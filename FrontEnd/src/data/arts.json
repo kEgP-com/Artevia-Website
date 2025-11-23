@@ -1,0 +1,82 @@
+[
+  {
+    "id": 1,
+    "title": "Sunset Dreams",
+    "artist": "Juan Dela Cruz",
+    "origin": "Cebu, Philippines",
+    "category": "Landscape",
+    "price": "3500",
+    "description": "A vivid portrayal of the Philippine sunset using warm tones and soft brush strokes that evoke a sense of calm and nostalgia.",
+    "image": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e"
+  },
+  {
+    "id": 2,
+    "title": "Harmony",
+    "artist": "Maria Santos",
+    "origin": "Manila, Philippines",
+    "category": "Abstract",
+    "price": "4200",
+    "description": "An abstract exploration of balance and emotion through mixed media, reflecting the unity between chaos and order.",
+    "image": "https://images.unsplash.com/photo-1504196606672-aef5c9cefc92"
+  },
+  {
+    "id": 3,
+    "title": "The Market Life",
+    "artist": "Leo Ramirez",
+    "origin": "Batangas, Philippines",
+    "category": "Realism",
+    "price": "5100",
+    "description": "Depicts the lively and colorful atmosphere of a Filipino wet market with incredible attention to detail and local culture.",
+    "image": "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620"
+  },
+  {
+    "id": 4,
+    "title": "Whispers of Nature",
+    "artist": "Celine Tan",
+    "origin": "Baguio, Philippines",
+    "category": "Nature",
+    "price": "2800",
+    "description": "A gentle watercolor painting capturing the serenity of pine trees and mountain mist, inspired by Baguio mornings.",
+    "image": "https://images.unsplash.com/photo-1473187983305-f615310e7daa"
+  },
+  {
+    "id": 5,
+    "title": "Faith",
+    "artist": "Rico Gomez",
+    "origin": "Davao, Philippines",
+    "category": "Portrait",
+    "price": "6100",
+    "description": "A portrait of an elderly woman in deep prayer, symbolizing strength and resilience through faith and time.",
+    "image": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9"
+  },
+  {
+    "id": 6,
+    "title": "Golden Fields",
+    "artist": "Angela Cruz",
+    "origin": "Iloilo, Philippines",
+    "category": "Landscape",
+    "price": "3900",
+    "description": "A wide panoramic view of rice fields at harvest time under the glowing afternoon sun, celebrating rural life and abundance.",
+    "image": "https://images.unsplash.com/photo-1501785888041-af3ef285b470"
+  },
+  {
+    "id": 7,
+    "title": "Echoes of Time",
+    "artist": "Marco Reyes",
+    "origin": "Laguna, Philippines",
+    "category": "Surrealism",
+    "price": "7200",
+    "description": "A surreal representation of memory and time, blending dreamlike imagery with symbolic Filipino elements.",
+    "image": "https://images.unsplash.com/photo-1501594907352-04cda38ebc29"
+  },
+  {
+    "id": 8,
+    "title": "Mother’s Love",
+    "artist": "Ella Mendoza",
+    "origin": "Quezon City, Philippines",
+    "category": "Portrait",
+    "price": "5600",
+    "description": "A tender portrait showing the deep bond between mother and child using expressive lighting and realism.",
+    "image": "https://images.unsplash.com/photo-1487412912498-0447578fcca8"
+  }
+]

@@ -1,0 +1,194 @@
+[
+  {
+    "id": 1001,
+    "customer": "John Cruz",
+    "dateOrdered": "2025-10-10",
+    "dateDelivered": "",
+    "dateCancelled": "",
+    "status": "Pending",
+    "total": 2450,
+    "paymentMethod": "GCash",
+    "items": [
+      {
+        "name": "Abstract Painting",
+        "price": 1250,
+        "artist": "Ella Martinez",
+        "artistType": "Commission"
+      },
+      {
+        "name": "Portrait of Nature",
+        "price": 1200,
+        "artist": "Rico Dela Cruz",
+        "artistType": "Non-Commission"
+      }
+    ]
+  },
+  {
+    "id": 1002,
+    "customer": "Maria Santos",
+    "dateOrdered": "2025-10-12",
+    "dateDelivered": "2025-10-17",
+    "dateCancelled": "",
+    "status": "Completed",
+    "total": 2300,
+    "paymentMethod": "PayPal",
+    "items": [
+      {
+        "name": "Landscape Canvas",
+        "price": 1150,
+        "artist": "Celine Ramos",
+        "artistType": "Commission"
+      },
+      {
+        "name": "City Lights Artwork",
+        "price": 1150,
+        "artist": "Miguel Tan",
+        "artistType": "Non-Commission"
+      }
+    ]
+  },
+  {
+    "id": 1003,
+    "customer": "Ben Cruz",
+    "dateOrdered": "2025-10-15",
+    "dateDelivered": "",
+    "dateCancelled": "",
+    "status": "Pending",
+    "total": 1850,
+    "paymentMethod": "GCash",
+    "items": [
+      {
+        "name": "Ocean Serenity",
+        "price": 950,
+        "artist": "Hannah Torres",
+        "artistType": "Commission"
+      },
+      {
+        "name": "Golden Horizon",
+        "price": 900,
+        "artist": "Leo Bautista",
+        "artistType": "Non-Commission"
+      }
+    ]
+  },
+  {
+    "id": 1004,
+    "customer": "Carla Reyes",
+    "dateOrdered": "2025-09-28",
+    "dateDelivered": "2025-10-03",
+    "dateCancelled": "",
+    "status": "Completed",
+    "total": 2750,
+    "paymentMethod": "Bank Transfer",
+    "items": [
+      {
+        "name": "Forest Dreams",
+        "price": 1300,
+        "artist": "Rico Dela Cruz",
+        "artistType": "Commission"
+      },
+      {
+        "name": "Morning Glow",
+        "price": 1450,
+        "artist": "Ella Martinez",
+        "artistType": "Non-Commission"
+      }
+    ]
+  },
+  {
+    "id": 1005,
+    "customer": "Gina Ramos",
+    "dateOrdered": "2025-10-18",
+    "dateDelivered": "",
+    "dateCancelled": "",
+    "status": "Pending",
+    "total": 1600,
+    "paymentMethod": "COD",
+    "items": [
+      {
+        "name": "Bloom in Silence",
+        "price": 800,
+        "artist": "Celine Ramos",
+        "artistType": "Commission"
+      },
+      {
+        "name": "The Quiet Lake",
+        "price": 800,
+        "artist": "Miguel Tan",
+        "artistType": "Non-Commission"
+      }
+    ]
+  },
+  {
+    "id": 1006,
+    "customer": "Darren Lopez",
+    "dateOrdered": "2025-10-01",
+    "dateDelivered": "2025-10-06",
+    "dateCancelled": "",
+    "status": "Completed",
+    "total": 3100,
+    "paymentMethod": "PayPal",
+    "items": [
+      {
+        "name": "Sunset Mirage",
+        "price": 1550,
+        "artist": "Ella Martinez",
+        "artistType": "Commission"
+      },
+      {
+        "name": "City Reflections",
+        "price": 1550,
+        "artist": "Rico Dela Cruz",
+        "artistType": "Non-Commission"
+      }
+    ]
+  },
+  {
+    "id": 1007,
+    "customer": "Isabel Torres",
+    "dateOrdered": "2025-10-20",
+    "dateDelivered": "",
+    "dateCancelled": "2025-10-21",
+    "status": "Cancelled",
+    "total": 2200,
+    "paymentMethod": "GCash",
+    "items": [
+      {
+        "name": "Winds of Change",
+        "price": 1100,
+        "artist": "Celine Ramos",
+        "artistType": "Commission"
+      },
+      {
+        "name": "Night Garden",
+        "price": 1100,
+        "artist": "Miguel Tan",
+        "artistType": "Non-Commission"
+      }
+    ]
+  },
+  {
+    "id": 1008,
+    "customer": "Harold Bautista",
+    "dateOrdered": "2025-10-22",
+    "dateDelivered": "",
+    "dateCancelled": "",
+    "status": "Pending",
+    "total": 1950,
+    "paymentMethod": "GCash",
+    "items": [
+      {
+        "name": "Tranquil Shores",
+        "price": 950,
+        "artist": "Hannah Torres",
+        "artistType": "Commission"
+      },
+      {
+        "name": "Neon Pulse",
+        "price": 1000,
+        "artist": "Leo Bautista",
+        "artistType": "Non-Commission"
+      }
+    ]
+  }
+]

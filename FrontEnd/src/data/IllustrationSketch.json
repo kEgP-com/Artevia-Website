@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "name": "Cat Portrait",
+    "artist": "by Hansana",
+    "category": "Illustration & Sketch",
+    "price": 2826.00,
+    "description": "Charcoal Custom Portrait of Cat. Contact the artist for custom work. Social media: @HansanaArt. Phone: +63 912 345 6781. Email: hansana@example.com",
+    "imageUrl": "../../images/Sketch arts/cat portrait.png"
+  },
+  {
+    "id": 2,
+    "name": "Graphite Pencil Portrait",
+    "artist": "by AStDaya",
+    "category": "Illustration & Sketch",
+    "price": 3853.00,
+    "description": "Custom hand drawn portrait using graphite pencil unique gift idea for mom, dad, children and other. Contact the artist for custom work. Social media: @AStDayaArt. Phone: +63 912 345 6782. Email: astdya@example.com",
+    "imageUrl": "../../images/Sketch arts/custom portrait.png"
+  },
+  {
+    "id": 3,
+    "name": "Portrait",
+    "artist": "ART2YOUcreation",
+    "category": "Illustration & Sketch",
+    "price": 190.00,
+    "description": "Custom hand drawn portrait using pencil. Contact the artist for custom work. Social media: @ART2YOUcreation. Phone: +63 912 345 6783. Email: art2you@example.com",
+    "imageUrl": "../../images/Sketch arts/Custom_Portrait_2.png"
+  },
+  {
+    "id": 4,
+    "name": "Father & Son",
+    "artist": "by MichaelJArts",
+    "category": "Illustration & Sketch",
+    "price": 2826.00,
+    "description": "Sketch of father and son using pencil. Contact the artist for custom work. Social media: @MichaelJArts. Phone: +63 912 345 6784. Email: michaeljarts@example.com",
+    "imageUrl": "../../images/Sketch arts/custom portrait -3.png"
+  },
+  {
+    "id": 5,
+    "name": "Mr. Dog",
+    "artist": "by yourstruly",
+    "category": "Illustration & Sketch",
+    "price": 6375.00,
+    "description": "Custom pet portraits dressed in suits. Contact the artist for custom work. Social media: @yourstruly. Phone: +63 912 345 6785. Email: yourstruly@example.com",
+    "imageUrl": "../../images/Sketch arts/dog portrait.png"
+  },
+  {
+    "id": 6,
+    "name": "SelfPortrait",
+    "artist": "by MichaelJArts",
+    "category": "Illustration & Sketch",
+    "price": 2826.00,
+    "description": "Custom hand drawn portrait using pencil. Contact the artist for custom work. Social media: @MichaelJArts. Phone: +63 912 345 6784. Email: michaeljarts@example.com",
+    "imageUrl": "../../images/Sketch arts/self portrait.png"
+  }
+]

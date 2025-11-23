@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "name": "Alice Santos",
+    "email": "alice.santos@example.com",
+    "address": "Cabuyao, Laguna",
+    "contact": "09171234567",
+    "age": 23
+  },
+  {
+    "id": 2,
+    "name": "Ben Cruz",
+    "email": "ben.cruz@example.com",
+    "address": "Binan, Laguna",
+    "contact": "09179876543",
+    "age": 29
+  },
+  {
+    "id": 3,
+    "name": "Carla Reyes",
+    "email": "carla.reyes@example.com",
+    "address": "San Pedro, Laguna",
+    "contact": "09170001111",
+    "age": 21
+  },
+  {
+    "id": 4,
+    "name": "Darren Lopez",
+    "email": "darren.lopez@example.com",
+    "address": "Sta. Rosa, Laguna",
+    "contact": "09281231234",
+    "age": 34
+  },
+  {
+    "id": 5,
+    "name": "Ella Villanueva",
+    "email": "ella.villanueva@example.com",
+    "address": "Calamba, Laguna",
+    "contact": "09190002222",
+    "age": 27
+  },
+  {
+    "id": 6,
+    "name": "Francis Dela Cruz",
+    "email": "francis.delacruz@example.com",
+    "address": "Los Baños, Laguna",
+    "contact": "09998887777",
+    "age": 30
+  },
+  {
+    "id": 7,
+    "name": "Gina Ramos",
+    "email": "gina.ramos@example.com",
+    "address": "Cabuyao, Laguna",
+    "contact": "09274561234",
+    "age": 25
+  },
+  {
+    "id": 8,
+    "name": "Harold Bautista",
+    "email": "harold.bautista@example.com",
+    "address": "Cabuyao, Laguna",
+    "contact": "09451234567",
+    "age": 32
+  },
+  {
+    "id": 9,
+    "name": "Isabel Torres",
+    "email": "isabel.torres@example.com",
+    "address": "Cabuyao, Laguna",
+    "contact": "09778889999",
+    "age": 28
+  },
+  {
+    "id": 10,
+    "name": "James Rivera",
+    "email": "james.rivera@example.com",
+    "address": "Calamba, Laguna",
+    "contact": "09361239876",
+    "age": 26
+  },
+  {
+    "id": 11,
+    "name": "Katrina Mendoza",
+    "email": "katrina.mendoza@example.com",
+    "address": "Los Baños, Laguna",
+    "contact": "09172349876",
+    "age": 24
+  },
+  {
+    "id": 12,
+    "name": "Leo Gutierrez",
+    "email": "leo.gutierrez@example.com",
+    "address": "Sta. Rosa, Laguna",
+    "contact": "09453451234",
+    "age": 33
+  },
+  {
+    "id": 13,
+    "name": "Monica Flores",
+    "email": "monica.flores@example.com",
+    "address": "Binan, Laguna",
+    "contact": "09569876543",
+    "age": 22
+  },
+  {
+    "id": 14,
+    "name": "Nathan Cruz",
+    "email": "nathan.cruz@example.com",
+    "address": "San Pedro, Laguna",
+    "contact": "09779812345",
+    "age": 31
+  },
+  {
+    "id": 15,
+    "name": "Olivia Garcia",
+    "email": "olivia.garcia@example.com",
+    "address": "Cabuyao, Laguna",
+    "contact": "09663456789",
+    "age": 27
+  }
+]

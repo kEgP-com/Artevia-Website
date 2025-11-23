@@ -1,0 +1,400 @@
+
+.order-history-container {
+  padding: 50px;
+  background: url("../images/images/login_bg.png") no-repeat center center/cover;
+  min-height: 100vh;
+  font-family: "Poppins", sans-serif;
+  color: #4b3b2b;
+}
+
+
+.order-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.order-history-header h2 {
+  font-size: 28px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #3e2d23;
+}
+
+.order-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.order-filter .filter-icon {
+  color: #4b3b2b;
+  font-size: 18px;
+}
+
+.order-filter select {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #b59b7b;
+  background: #fffaf5;
+  color: #4b3b2b;
+  font-size: 15px;
+  transition: 0.3s ease;
+}
+
+.order-filter select:hover {
+  background: #f0e4d7;
+}
+
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+
+.order-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  padding: 18px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(6px);
+}
+
+.order-card:hover {
+  transform: translateY(-5px);
+}
+
+
+.order-img img {
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  border: 2px solid #c2ae96;
+  object-fit: cover;
+}
+
+
+.order-info {
+  flex: 1;
+  margin-left: 20px;
+  line-height: 1.6;
+}
+
+/* Status Tag */
+.order-status {
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-weight: bold;
+  color: #fff;
+  text-transform: capitalize;
+}
+.order-status.delivered {
+  background: #4caf50;
+}
+.order-status.pending {
+  background: #ffb300;
+}
+.order-status.cancelled {
+  background: #e53935;
+}
+
+/*  Action Buttons */
+.order-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.order-actions button {
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 14px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 500;
+  transition: all 0.25s ease;
+  width: 130px;
+}
+
+/* Button Colors */
+.details-btn {
+  background: #c2ae96;
+}
+.details-btn:hover {
+  background: #b0977d;
+}
+
+.cancel-btn {
+  background: #e53935;
+}
+.cancel-btn:hover {
+  background: #c62828;
+}
+
+.driver-btn {
+  background: #039be5;
+}
+.driver-btn:hover {
+  background: #0288d1;
+}
+
+.vendor-btn {
+  background: #6a1b9a;
+}
+.vendor-btn:hover {
+  background: #8e24aa;
+}
+
+.rate-btn {
+  background: #fbc02d;
+  color: #3e2d23;
+}
+.rate-btn:hover {
+  background: #fdd835;
+}
+
+/* Clear History */
+.clear-history-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 25px;
+}
+
+.clear-history-btn {
+  background: #9c6b3d;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.clear-history-btn:hover {
+  background: #7a4f29;
+  transform: scale(1.05);
+}
+
+/* Empty Orders */
+.empty-order {
+  text-align: center;
+  margin-top: 50px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 25px;
+  border-radius: 10px;
+  font-size: 16px;
+  color: #6d5b4c;
+}
+
+/* Overlay Modal */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(60, 40, 20, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(6px);
+  z-index: 999;
+}
+
+.overlay-content {
+  background: #fffaf5;
+  padding: 30px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 420px;
+  text-align: left;
+  position: relative;
+  box-shadow: 0 8px 20px rgba(75, 59, 43, 0.3);
+}
+
+.overlay-content h2 {
+  text-align: center;
+  margin-bottom: 15px;
+  color: #4b3b2b;
+}
+
+.overlay-img {
+  display: block;
+  margin: 0 auto 15px;
+  width: 110px;
+  height: 110px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 2px solid #c2ae96;
+}
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  font-size: 22px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #4b3b2b;
+}
+
+.close-btn:hover {
+  color: #a67b5b;
+}
+
+.confirm-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.confirm-btn {
+  background: #9c6b3d;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.confirm-btn:hover {
+  background: #7a4f29;
+}
+/* Responsive Layouts */
+
+/* Medium screens (tablets) */
+@media (max-width: 992px) {
+  .order-history-container {
+    padding: 30px;
+  }
+
+  .order-history-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .orders-list {
+    align-items: center;
+  }
+
+  .order-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 90%;
+    margin: 0 auto;
+  }
+
+  .order-img img {
+    width: 150px;
+    height: 150px;
+  }
+
+  .order-info {
+    margin-left: 0;
+    margin-top: 10px;
+  }
+
+  .order-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 10px;
+    gap: 10px;
+  }
+
+  .order-actions button {
+    width: auto;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
+
+/* Small screens (mobile) */
+@media (max-width: 600px) {
+  .order-history-container {
+    padding: 20px;
+  }
+
+  .order-card {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 15px;
+    text-align: center;
+  }
+
+  /* Only show the image and buttons, hide text info for compact layout */
+  .order-info {
+    display: none;
+  }
+
+  .order-img img {
+    width: 180px;
+    height: 180px;
+    border-radius: 14px;
+  }
+
+  .order-actions {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    margin-top: 15px;
+  }
+
+  .order-actions button {
+    width: 80%;
+    font-size: 15px;
+    padding: 12px 0;
+  }
+
+  .order-history-header h2 {
+    font-size: 22px;
+  }
+
+  .order-filter select {
+    font-size: 14px;
+    padding: 8px 10px;
+  }
+
+  .clear-history-btn {
+    width: 90%;
+    padding: 10px;
+  }
+}
+
+/* Extra Small Screens (Under 400px) */
+@media (max-width: 400px) {
+  .order-img img {
+    width: 150px;
+    height: 150px;
+  }
+
+  .order-actions button {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .overlay-content {
+    width: 95%;
+    padding: 20px;
+  }
+}

@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "name": "A Taste of Honey",
+    "artist": "by Christian Løgstrup",
+    "category": "Digital Art",
+    "price": 7700.00,
+    "description": "Digital on paper 27.5 inch x 27.5 inch",
+    "imageUrl": "../../images/Digital Art/A_Taste_of_Honey.png"
+  },
+  {
+    "id": 2,
+    "name": "Coming home",
+    "artist": "by Fikry Botros",
+    "category": "Digital Art",
+    "price": 430.00,
+    "description": "Digital on Paper",
+    "imageUrl": "../../images/Digital Art/Coming home.png"
+  },
+  {
+    "id": 3,
+    "name": "Feel The Heat - Diptych",
+    "artist": "by Lynne Godina-orme",
+    "category": "Digital Art",
+    "price": 1268.00,
+    "description": "Digital",
+    "imageUrl": "../../images/Digital Art/Feel The Heat.png"
+  },
+  {
+    "id": 4,
+    "name": "Floral Majesty 1",
+    "artist": "by Michael Filonow",
+    "category": "Digital Art",
+    "price": 495.00,
+    "description": "Digital on Paper 30.0 inch x 24.0 inch",
+    "imageUrl": "../../images/Digital Art/Floral Majesty.png"
+  },
+  {
+    "id": 5,
+    "name": "Goddess 54 ",
+    "artist": "by Jason Lincoln Jeffers",
+    "category": "Digital Art",
+    "price": 5290.00,
+    "description": "Digital on metal 52.0 inch x 32.0 inch",
+    "imageUrl": "../../images/Digital Art/goddess 54.png"
+  },
+  {
+    "id": 6,
+    "name": "Searching for peace",
+    "artist": "by Esteban Vera",
+    "category": "Digital Art",
+    "price": 1750.00,
+    "description": "Digital on paper 43.3 inch x 35.4 inch",
+    "imageUrl": "../../images/Digital Art/Searching for peace.png"
+  }
+]

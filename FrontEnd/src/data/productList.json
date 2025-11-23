@@ -1,0 +1,254 @@
+[
+  {
+    "id": 1,
+    "name": "Anarva",
+    "artist": "Unknown",
+    "category": "Handmade Decor",
+    "price": 2750.00,
+    "description": "Ecomix Elephant with Fabric & Wood - Small",
+    "imageUrl": "../../images/Handmade Decor/Anarva.png"
+  },
+  {
+    "id": 2,
+    "name": "Dovy Oak Wood",
+    "artist": "by Woodlands",
+    "category": "Handmade Decor",
+    "price": 2890.00,
+    "description": "Oak Wood Decorative Bird",
+    "imageUrl": "../../images/Handmade Decor/dovy_oak.png"
+  },
+  {
+    "id": 3,
+    "name": "Fleur D",
+    "artist": "by Ceramic Sit",
+    "category": "Handmade Decor",
+    "price": 190.00,
+    "description": "Candle Stand Large",
+    "imageUrl": "../../images/Handmade Decor/fleur d.jpg"
+  },
+  {
+    "id": 4,
+    "name": "Lupa Terracota",
+    "artist": "by Sartigas",
+    "category": "Handmade Decor",
+    "price": 590.00,
+    "description": "Digital on Paper 30.0 inch x 24.0 inch",
+    "imageUrl": "../../images/Handmade Decor/lupa terracota.png"
+  },
+  {
+    "id": 5,
+    "name": "Malar Pampas",
+    "artist": "by Sardigas",
+    "category": "Handmade Decor",
+    "price": 1290.00,
+    "description": "Sorghum Stem Bundle",
+    "imageUrl": "../../images/Handmade Decor/malar pampas.png"
+  },
+  {
+    "id": 6,
+    "name": "Ort Planter",
+    "artist": "by Paganini Arts",
+    "category": "Handmade Decor",
+    "price": 2050.00,
+    "description": "Ort Ceramic Planter",
+    "imageUrl": "../../images/Handmade Decor/ort.jpg"
+  },
+   {
+    "id": 7,
+    "name": "Cat Portrait",
+    "artist": "by Hansana",
+    "category": "Illustration & Sketch",
+    "price": 2826.00,
+    "description": "Charcoal Custom Portrait of Cat. Contact the artist for custom work. Social media: @HansanaArt. Phone: +63 912 345 6781. Email: hansana@example.com",
+    "imageUrl": "../../images/Sketch arts/cat portrait.png"
+  },
+  {
+    "id": 8,
+    "name": "Graphite Pencil Portrait",
+    "artist": "by AStDaya",
+    "category": "Illustration & Sketch",
+    "price": 3853.00,
+    "description": "Custom hand drawn portrait using graphite pencil, unique gift idea for mom, dad, children, and others. Contact the artist for custom work. Social media: @AStDayaArt. Phone: +63 912 345 6782. Email: astdya@example.com",
+    "imageUrl": "../../images/Sketch arts/custom portrait.png"
+  },
+  {
+    "id": 9,
+    "name": "Portrait",
+    "artist": "ART2YOUcreation",
+    "category": "Illustration & Sketch",
+    "price": 190.00,
+    "description": "Custom hand drawn portrait using pencil. Contact the artist for custom work. Social media: @ART2YOUcreation. Phone: +63 912 345 6783. Email: art2you@example.com",
+    "imageUrl": "../../images/Sketch arts/Custom_Portrait_2.png"
+  },
+  {
+    "id": 10,
+    "name": "Father & Son",
+    "artist": "by MichaelJArts",
+    "category": "Illustration & Sketch",
+    "price": 2826.00,
+    "description": "Sketch of father and son using pencil. Contact the artist for custom work. Social media: @MichaelJArts. Phone: +63 912 345 6784. Email: michaeljarts@example.com",
+    "imageUrl": "../../images/Sketch arts/custom portrait -3.png"
+  },
+  {
+    "id": 11,
+    "name": "Mr. Dog",
+    "artist": "by yourstruly",
+    "category": "Illustration & Sketch",
+    "price": 6375.00,
+    "description": "Custom pet portraits dressed in suits. Contact the artist for custom work. Social media: @yourstruly. Phone: +63 912 345 6785. Email: yourstruly@example.com",
+    "imageUrl": "../images/Sketch arts/dog portrait.png"
+  },
+  {
+    "id": 12,
+    "name": "SelfPortrait",
+    "artist": "by MichaelJArts",
+    "category": "Illustration & Sketch",
+    "price": 2826.00,
+    "description": "Custom hand drawn portrait using pencil. Contact the artist for custom work. Social media: @MichaelJArts. Phone: +63 912 345 6784. Email: michaeljarts@example.com",
+    "imageUrl": "../../images/Sketch arts/self portrait.png"
+  },
+  {
+    "id": 13,
+    "name": "Abstract Paint",
+    "artist": "by Luinette Belen",
+    "category": "Painting",
+    "price": 3850.00,
+    "description": "A vibrant abstract painting showcasing expressive strokes and layered textures.",
+    "imageUrl": "../../images/Painting/Abstract Paint by Luinette Belen.jpg"
+  },
+  {
+    "id": 14,
+    "name": "Oil Canvas",
+    "artist": "by denCepada",
+    "category": "Painting",
+    "price": 4200.00,
+    "description": "Oil on canvas featuring serene tones and subtle detailing of landscapes.",
+    "imageUrl": "../../images/Painting/Oil Canvas by denCepada.jpg"
+  },
+  {
+    "id": 15,
+    "name": "Oil On Canvas",
+    "artist": "By Shan Arts",
+    "category": "Painting",
+    "price": 3990.00,
+    "description": "A richly detailed oil painting with expressive brushwork and depth.",
+    "imageUrl": "../../images/Painting/Oil_On_Canvas_By_Shan_Arts.jpg"
+  },
+  {
+    "id": 16,
+    "name": "Pag Akbay Series VII",
+    "artist": "by Leti Watersong",
+    "category": "Painting",
+    "price": 4750.00,
+    "description": "Part of the Pag Akbay series—an evocative depiction of human connection and emotion.",
+    "imageUrl": "../../images/Painting/Pag Akbay Series VII by Leti watersong.jpg"
+  },
+  {
+    "id": 17,
+    "name": "Blossom V Wood Sculpture",
+    "artist": "by Wouter van der Vlugt",
+    "category": "Sculpture",
+    "price": 6800.00,
+    "description": "A contemporary wooden sculpture with fluid organic form and modern aesthetic.",
+    "imageUrl": "../../images/Sculpture/blossom-v-wood-sculpture-by-wouter-van-der-vlugt-1-300x200.png"
+  },
+  {
+    "id": 18,
+    "name": "First Connection Marble Sculpture",
+    "artist": "by Francesca Bernardini",
+    "category": "Sculpture",
+    "price": 7500.00,
+    "description": "Elegant marble sculpture representing unity and the emotional bond between two beings.",
+    "imageUrl": "../../images/Sculpture/first-connection-marble-sculpture-by-francesca-bernardini_1.png"
+  },
+  {
+    "id": 19,
+    "name": "La Grande Ourse Animal Sculpture",
+    "artist": "by Eric Valat",
+    "category": "Sculpture",
+    "price": 8200.00,
+    "description": "A finely crafted animal sculpture reflecting strength and gentleness in marble finish.",
+    "imageUrl": "../../images/Sculpture/la-grande-ourse-animal-sculpture-by-eric-valat_7-550x769.png"
+  },
+  {
+    "id": 20,
+    "name": "Peace and Love II Stainless Steel Sculpture",
+    "artist": "by Franck K",
+    "category": "Sculpture",
+    "price": 9100.00,
+    "description": "A stainless steel masterpiece embodying harmony through smooth reflective surfaces.",
+    "imageUrl": "../../images/Sculpture/peace-and-love-ii-stainless-steel-sculpture-by-franck-k-1-550x536.png"
+  },
+  {
+    "id": 21,
+    "name": "Rosa",
+    "artist": "by Marie Louise Sorbac",
+    "category": "Sculpture",
+    "price": 6400.00,
+    "description": "Graceful marble sculpture inspired by the beauty and delicacy of nature’s forms.",
+    "imageUrl": "../../images/Sculpture/rosa-by-marie-louise-sorbac-300x450.png"
+  },
+  {
+    "id": 22,
+    "name": "Stonegate 8 Marble Sculpture",
+    "artist": "by Mattia Bosco",
+    "category": "Sculpture",
+    "price": 7800.00,
+    "description": "Intricately carved marble sculpture balancing geometric precision and organic flow.",
+    "imageUrl": "../../images/Sculpture/stonegate-8-marble-sculpture-by-mattia-bosco-2-300x450.png"
+  },
+  {
+    "id": 23,
+    "name": "A Taste of Honey",
+    "artist": "by Christian Løgstrup",
+    "category": "Digital Art",
+    "price": 7700.00,
+    "description": "Digital on paper 27.5 inch x 27.5 inch",
+    "imageUrl": "../../images/Digital Art/A_Taste_of_Honey.png"
+  },
+  {
+    "id": 24,
+    "name": "Coming home",
+    "artist": "by Fikry Botros",
+    "category": "Digital Art",
+    "price": 430.00,
+    "description": "Digital on Paper",
+    "imageUrl": "../../images/Digital Art/Coming home.png"
+  },
+  {
+    "id": 25,
+    "name": "Feel The Heat - Diptych",
+    "artist": "by Lynne Godina-orme",
+    "category": "Digital Art",
+    "price": 1268.00,
+    "description": "Digital",
+    "imageUrl": "../../images/Digital Art/Feel The Heat.png"
+  },
+  {
+    "id": 26,
+    "name": "Floral Majesty 1",
+    "artist": "by Michael Filonow",
+    "category": "Digital Art",
+    "price": 495.00,
+    "description": "Digital on Paper 30.0 inch x 24.0 inch",
+    "imageUrl": "../../images/Digital Art/Floral Majesty.png"
+  },
+  {
+    "id": 27,
+    "name": "Goddess 54",
+    "artist": "by Jason Lincoln Jeffers",
+    "category": "Digital Art",
+    "price": 5290.00,
+    "description": "Digital on metal 52.0 inch x 32.0 inch",
+    "imageUrl": "../../images/Digital Art/goddess 54.png"
+  },
+  {
+    "id": 28,
+    "name": "Searching for peace",
+    "artist": "by Esteban Vera",
+    "category": "Digital Art",
+    "price": 1750.00,
+    "description": "Digital on paper 43.3 inch x 35.4 inch",
+    "imageUrl": "../../images/Digital Art/Searching for peace.png"
+  }
+]

@@ -1,0 +1,112 @@
+/* Responsive Admin Panel Enhancements */
+
+/* General mobile-safe adjustments */
+.admin-root {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* --- NAVIGATION --- */
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: #333;
+}
+
+@media (max-width: 900px) {
+  .dashboard-nav {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.98);
+    border-top: 1px solid #ccc;
+    padding: 10px 0;
+    z-index: 50;
+  }
+
+  .dashboard-nav.show {
+    display: flex;
+  }
+
+  .nav-item {
+    display: block;
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .hamburger {
+    display: block;
+  }
+}
+
+/* --- TABLE RESPONSIVENESS --- */
+
+/* Make tables scroll horizontally on small screens */
+.scrollable-table {
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* Adjust cell spacing for readability */
+.users-table th,
+.users-table td {
+  padding: 10px 8px;
+  font-size: 0.9rem;
+}
+
+/* Hide certain columns on small screens */
+@media (max-width: 800px) {
+  .hide-tablet {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .hide-mobile {
+    display: none;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 8px 6px;
+    font-size: 0.85rem;
+  }
+
+  .action-btn {
+    font-size: 0.8rem;
+    padding: 6px 8px;
+  }
+
+  .controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .controls-right {
+    align-self: flex-end;
+  }
+
+  .search-group {
+    width: 100%;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+}
+
+/* Prevent overlap of dropdowns and overlays */
+.dropdown-menu {
+  z-index: 100;
+}
+
+.overlay {
+  overflow-y: auto;
+}

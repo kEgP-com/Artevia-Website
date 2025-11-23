@@ -1,0 +1,206 @@
+
+
+/* General adjustments */
+.admin-main {
+  padding: 20px;
+  overflow-x: hidden;
+}
+
+/* Scrollable table container */
+.scrollable-table {
+  overflow-x: auto;
+}
+
+/* Ensure overlays always appear above everything */
+.overlay {
+  position: fixed !important;
+  z-index: 9999 !important;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+@media (max-width: 1024px) {
+  /* Hide less important columns */
+  .users-table th:nth-child(3),
+  .users-table td:nth-child(3),
+  .users-table th:nth-child(4),
+  .users-table td:nth-child(4) {
+    display: none;
+  }
+
+  .table-card {
+    overflow-x: auto;
+  }
+
+  .users-table th,
+  .users-table td {
+    white-space: nowrap;
+  }
+
+  .overlay-content {
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+
+@media (max-width: 768px) {
+  /* Header layout */
+  .dashboard-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    z-index: 100;
+    padding: 0.5rem 1rem;
+  }
+
+  /* Brand logo */
+  .brand-logo {
+    width: 90px;
+  }
+
+  /* Hide desktop nav */
+  .dashboard-nav {
+    display: none;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.97);
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    border-radius: 0 0 10px 10px;
+  }
+
+  /* When toggled via React */
+  .dashboard-nav.show {
+    display: flex;
+  }
+
+  /* Hamburger menu */
+  .hamburger {
+    display: block;
+    background: none;
+    border: none;
+    color: #333;
+    font-size: 1.8rem;
+    cursor: pointer;
+    z-index: 120;
+  }
+
+  /* Nav items */
+  .nav-item {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid #ddd;
+    background: none;
+    font-size: 1rem;
+    text-align: left;
+  }
+
+  .nav-item:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  /* Icon section */
+  .icon-section {
+    display: flex;
+    gap: 10px;
+    z-index: 120;
+  }
+
+  /* Hide more columns */
+  .users-table th:nth-child(4),
+  .users-table td:nth-child(4),
+  .users-table th:nth-child(5),
+  .users-table td:nth-child(5) {
+    display: none;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .action-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .overlay-content {
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+}
+
+
+@media (max-width: 500px) {
+  /* Table becomes stacked */
+  .table-card {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  table.users-table {
+    width: 100%;
+    display: block;
+  }
+
+  .users-table thead {
+    display: none;
+  }
+
+  .users-table tr {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    padding: 10px;
+  }
+
+  .users-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    padding: 6px 0;
+    word-break: break-word;
+  }
+
+  .users-table td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    color: #444;
+    flex-shrink: 0;
+    margin-right: 10px;
+  }
+
+  .action-btn {
+    margin: 2px;
+    flex: 1;
+    min-width: 70px;
+  }
+
+  /* Scrollable overlay content */
+  .overlay-content {
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+
+@media (max-height: 600px) {
+  .overlay-content {
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+}

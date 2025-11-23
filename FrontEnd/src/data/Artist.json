@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "name": "Luna Reyes",
+    "origin": "Cebu, Philippines",
+    "style": "Abstract",
+    "email": "luna.reyes@example.com",
+    "bio": "Known for her vibrant abstract works that blend emotion and color.",
+    "image": "https://via.placeholder.com/150"
+  },
+  {
+    "id": 2,
+    "name": "Marco Dela Cruz",
+    "origin": "Manila, Philippines",
+    "style": "Realism",
+    "email": "marco.delacruz@example.com",
+    "bio": "A contemporary realist painter capturing everyday Filipino life.",
+    "image": "https://via.placeholder.com/150"
+  }
+]

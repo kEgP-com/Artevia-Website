@@ -1,0 +1,87 @@
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.overlay-box {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 40px 60px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  max-width: 400px;
+  animation: popIn 0.4s ease-in-out;
+}
+
+.overlay-icon {
+  font-size: 40px;
+  color: #825a3c;
+  margin-bottom: 15px;
+}
+
+.overlay-box h2 {
+  color: #825a3c;
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.overlay-box p {
+  color: #333;
+  font-size: 16px;
+  margin-bottom: 25px;
+}
+
+
+.overlay-button {
+  background: #825a3c;
+  color: #fff;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(130, 90, 60, 0.3);
+}
+
+.overlay-button:hover {
+  background: #ffffff;
+  color: #000000;
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 6px 15px rgba(130, 90, 60, 0.45);
+}
+
+/* ✨ Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

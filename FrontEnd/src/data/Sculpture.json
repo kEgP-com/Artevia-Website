@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "name": "Blossom V Wood Sculpture",
+    "artist": "by Wouter van der Vlugt",
+    "category": "Sculpture",
+    "price": 6800.00,
+    "description": "A contemporary wooden sculpture with fluid organic form and modern aesthetic.",
+    "imageUrl": "../../images/Sculpture/blossom-v-wood-sculpture-by-wouter-van-der-vlugt-1-300x200.png"
+  },
+  {
+    "id": 2,
+    "name": "First Connection Marble Sculpture",
+    "artist": "by Francesca Bernardini",
+    "category": "Sculpture",
+    "price": 7500.00,
+    "description": "Elegant marble sculpture representing unity and the emotional bond between two beings.",
+    "imageUrl": "../../images/Sculpture/first-connection-marble-sculpture-by-francesca-bernardini_1.png"
+  },
+  {
+    "id": 3,
+    "name": "La Grande Ourse Animal Sculpture",
+    "artist": "by Eric Valat",
+    "category": "Sculpture",
+    "price": 8200.00,
+    "description": "A finely crafted animal sculpture reflecting strength and gentleness in marble finish.",
+    "imageUrl": "../../images/Sculpture/la-grande-ourse-animal-sculpture-by-eric-valat_7-550x769.png"
+  },
+  {
+    "id": 4,
+    "name": "Peace and Love II Stainless Steel Sculpture",
+    "artist": "by Franck K",
+    "category": "Sculpture",
+    "price": 9100.00,
+    "description": "A stainless steel masterpiece embodying harmony through smooth reflective surfaces.",
+    "imageUrl": "../../images/Sculpture/peace-and-love-ii-stainless-steel-sculpture-by-franck-k-1-550x536.png"
+  },
+  {
+    "id": 5,
+    "name": "Rosa",
+    "artist": "by Marie Louise Sorbac",
+    "category": "Sculpture",
+    "price": 6400.00,
+    "description": "Graceful marble sculpture inspired by the beauty and delicacy of nature’s forms.",
+    "imageUrl": "../../images/Sculpture/rosa-by-marie-louise-sorbac-300x450.png"
+  },
+  {
+    "id": 6,
+    "name": "Stonegate 8 Marble Sculpture",
+    "artist": "by Mattia Bosco",
+    "category": "Sculpture",
+    "price": 7800.00,
+    "description": "Intricately carved marble sculpture balancing geometric precision and organic flow.",
+    "imageUrl": "../../images/Sculpture/stonegate-8-marble-sculpture-by-mattia-bosco-2-300x450.png"
+  }
+]
