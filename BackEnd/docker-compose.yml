@@ -1,20 +1,20 @@
 services:
   app:
     build: .
-    container_name: php-app
+    container_name: php
     ports:
       - "8082:8000"
       - "8000:8000" 
     volumes:
       - ./src:/var/www/html
-    command: php artisan serve --host=0.0.0.0 --port=8000
+    command: sh -c "composer install && php artisan serve --host=0.0.0.0 --port=8000"
     depends_on:
       - db
 
 
   db:
     image: mysql:8.0
-    container_name: mysql-db_data
+    container_name: mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
@@ -28,7 +28,7 @@ services:
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin
+    container_name: admin
     restart: always
     ports:
       - "8081:80"
