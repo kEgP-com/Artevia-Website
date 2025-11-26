@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "name": "Anarva",
+    "artist": "Unknown",
+    "category": "Handmade Decor",
+    "price": 2750.00,
+    "description": "Ecomix Elephant ith Fabric & Wood - Small",
+    "imageUrl": "../images/Handmade Decor/Anarva.png"
+  },
+  {
+    "id": 2,
+    "name": "Dovy Oak Wood",
+    "artist": "by Woodlands",
+    "category": "Handmade Decor",
+    "price": 2890.00,
+    "description": "Oak Wood Decorative Bird",
+    "imageUrl": "../../images/Handmade Decor/dovy_oak.png"
+  },
+  {
+    "id": 3,
+    "name": "Fleur D",
+    "artist": "by Ceramic Sit",
+    "category": "Handmade Decor",
+    "price": 190.00,
+    "description": "Candle Stand Large",
+    "imageUrl": "../../images/Handmade Decor/fleur d.jpg"
+  },
+  {
+    "id": 4,
+    "name": "Lupa Terracota",
+    "artist": "by Sartigas",
+    "category": "Handmade Decor",
+    "price": 590.00,
+    "description": "Digital on Paper 30.0 inch x 24.0 inch",
+    "imageUrl": "../../images/HandmadeDecors/lupa terracota.png"
+  },
+  {
+    "id": 5,
+    "name": "Malar Pampas",
+    "artist": "by Sardigas",
+    "category": "Handmade Decor",
+    "price": 1290.00,
+    "description": "Sorghum Stem Bundle",
+    "imageUrl": "../../images/HandmadeDecors/malar pampas.png"
+  },
+  {
+    "id": 6,
+    "name": "Ort Planter",
+    "artist": "by Paganini Arts",
+    "category": "Handmade Decor",
+    "price": 2050.00,
+    "description": "Ort Ceramic Planter",
+    "imageUrl": "../../images/Handmade Decor/ort.jpg"
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "Golden Retriever Portrait",
+    "artist": "Mila Reyes",
+    "type": "Digital Art",
+    "isCommissioned": true,
+    "price": 1800
+  },
+  {
+    "id": 2,
+    "name": "Abstract Color Flow",
+    "artist": "Jacob Tan",
+    "type": "Acrylic Painting",
+    "isCommissioned": false,
+    "price": 2300
+  },
+  {
+    "id": 3,
+    "name": "Mountain Serenity",
+    "artist": "Lara Dela Cruz",
+    "type": "Oil on Canvas",
+    "isCommissioned": true,
+    "price": 3200
+  }
+]
