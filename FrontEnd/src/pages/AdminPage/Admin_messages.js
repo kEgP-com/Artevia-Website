@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-// import "../../css/Admin.css";
 import "../../css/AdminMessage.css";
 import {
   FaUserCircle,
@@ -12,7 +11,9 @@ import {
 } from "react-icons/fa";
 import logo from "../../images/logo/logo_clear.png";
 import wavebg from "../../images/images/login_bg.png";
-import messagesData from "../../data/messages.json";
+
+
+const API_URL = "http://localhost:8082/api";
 
 export default function AdminMessages() {
   const navigate = useNavigate();
@@ -25,13 +26,28 @@ export default function AdminMessages() {
   const [viewMessage, setViewMessage] = useState(null);
   const [responseText, setResponseText] = useState("");
   const [isNavOpen, setIsNavOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   const toggleNav = () => setIsNavOpen(!isNavOpen);
+
+
+  const fetchMessages = async () => {
+    setIsLoading(true);
+    try {
+        const response = await fetch(`${API_URL}/messages`);
+        if (response.ok) {
+            const data = await response.json();
+            setMessages(data);
+        }
+    } catch (error) {
+        console.error("Error fetching messages:", error);
+    } finally {
+        setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const dataWithResponses = messagesData.map((m) => ({
-      ...m,
-      response: m.response || "",
-    }));
-    setMessages(dataWithResponses);
+    fetchMessages();
   }, []);
 
   const toggleSettings = () => {
@@ -48,46 +64,80 @@ export default function AdminMessages() {
     setQuery(searchTerm);
   };
 
-  const handleDelete = (id) => {
+  
+  const handleDelete = async (id) => {
     if (!window.confirm("Delete this message?")) return;
-    setMessages((prev) => prev.filter((m) => m.id !== id));
-    setViewMessage(null);
+
+    try {
+        await fetch(`${API_URL}/messages/${id}`, { method: "DELETE" });
+        setMessages((prev) => prev.filter((m) => m.id !== id));
+        setViewMessage(null);
+    } catch (error) {
+        alert("Failed to delete message.");
+    }
   };
 
-  const handleSendResponse = () => {
+
+  const handleSendResponse = async () => {
     if (!responseText.trim()) return alert("Please enter a response before sending.");
 
-    const updatedMessages = messages.map((m) =>
-      m.id === viewMessage.id
-        ? { ...m, response: responseText, status: "Resolved" }
-        : m
-    );
+    try {
+        const response = await fetch(`${API_URL}/messages/${viewMessage.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ response: responseText })
+        });
 
-    setMessages(updatedMessages);
-    const updatedMessage = updatedMessages.find((m) => m.id === viewMessage.id);
-    setViewMessage(updatedMessage);
-    alert("Response sent and message marked as Resolved!");
-    setResponseText(updatedMessage.response);
+        if (response.ok) {
+            const result = await response.json();
+            // Update local state
+            const updatedMessages = messages.map((m) =>
+                m.id === viewMessage.id ? result.data : m
+            );
+            setMessages(updatedMessages);
+            setViewMessage(result.data);
+            alert("Response sent and message marked as Resolved!");
+        } else {
+            alert("Failed to send response.");
+        }
+    } catch (error) {
+        console.error("Error sending response:", error);
+    }
   };
 
-  const handleMarkResolved = (id) => {
+
+  const handleMarkResolved = async (id) => {
     const message = messages.find((m) => m.id === id);
     if (!message) return;
 
-    if (!message.response && !responseText.trim()) {
-      return alert("Please write a response before marking as resolved.");
+    const payloadText = responseText.trim() || message.response || "Marked as resolved by Admin";
+
+    try {
+        const response = await fetch(`${API_URL}/messages/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ response: payloadText })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            const updatedMessages = messages.map((m) =>
+                m.id === id ? result.data : m
+            );
+            setMessages(updatedMessages);
+            setViewMessage(result.data);
+            alert("Message marked as Resolved!");
+            setResponseText("");
+        }
+    } catch (error) {
+        console.error("Error resolving message:", error);
     }
+  };
 
-    const updatedResponse = responseText.trim() || message.response;
-    const updatedMessages = messages.map((m) =>
-      m.id === id ? { ...m, response: updatedResponse, status: "Resolved" } : m
-    );
-
-    setMessages(updatedMessages);
-    const updatedMessage = updatedMessages.find((m) => m.id === id);
-    setViewMessage(updatedMessage);
-    alert("Message marked as Resolved with your response!");
-    setResponseText("");
+  // Helper Date Formatter
+  const formatDate = (dateString) => {
+      if(!dateString) return "";
+      return new Date(dateString).toLocaleDateString("en-PH");
   };
 
   const filtered = useMemo(() => {
@@ -104,10 +154,10 @@ export default function AdminMessages() {
 
     switch (sortOrder) {
       case "latest":
-        data.sort((a, b) => new Date(b.date) - new Date(a.date));
+        data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         break;
       case "oldest":
-        data.sort((a, b) => new Date(a.date) - new Date(b.date));
+        data.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
         break;
       case "unread":
         data = data.filter((m) => m.status.toLowerCase() === "unread");
@@ -220,7 +270,9 @@ export default function AdminMessages() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.length === 0 ? (
+                {isLoading ? (
+                    <tr><td colSpan="6" style={{textAlign:"center"}}>Loading messages...</td></tr>
+                ) : filtered.length === 0 ? (
                   <tr className="empty-row">
                     <td colSpan="6">No messages found</td>
                   </tr>
@@ -230,7 +282,7 @@ export default function AdminMessages() {
                       <td>{m.id}</td>
                       <td>{m.name}</td>
                       <td>{m.email}</td>
-                      <td>{m.date}</td>
+                      <td>{formatDate(m.created_at)}</td>
                       <td>
                         <span
                           className={`status-badge ${
@@ -272,7 +324,7 @@ export default function AdminMessages() {
             <p><strong>Name:</strong> {viewMessage.name}</p>
             <p><strong>Email:</strong> {viewMessage.email}</p>
             <p><strong>Subject:</strong> {viewMessage.subject}</p>
-            <p><strong>Date:</strong> {viewMessage.date}</p>
+            <p><strong>Date:</strong> {formatDate(viewMessage.created_at)}</p>
             <p><strong>Status:</strong> {viewMessage.status}</p>
 
             <div className="message-box">

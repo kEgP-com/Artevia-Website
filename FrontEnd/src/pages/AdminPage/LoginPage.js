@@ -11,30 +11,33 @@ export default function AdminLogin() {
   const [pin, setPin] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showPin, setShowPin] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Default admin credentials
-  const defaultAdmin = {
-    username: "admin@gmail.com",
-    password: "admin123",
-    pin: "4321"
-  };
+  const handleLogin = async () => {
+    setIsLoading(true);
+    try {
+        const response = await fetch("http://localhost:8082/api/admin/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ emailOrUser, password, pin })
+        });
 
- 
-  const handleLogin = () => {
-    if (
-      (emailOrUser === defaultAdmin.username || emailOrUser === "admin") &&
-      password === defaultAdmin.password &&
-      pin === defaultAdmin.pin
-    ) {
-      alert("Admin login successful!");
+        const data = await response.json();
 
-      // Save login flag
-      localStorage.setItem("isAdminLoggedIn", "true");
-
-      navigate("/admin/dashboard");
-    } else {
-      alert("Invalid admin credentials or PIN.");
+        if (response.ok) {
+            // ✅ Save Login Session
+            localStorage.setItem("adminData", JSON.stringify(data.admin));
+            alert("Login Successful!");
+            navigate("/admin/dashboard");
+        } else {
+            alert(data.message || "Login failed");
+        }
+    } catch (error) {
+        console.error("Login Error:", error);
+        alert("Server error. Please try again.");
+    } finally {
+        setIsLoading(false);
     }
   };
 
@@ -61,10 +64,7 @@ export default function AdminLogin() {
             onChange={(e) => setPassword(e.target.value)}
             className="input2 password-input"
           />
-          <span
-            className="eye-icon"
-            onClick={() => setShowPassword(!showPassword)}
-          >
+          <span className="eye-icon" onClick={() => setShowPassword(!showPassword)}>
             {showPassword ? <FaEyeSlash /> : <FaEye />}
           </span>
         </div>
@@ -84,11 +84,11 @@ export default function AdminLogin() {
           </span>
         </div>
 
-        <button className="button" onClick={handleLogin}>
-          <span className="text2">LOGIN</span>
+        <button className="button" onClick={handleLogin} disabled={isLoading}>
+          <span className="text2">{isLoading ? "Verifying..." : "LOGIN"}</span>
         </button>
 
-        <Link to="/admin/forgotPassword" className="text4">
+        <Link to="/admin/forgotPassword" style={{marginTop: '10px', textDecoration:'none', color:'#555'}}>
           Forgot Password?
         </Link>
       </div>

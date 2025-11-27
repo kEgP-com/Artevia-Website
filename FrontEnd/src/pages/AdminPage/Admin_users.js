@@ -4,7 +4,6 @@ import "../../css/Admin.css";
 import { FaUserCircle, FaCog, FaBars } from "react-icons/fa";
 import logo from "../../images/logo/logo_clear.png";
 import wavebg from "../../images/images/login_bg.png";
-import usersData from "../../data/users.json";
 
 export default function AdminUsers() {
   const navigate = useNavigate();
@@ -20,9 +19,32 @@ export default function AdminUsers() {
   const [showSettings, setShowSettings] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
+  
+
+  const [isLoading, setIsLoading] = useState(false);
+
   const toggleNav = () => setIsNavOpen(!isNavOpen);
+
+
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    try {
+        const response = await fetch("http://localhost:8082/api/users");
+        if (response.ok) {
+            const data = await response.json();
+            setUsers(data);
+        } else {
+            console.error("Failed to fetch users");
+        }
+    } catch (error) {
+        console.error("Network error:", error);
+    } finally {
+        setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    setUsers(usersData);
+    fetchUsers();
   }, []);
 
   // --- DROPDOWNS ---
@@ -36,15 +58,6 @@ export default function AdminUsers() {
     setShowSettings(false);
   };
 
-  // --- NAVIGATION ---
-  const goTo = (path) => navigate(path);
-
-  const handleLogout = () => {
-    // Example: clear session if needed
-    // localStorage.removeItem("adminToken");
-    navigate("/admin/login");
-  };
-
   // --- FILTERING & SORTING ---
   const filtered = useMemo(() => {
     let data = [...users];
@@ -55,7 +68,7 @@ export default function AdminUsers() {
         (u) =>
           u.name.toLowerCase().includes(q) ||
           u.email.toLowerCase().includes(q) ||
-          u.address.toLowerCase().includes(q)
+          (u.address && u.address.toLowerCase().includes(q))
       );
     }
 
@@ -64,16 +77,27 @@ export default function AdminUsers() {
     } else if (sortOrder === "z-a") {
       data.sort((a, b) => b.name.localeCompare(a.name));
     } else if (sortOrder === "age") {
-      data.sort((a, b) => a.age - b.age);
+      data.sort((a, b) => (a.age || 0) - (b.age || 0));
     }
 
     return data;
   }, [users, query, sortOrder]);
 
   // --- CRUD FUNCTIONS ---
-  const handleDelete = (id) => {
-    if (!window.confirm("Delete this user?")) return;
-    setUsers((prev) => prev.filter((u) => u.id !== id));
+  
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this user? This cannot be undone.")) return;
+
+    try {
+        const response = await fetch(`http://localhost:8082/api/users/${id}`, {
+            method: "DELETE"
+        });
+        
+        setUsers((prev) => prev.filter((u) => u.id !== id));
+    } catch (error) {
+        alert("Failed to delete user.");
+    }
   };
 
   const handleEdit = (user) => {
@@ -81,15 +105,40 @@ export default function AdminUsers() {
     setEditedUser({ ...user });
   };
 
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditedUser({});
+  };
+
   const handleChange = (e, key) => {
     setEditedUser((prev) => ({ ...prev, [key]: e.target.value }));
   };
 
-  const handleSave = (id) => {
-    setUsers((prev) =>
-      prev.map((u) => (u.id === id ? { ...editedUser } : u))
-    );
-    setEditingId(null);
+
+  const handleSave = async (id) => {
+    try {
+        const response = await fetch(`http://localhost:8082/api/users/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify(editedUser)
+        });
+
+        if (response.ok) {
+            setUsers((prev) =>
+              prev.map((u) => (u.id === id ? { ...editedUser } : u))
+            );
+            setEditingId(null);
+            alert("User updated successfully!");
+        } else {
+            alert("Failed to update user.");
+        }
+    } catch (error) {
+        console.error("Update error:", error);
+        alert("Network error.");
+    }
   };
 
   // --- ADD USER OVERLAY ---
@@ -103,6 +152,7 @@ export default function AdminUsers() {
         address: "",
         contact: "",
         age: "",
+        password: "password123"
       },
     ]);
   };
@@ -117,6 +167,7 @@ export default function AdminUsers() {
       address: "",
       contact: "",
       age: "",
+      password: "password123"
     }));
     setNewUsers(newArray);
   };
@@ -127,9 +178,37 @@ export default function AdminUsers() {
     setNewUsers(updated);
   };
 
-  const handleSaveNewUsers = () => {
-    setUsers((prev) => [...prev, ...newUsers]);
-    setShowOverlay(false);
+  // ✅ SAVE NEW USERS (Backend Connected)
+  const handleSaveNewUsers = async () => {
+    setIsLoading(true);
+    try {
+        for (const user of newUsers) {
+            await fetch("http://localhost:8082/api/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    email: user.email,
+                    password: user.password,
+                    name: user.name,
+                    address: user.address,
+                    contact: user.contact,
+                    age: user.age
+                })
+            });
+        }
+        
+        await fetchUsers();
+        setShowOverlay(false);
+        alert("Users added successfully!");
+    } catch (error) {
+        console.error("Add user error:", error);
+        alert("Failed to add some users.");
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   return (
@@ -223,6 +302,9 @@ export default function AdminUsers() {
             <button className="btn-add" onClick={handleAddClick}>
               Add User
             </button>
+            <button className="btn" onClick={fetchUsers} style={{marginLeft: '10px'}}>
+              Refresh Data
+            </button>
           </div>
         </section>
 
@@ -241,7 +323,9 @@ export default function AdminUsers() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.length === 0 ? (
+                {isLoading ? (
+                    <tr><td colSpan="6" style={{textAlign: "center", padding: "20px"}}>Loading Data...</td></tr>
+                ) : filtered.length === 0 ? (
                   <tr className="empty-row">
                     <td colSpan="6">No results found</td>
                   </tr>
@@ -310,12 +394,22 @@ export default function AdminUsers() {
                       </td>
                       <td>
                         {editingId === u.id ? (
-                          <button
-                            className="action-btn save"
-                            onClick={() => handleSave(u.id)}
-                          >
-                            Save
-                          </button>
+                          <>
+                            <button
+                              className="action-btn save"
+                              onClick={() => handleSave(u.id)}
+                            >
+                              Save
+                            </button>
+                            {/* ✅ NEW CANCEL BUTTON */}
+                            <button
+                                className="action-btn"
+                                onClick={handleCancelEdit}
+                                style={{ marginLeft: "5px", backgroundColor: "#6c757d", color: "white" }}
+                            >
+                                Cancel
+                            </button>
+                          </>
                         ) : (
                           <>
                             <button
@@ -392,8 +486,8 @@ export default function AdminUsers() {
             </div>
 
             <div className="overlay-actions">
-              <button className="btn" onClick={handleSaveNewUsers}>
-                Save
+              <button className="btn" onClick={handleSaveNewUsers} disabled={isLoading}>
+                {isLoading ? "Saving..." : "Save"}
               </button>
               <button className="btn" onClick={() => setShowOverlay(false)}>
                 Cancel

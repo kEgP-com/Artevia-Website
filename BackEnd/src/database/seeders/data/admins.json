@@ -1,0 +1,14 @@
+[
+  {
+    "username": "admin",
+    "email": "admin@gmail.com",
+    "password": "admin123",
+    "pin": "4321"
+  },
+  {
+    "username": "superadmin",
+    "email": "root@gallery.com",
+    "password": "rootpassword",
+    "pin": "0000"
+  }
+]

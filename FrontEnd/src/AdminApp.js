@@ -1,76 +1,77 @@
-import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
-
-import DashboardAdmin from "./pages/AdminPage/Dashboard_Admin";
-import ArtsPage from "./pages/AdminPage/ArtsPage";
+import { Routes, Route } from "react-router-dom"; 
+import DashboardAdmin from "./pages/AdminPage/Dashboard_Admin"; 
+import AdminArts from "./pages/AdminPage/ArtsPage"; 
 import AdminUsers from "./pages/AdminPage/Admin_users";
 import AdminOrders from "./pages/AdminPage/Admin_orders";
 import AdminMessages from "./pages/AdminPage/Admin_messages";
-import ArtistsPage from "./pages/AdminPage/ArtistsPage";
+import AdminArtists from "./pages/AdminPage/ArtistsPage"; 
 import LoginPage from "./pages/AdminPage/LoginPage";
-import ForgotPassword from "./pages/AdminPage/ForgotPassword";
+import AdminProtectedRoute from "./components/AdminProtectedRoute"; 
 
-import ProtectedRoute from "./components/ProtectedRoute"; 
-
-export default function AdminApp() {
+function AdminApp() {
   return (
+  
     <Routes>
-      {/* Public routes */}
+      {/* PUBLIC ROUTE */}
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/forgotPassword" element={<ForgotPassword />} />
 
-      {/* Protected routes */}
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute>
+          <AdminProtectedRoute>
             <DashboardAdmin />
-          </ProtectedRoute>
+          </AdminProtectedRoute>
         }
       />
-      <Route
-        path="/arts"
-        element={
-          <ProtectedRoute>
-            <ArtsPage />
-          </ProtectedRoute>
-        }
-      />
+      
       <Route
         path="/users"
         element={
-          <ProtectedRoute>
+          <AdminProtectedRoute>
             <AdminUsers />
-          </ProtectedRoute>
+          </AdminProtectedRoute>
         }
       />
+      
+      <Route
+        path="/arts"
+        element={
+          <AdminProtectedRoute>
+            <AdminArts />
+          </AdminProtectedRoute>
+        }
+      />
+      
       <Route
         path="/artists"
         element={
-          <ProtectedRoute>
-            <ArtistsPage />
-          </ProtectedRoute>
+          <AdminProtectedRoute>
+            <AdminArtists />
+          </AdminProtectedRoute>
         }
       />
+      
       <Route
         path="/orders"
         element={
-          <ProtectedRoute>
+          <AdminProtectedRoute>
             <AdminOrders />
-          </ProtectedRoute>
+          </AdminProtectedRoute>
         }
       />
+      
       <Route
         path="/messages"
         element={
-          <ProtectedRoute>
+          <AdminProtectedRoute>
             <AdminMessages />
-          </ProtectedRoute>
+          </AdminProtectedRoute>
         }
       />
-
-      {/* Default route */}
-      <Route path="*" element={<Navigate to="/admin/login" />} />
+      
+      {/* ... your customer routes ... */}
     </Routes>
   );
 }
+
+export default AdminApp;
