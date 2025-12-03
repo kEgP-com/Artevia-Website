@@ -44,7 +44,7 @@ function HandmadeDecors()
     fetchDecors();
   }, []);
 
-  // 4. Helper to fix image URLs from the database
+  // 4. Helper to fix image URLs from the database issue
   const getImagePath = (imageUrl) => {
     if (!imageUrl) return "https://via.placeholder.com/300"; // Safety fallback
     
