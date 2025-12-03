@@ -1,80 +1,97 @@
-import React, { useState } from "react";
+// src/pages/ProductPage/Painting.js
+import React, { useState, useEffect } from "react";
 import Navbar from "../../components/navbar";
 import Footer from "../../components/footer";
 import "../../css/Category.css";
-import painting from "../../data/Painting.json";
 import ProductCard from "../../components/ProductCard";
-
-
-const images = require.context("../../images", true);
+import { productAPI } from "../../services/api";
 
 function Painting() {
   const [selectedArt, setSelectedArt] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterCategory, setFilterCategory] = useState("All");
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPaintings = async () => {
+      try {
+        setLoading(true);
+        const response = await productAPI.getAllProducts();
+        
+        let allProducts = [];
+        if (Array.isArray(response)) {
+          allProducts = response;
+        } else if (response && Array.isArray(response.data)) {
+          allProducts = response.data;
+        }
+        
+        // Filter for paintings
+        const paintings = allProducts.filter(product => 
+          product.category?.toLowerCase().includes('painting')
+        );
+        
+        setProducts(paintings);
+      } catch (error) {
+        console.error("Error fetching paintings:", error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPaintings();
+  }, []);
 
   const handleView = (art) => setSelectedArt(art);
   const closeOverlay = () => setSelectedArt(null);
 
- 
-  const getImagePath = (path) => {
-    try {
-      const cleanPath = path.replace(/^(\.\.\/)+images\//, "");
-      return images(`./${cleanPath}`);
-    } catch (err) {
-      console.warn("Image not found:", path);
-      return "";
-    }
-  };
-
-
-  const filteredSketches = painting.filter((art) => {
-    const matchesSearch = art.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = filterCategory === "All" || art.category === filterCategory;
-    return matchesSearch && matchesCategory;
+  const filteredPaintings = products.filter((art) => {
+    return art.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="sculpture-page">
+          <section className="sculpture-hero">
+            <h1>Painting</h1>
+            <p>Loading paintings from database...</p>
+          </section>
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
       <Navbar />
-
       <div className="sculpture-page">
         <section className="sculpture-hero">
           <h1>Painting</h1>
+          
+          <div className="database-info">
+            <p>Found {products.length} paintings in database</p>
+          </div>
 
-    
           <div className="sculpture-filters">
             <input
               type="text"
-              placeholder="Search artworks..."
+              placeholder="Search paintings..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="sculpture-search-input"
             />
-            <select
-              className="sculpture-filter-select"
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-            >
-              <option value="All">All Categories</option>
-              <option value="Sketch">Sketch</option>
-              <option value="Illustration">Illustration</option>
-              <option value="Concept Art">Concept Art</option>
-            </select>
           </div>
 
-    
           <div className="discovery-grid">
-            {filteredSketches.length > 0 ? (
-              filteredSketches.map((art) => (
-                <ProductCard
-                  key={art.id}
-                  item={art}
-                  onView={handleView}
-                />
+            {filteredPaintings.length > 0 ? (
+              filteredPaintings.map((art) => (
+                <ProductCard key={art.id} item={art} onView={handleView} />
               ))
             ) : (
-              <p className="no-results">No artworks found.</p>
+              <p className="no-results">No paintings found.</p>
             )}
           </div>
         </section>
@@ -82,18 +99,15 @@ function Painting() {
 
       <Footer />
 
-   
       {selectedArt && (
         <div className="overlay-backdrop" onClick={closeOverlay}>
           <div className="overlay-content" onClick={(e) => e.stopPropagation()}>
             <button className="close-btn" onClick={closeOverlay}>×</button>
-
             <img
-              src={getImagePath(selectedArt.imageUrl)}
+              src={selectedArt.image_url || '/images/default-product.jpg'}
               alt={selectedArt.name}
               className="overlay-image"
             />
-
             <h2>{selectedArt.name}</h2>
             <p><strong>{selectedArt.artist}</strong></p>
             <p><em>{selectedArt.category}</em></p>
