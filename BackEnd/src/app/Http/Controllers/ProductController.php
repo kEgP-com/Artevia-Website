@@ -13,6 +13,18 @@ class ProductController extends Controller
     {
         // Returns the list including the 'image_url' needed for the frontend
         return response()->json(Product::all());
+
+        
+    }
+    public function indexOn()
+    {
+    
+        $products = \Illuminate\Support\Facades\DB::table('products')
+            ->join('artists', 'products.artist_id', '=', 'artists.id')
+            ->select('products.*', 'artists.name as artist_name') // Get product data + artist name
+            ->get();
+
+        return response()->json($products);
     }
 
     // 2. GET SINGLE PRODUCT
