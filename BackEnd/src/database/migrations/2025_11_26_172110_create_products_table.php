@@ -1,32 +1,36 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace Database\Seeders;
 
-return new class extends Migration
+use Illuminate\Database\Seeder;
+use App\Models\Product;
+use Illuminate\Support\Facades\File;
+
+class ProductSeeder extends Seeder
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function run(): void
     {
-        Schema::create('products', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('artist');
-            $table->string('category');
-            $table->decimal('price', 10, 2); // 10 digits total, 2 decimal places
-            $table->text('description');     // 'text' allows longer descriptions
-            $table->string('image_url');
-            $table->timestamps();
-        });
+        // FIX: Point to the correct location inside 'src'
+        $jsonPath = base_path('src/database/seeders/data/productList.json');
+
+        // Safety Check: Verify file exists to prevent crashes
+        if (!File::exists($jsonPath)) {
+            $this->command->error("File not found at: " . $jsonPath);
+            return;
+        }
+
+        $json = File::get($jsonPath);
+        $products = json_decode($json, true);
+
+        foreach ($products as $product) {
+            Product::create([
+                'name'        => $product['name'],
+                'artist'      => $product['artist'] ?? null,
+                'category'    => $product['category'],
+                'price'       => $product['price'],
+                'description' => $product['description'],
+                'image_url'   => $product['imageUrl'] 
+            ]);
+        }
     }
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::dropIfExists('products');
-    }
-};
+}
