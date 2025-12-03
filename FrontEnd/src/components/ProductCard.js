@@ -1,29 +1,27 @@
 // src/components/ProductCard.js - ORIGINAL STYLE WITH API INTEGRATION
 import React, { useState } from "react";
-import './ProductCard.css';
 
 function ProductCard({ item, onView }) {
   const [addedMessage, setAddedMessage] = useState("");
 
-  // Fix image URL for Laravel API
-  const getImageUrl = () => {
+  // Get image URL - ORIGINAL STYLE
+  const getImageUrl = (item) => {
     if (!item) return '/images/default-product.jpg';
     
-    // Try API image_url first
+    // If from API (Laravel)
     if (item.image_url) {
       // If it's a full URL
       if (item.image_url.startsWith('http')) {
         return item.image_url;
       }
       // If it's from Laravel public folder
-      if (item.image_url.startsWith('/images/')) {
+      if (item.image_url.startsWith('/')) {
         return `http://localhost:8000${item.image_url}`;
       }
       // If it's from Laravel storage
-      if (item.image_url.startsWith('/storage/')) {
-        return `http://localhost:8000${item.image_url}`;
+      if (item.image_url.startsWith('storage/')) {
+        return `http://localhost:8000/${item.image_url}`;
       }
-      return `http://localhost:8000/storage/${item.image_url}`;
     }
     
     // Fallback to local images (original method)
@@ -55,7 +53,7 @@ function ProductCard({ item, onView }) {
         artist: item.artist || "Unknown",
         type: item.category || "Art",
         price: item.price,
-        image: getImageUrl(), // Use the fixed image URL
+        image: getImageUrl(item), // Use the fixed image URL
         quantity: 1,
       });
     }
@@ -67,9 +65,9 @@ function ProductCard({ item, onView }) {
   };
 
   return (
-    <div className="discovery-frame" onClick={() => onView(item)}>
+    <div className="discovery-frame">
       <img 
-        src={getImageUrl()} 
+        src={getImageUrl(item)} 
         alt={item.name}
         onError={(e) => {
           console.error('Image failed to load:', e.target.src);
@@ -85,20 +83,14 @@ function ProductCard({ item, onView }) {
         <div className="discovery-buttons-container">
           <button 
             className="btn-discovery-overlay" 
-            onClick={(e) => {
-              e.stopPropagation();
-              handleAddToCart();
-            }}
+            onClick={handleAddToCart}
           >
             ADD TO CART
           </button>
 
           <button
             className="btn-discovery-overlay"
-            onClick={(e) => {
-              e.stopPropagation();
-              onView(item);
-            }}
+            onClick={() => onView(item)}
           >
             VIEW
           </button>
