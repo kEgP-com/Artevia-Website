@@ -2,10 +2,9 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../../components/navbar";
 import Footer from "../../components/footer";
 import "../../css/Category.css";
-// import handmadeDecors from "../../data/HandmadeDecors.json"; // We don't need this anymore
 import ProductCard from "../../components/ProductCard";
 
-function HandmadeDecors() {
+function HandmadeDecors() 
   // 1. New state to hold the data coming from your database
   const [handmadeDecors, setHandmadeDecors] = useState([]);
   const [loading, setLoading] = useState(true);
