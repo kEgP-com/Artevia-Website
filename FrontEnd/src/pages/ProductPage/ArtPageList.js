@@ -1,14 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // 1. Added useEffect
 import Navbar from "../../components/navbar";
 import Footer from "../../components/footer";
 import "../../css/Category.css";
-import productList from "../../data/productList.json";
+// import productList from "../../data/productList.json"; // 2. REMOVED JSON Import
 import ProductCard from "../../components/ProductCard";
 
-
-const images = require.context("../../images", true);
-
 function ArtPageList() {
+  // 3. New State to store API data
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [selectedArt, setSelectedArt] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("All");
@@ -17,21 +18,54 @@ function ArtPageList() {
   const handleView = (art) => setSelectedArt(art);
   const closeOverlay = () => setSelectedArt(null);
 
+  // 4. Fetch Data from Laravel API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        // Ensure this matches your Laravel server URL
+        const response = await fetch("http://127.0.0.1:8000/api/products");
+        
+        if (!response.ok) {
+          throw new Error("Failed to fetch products");
+        }
 
-  const getImagePath = (path) => {
-    try {
-      const cleanPath = path.replace(/^(\.\.\/)+images\//, "");
-      return images(`./${cleanPath}`);
-    } catch (err) {
-      console.warn("Image not found:", path);
-      return "";
+        const data = await response.json();
+        // Check if your API returns the array directly or inside a 'data' key
+        // Example: setProducts(data.data ? data.data : data);
+        setProducts(data); 
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // 5. Updated Image Handling for API
+  // NOTE: Your Laravel ProductController should return the full image URL 
+  // or a path relative to the public folder.
+  const getImagePath = (imageUrl) => {
+    if (!imageUrl) return "https://via.placeholder.com/300"; // Fallback image
+    
+    // If the image path from DB already has http, use it. 
+    if (imageUrl.startsWith('http')) {
+        return imageUrl;
     }
+    
+    // Otherwise, prepend your Laravel base URL
+    return `http://127.0.0.1:8000/${imageUrl}`; 
   };
 
-
-  let filteredArts = productList.filter((art) => {
-    const matchesSearch = art.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = filterCategory === "All" || art.category === filterCategory;
+  // 6. Changed 'productList' to 'products' state variable
+  let filteredArts = products.filter((art) => {
+    // Ensure properties exist to prevent crashing on incomplete data
+    const name = art.name || "";
+    const category = art.category || "";
+    
+    const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = filterCategory === "All" || category === filterCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -89,9 +123,13 @@ function ArtPageList() {
           </div>
 
           <div className="discovery-grid">
-            {filteredArts.length > 0 ? (
+            {loading ? (
+                 <p>Loading artworks...</p>
+            ) : filteredArts.length > 0 ? (
               filteredArts.map((art) => (
-                <ProductCard key={art.id} item={art} onView={handleView} />
+                // Ensure your ProductCard uses the new image path logic if needed, 
+                // or pass the processed URL down
+                <ProductCard key={art.id} item={{...art, imageUrl: getImagePath(art.imageUrl)}} onView={handleView} />
               ))
             ) : (
               <p className="no-results">No artworks found.</p>
@@ -108,6 +146,7 @@ function ArtPageList() {
             <button className="close-btn" onClick={closeOverlay}>×</button>
 
             <img
+              // Use the helper function here
               src={getImagePath(selectedArt.imageUrl)}
               alt={selectedArt.name}
               className="overlay-image"
@@ -117,7 +156,7 @@ function ArtPageList() {
             <p><strong>{selectedArt.artist}</strong></p>
             <p><em>{selectedArt.category}</em></p>
             <p>{selectedArt.description}</p>
-            <h3>₱{selectedArt.price.toLocaleString()}</h3>
+            <h3>₱{selectedArt.price ? selectedArt.price.toLocaleString() : 0}</h3>
           </div>
         </div>
       )}
