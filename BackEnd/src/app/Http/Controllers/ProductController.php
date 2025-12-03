@@ -50,11 +50,10 @@ class ProductController extends Controller
         $data = $request->all();
         $imageUrl = null; // Default if upload fails
 
-        // ✅ Handle File Upload
-        // This saves to: storage/app/public/products/randomName.jpg
+
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('products', 'public');
-            $imageUrl = '/storage/' . $path; // The link the frontend needs
+            $imageUrl = '/storage/' . $path; 
         }
 
         $product = Product::create([
