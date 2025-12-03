@@ -41,11 +41,26 @@ function Navbar() {
     setShowRightMenu(false);
   };
 
-  // Navigate to product or page
+  // ✅ PUBLIC NAVIGATION (No login required)
   const goToPage = (path) => {
     navigate(path);
     setShowLeftMenu(false);
     setShowRightMenu(false);
+  };
+
+  // 🔒 PROTECTED NAVIGATION (Requires Login)
+  // Used for: Account, Orders, Cart
+  const checkAuthAndNavigate = (path) => {
+    const isLoggedIn = localStorage.getItem("accountInfo");
+
+    if (!isLoggedIn) {
+      // Alert the user and offer to go to login
+      if (window.confirm("You need to login to access this page. Go to Login?")) {
+        navigate("/customer/login");
+      }
+    } else {
+      goToPage(path);
+    }
   };
 
   return (
@@ -53,6 +68,7 @@ function Navbar() {
       <header className={`navbar-container ${isVisible ? "visible" : "hidden"}`}>
         <nav className="navbar">
 
+          {/* Mobile Left Menu Button */}
           <button
             className="menu-btn left-menu-btn"
             onClick={() => setShowLeftMenu(!showLeftMenu)}
@@ -60,34 +76,39 @@ function Navbar() {
             {showLeftMenu ? <FaTimes /> : <FaBars />}
           </button>
 
-
+          {/* Logo (Public) */}
           <div
             className="nav-left"
-            onClick={() => navigate("/customer/homepage")}
+            onClick={() => goToPage("/customer/homepage")}
             style={{ cursor: "pointer" }}
           >
             <img src={Logo} alt="Logo" className="logo-img" />
           </div>
 
-
+          {/* Search Bar */}
           <div className="nav-center">
             <input type="text" className="search-bar" placeholder="Search..." />
           </div>
 
-
+          {/* Right Icons */}
           <div className="nav-right">
+            {/* 🔒 PROTECTED: Profile */}
             <img
               src={ProfileIcon}
               alt="Profile"
               className="icon-img"
-              onClick={() => navigate("/customer/account")}
+              onClick={() => checkAuthAndNavigate("/customer/account")}
             />
+            
+            {/* 🔒 PROTECTED: Cart (Updated) */}
             <img
               src={CartIcon}
               alt="Cart"
               className="icon-img"
-              onClick={() => navigate("/customer/cart")}
+              onClick={() => checkAuthAndNavigate("/customer/cart")}
             />
+            
+            {/* 🌍 PUBLIC: Help */}
             <img
               src={HelpIcon}
               alt="Help"
@@ -96,7 +117,7 @@ function Navbar() {
             />
           </div>
 
-
+          {/* Mobile Right Menu Button */}
           <button
             className="menu-btn right-menu-btn"
             onClick={() => setShowRightMenu(!showRightMenu)}
@@ -105,13 +126,16 @@ function Navbar() {
           </button>
         </nav>
 
- 
+        {/* Desktop Links */}
         <div className="nav-links-bar">
           <ul className="nav-links">
-            <li onClick={() => navigate("/customer/homepage")}>HOME</li>
+            <li onClick={() => goToPage("/customer/homepage")}>HOME</li>
             <li onClick={scrollToFooter}>ABOUT</li>
             <li onClick={() => goToPage("/customer/artpage")}>ART</li> 
-            <li onClick={() => navigate("/customer/order")}>ORDERS</li>
+            
+            {/* 🔒 PROTECTED: Orders */}
+            <li onClick={() => checkAuthAndNavigate("/customer/order")}>ORDERS</li>
+            
             <li className="nav-link-dropdown">
               CATEGORIES
               <div className="dropdown-content">
@@ -125,14 +149,17 @@ function Navbar() {
           </ul>
         </div>
 
-
+        {/* Mobile Left Menu */}
         {showLeftMenu && (
           <div className="mobile-dropdown left-dropdown">
             <ul>
-              <li onClick={() => navigate("/customer/homepage")}>HOME</li>
+              <li onClick={() => goToPage("/customer/homepage")}>HOME</li>
               <li onClick={scrollToFooter}>ABOUT</li>
               <li onClick={() => goToPage("/customer/artpage")}>ART</li> 
-              <li onClick={() => navigate("/customer/order")}>ORDERS</li>
+              
+              {/* 🔒 PROTECTED: Orders */}
+              <li onClick={() => checkAuthAndNavigate("/customer/order")}>ORDERS</li>
+              
               <li className="nav-link-dropdown">
                 CATEGORIES
                 <div className="dropdown-content">
@@ -147,25 +174,28 @@ function Navbar() {
           </div>
         )}
 
-
+        {/* Mobile Right Menu */}
         {showRightMenu && (
           <div className="mobile-dropdown right-dropdown">
             <div className="mobile-search-alt">
               <input type="text" className="search-bar" placeholder="Search..." />
             </div>
             <div className="mobile-icons">
+              {/* 🔒 PROTECTED: Profile */}
               <img
                 src={ProfileIcon}
                 alt="Profile"
                 className="icon-img"
-                onClick={() => navigate("/customer/account")}
+                onClick={() => checkAuthAndNavigate("/customer/account")}
               />
+              {/* 🔒 PROTECTED: Cart */}
               <img
                 src={CartIcon}
                 alt="Cart"
                 className="icon-img"
-                onClick={() => navigate("/customer/cart")}
+                onClick={() => checkAuthAndNavigate("/customer/cart")}
               />
+              {/* 🌍 PUBLIC: Help */}
               <img
                 src={HelpIcon}
                 alt="Help"
@@ -177,7 +207,7 @@ function Navbar() {
         )}
       </header>
 
-
+      {/* Help Overlay */}
       {showHelpOverlay && (
         <div className="overlay">
           <div className="overlay-content">

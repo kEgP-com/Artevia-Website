@@ -1,3 +1,5 @@
+/* src/css/Category.css - ORIGINAL STYLING */
+
 .sculpture-page {
   min-height: 100vh;
   color: #3a2c1a;
@@ -24,7 +26,6 @@
   margin-bottom: 30px;
   font-weight: 600;
 }
-
 
 .sculpture-filters {
   display: flex;
@@ -74,14 +75,12 @@
   transform: translateY(-1px);
 }
 
-
 .discovery-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 25px;
   justify-items: center;
 }
-
 
 .no-results {
   font-size: 1.2rem;
@@ -119,8 +118,6 @@
   animation: popIn 0.25s ease-in-out;
 }
 
-
-
 .overlay-image {
   width: 100%;         
   height: auto;          
@@ -129,7 +126,6 @@
   border-radius: 12px;
   margin-bottom: 14px;
 }
-
 
 .close-btn {
   background: transparent;
@@ -147,7 +143,6 @@
   transform: scale(1.15);
   color: #8b5e34;
 }
-
 
 .overlay-content h2 {
   font-size: 1.4rem;
@@ -170,6 +165,23 @@
   font-weight: bold;
 }
 
+.buy-now-btn {
+  padding: 12px 24px;
+  background: #c2ae96;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 20px;
+  width: 100%;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.buy-now-btn:hover {
+  background: #a88d70;
+}
 
 @keyframes popIn {
   from {
@@ -181,7 +193,6 @@
     opacity: 1;
   }
 }
-
 
 @media (max-width: 480px) {
   .overlay-content {
@@ -203,7 +214,7 @@
   }
 }
 
- .added-message {
+.added-message {
   position: absolute;
   bottom: 10px;
   left: 50%;
@@ -222,4 +233,61 @@
   0% { opacity: 1; transform: translateX(-50%) translateY(0); }
   80% { opacity: 1; }
   100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+}
+
+/* Additional styles for API status messages (minimal) */
+.api-debug, .api-error, .api-success, .database-info, .results-info, .no-products {
+  background: rgba(255, 248, 240, 0.95);
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px auto;
+  text-align: center;
+  max-width: 800px;
+  color: #5b4228;
+}
+
+.api-error {
+  border: 2px solid #e6c8c8;
+}
+
+.api-success {
+  border: 1px solid #c8e6c9;
+  background: #f0f8f0;
+}
+
+.error-details {
+  background: #f9e9e9;
+  padding: 10px;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 0.85rem;
+  overflow: auto;
+  max-height: 200px;
+  margin: 10px 0;
+}
+
+.troubleshooting {
+  margin-top: 15px;
+  padding: 10px;
+  background: #f9f3e9;
+  border-radius: 6px;
+  border: 1px solid #e6d9c8;
+}
+
+.retry-btn {
+  background: #c2ae96;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-top: 10px;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.retry-btn:hover {
+  background: #a88d70;
 }

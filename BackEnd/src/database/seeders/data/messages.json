@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "name": "Maria Santos",
+    "email": "maria.santos@example.com",
+    "subject": "Issue with my painting order",
+    "message": "Hi, I ordered a landscape painting last week but haven’t received a confirmation email yet.",
+    "date": "2025-10-15",
+    "status": "Unread",
+    "response": ""
+  },
+  {
+    "id": 2,
+    "name": "Ja",
+    "email": "john.delacruz@example.com",
+    "subject": "Request for commission details",
+    "message": "Can I commission an abstract painting by Artist Luna?",
+    "date": "2025-10-13",
+    "status": "Resolved",
+    "response": "Hello John! Yes, Artist Luna accepts commission requests. Please fill out the commission form on our website or reply with your preferred size and theme so we can proceed."
+  }
+]

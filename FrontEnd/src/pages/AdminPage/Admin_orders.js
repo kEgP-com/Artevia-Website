@@ -1,51 +1,124 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "../../css/Admin.css";
-import { FaUserCircle, FaCog, FaSearch,FaBars } from "react-icons/fa";
+import { FaUserCircle, FaCog, FaSearch, FaBars } from "react-icons/fa";
 import logo from "../../images/logo/logo_clear.png";
 import wavebg from "../../images/images/login_bg.png";
-import ordersData from "../../data/orders.json";
-// import "../../css/AdminMessage.css";
+
+
+const API_URL = "http://localhost:8082/api";
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
   const [query, setQuery] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOrder, setSortOrder] = useState("none");
+  
   const [showSettings, setShowSettings] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  
   const [showEditOverlay, setShowEditOverlay] = useState(false);
   const [showViewOverlay, setShowViewOverlay] = useState(false);
+  
   const [editedOrder, setEditedOrder] = useState(null);
   const [viewOrder, setViewOrder] = useState(null);
   const [isNavOpen, setIsNavOpen] = useState(false);
+  
+  const [isLoading, setIsLoading] = useState(false);
+
   const toggleNav = () => setIsNavOpen(!isNavOpen);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    setOrders(ordersData);
-  }, []);
-
-  const toggleSettings = () => {
-    setShowSettings(!showSettings);
-    setShowProfile(false);
-  };
-
-  const toggleProfile = () => {
-    setShowProfile(!showProfile);
-    setShowSettings(false);
-  };
-
-  const handleLogout = () => {
-    if (window.confirm("Are you sure you want to logout?")) {
-      navigate("/admin/login");
+ 
+  const fetchOrders = async () => {
+    setIsLoading(true);
+    try {
+        const response = await fetch(`${API_URL}/orders`);
+        if (response.ok) {
+            const data = await response.json();
+            // Map DB fields to Frontend structure
+            const mappedData = data.map(o => ({
+                ...o,
+                id: o.id,
+                customer: o.customer_name || "Unknown User", 
+                dateOrdered: new Date(o.created_at).toLocaleDateString(),
+                dateDelivered: o.delivery_date,
+                total: o.total_amount,
+                status: o.status,
+                items: [{ 
+                    name: o.name,
+                    price: o.price,
+                    artist: "Unknown", 
+                    artistType: "Art"  
+                }] 
+            }));
+            setOrders(mappedData);
+        }
+    } catch (error) {
+        console.error("Error fetching orders:", error);
+    } finally {
+        setIsLoading(false);
     }
   };
 
-  const handleSearch = () => {
-    setQuery(searchTerm);
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const toggleSettings = () => { setShowSettings(!showSettings); setShowProfile(false); };
+  const toggleProfile = () => { setShowProfile(!showProfile); setShowSettings(false); };
+
+  const handleSearch = () => { setQuery(searchTerm); };
+
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this order?")) return;
+    
+    try {
+        await fetch(`${API_URL}/orders/${id}`, { method: "DELETE" });
+        setOrders((prev) => prev.filter((o) => o.id !== id));
+        setShowViewOverlay(false);
+        setShowEditOverlay(false);
+    } catch (error) {
+        alert("Failed to delete order.");
+    }
   };
 
+  const handleEdit = (order) => {
+    setEditedOrder({ ...order });
+    setShowEditOverlay(true);
+  };
+
+  // ✅ 3. SAVE STATUS EDIT (API)
+  const handleSaveEdit = async () => {
+    try {
+        const response = await fetch(`${API_URL}/orders/${editedOrder.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: editedOrder.status })
+        });
+
+        if (response.ok) {
+            setOrders((prev) =>
+              prev.map((o) => (o.id === editedOrder.id ? { ...o, status: editedOrder.status } : o))
+            );
+            setShowEditOverlay(false);
+            setEditedOrder(null);
+            alert("Order status updated!");
+        } else {
+            alert("Failed to update status.");
+        }
+    } catch (error) {
+        console.error("Update error:", error);
+    }
+  };
+
+  const handleViewOrder = (order) => {
+    setViewOrder(order);
+    setShowViewOverlay(true);
+  };
+
+  // Filtering Logic
   const filtered = useMemo(() => {
     let data = [...orders];
     const q = query.trim().toLowerCase();
@@ -85,50 +158,18 @@ export default function AdminOrders() {
       default:
         break;
     }
-
     return data;
   }, [orders, query, sortOrder]);
 
-  const handleDelete = (id) => {
-    if (!window.confirm("Delete this order?")) return;
-    setOrders((prev) => prev.filter((o) => o.id !== id));
-    setShowViewOverlay(false);
-    setShowEditOverlay(false);
-  };
-
-  const handleEdit = (order) => {
-    setEditedOrder({ ...order });
-    setShowEditOverlay(true);
-  };
-
-  const handleSaveEdit = () => {
-    setOrders((prev) =>
-      prev.map((o) => (o.id === editedOrder.id ? editedOrder : o))
-    );
-    setShowEditOverlay(false);
-    setEditedOrder(null);
-  };
-
-  const handleViewOrder = (order) => {
-    setViewOrder(order);
-    setShowViewOverlay(true);
-  };
-
   const getStatusClass = (status) => {
     switch (status.toLowerCase()) {
-      case "pending":
-        return "status-pending";
-      case "processing":
-        return "status-processing";
-      case "shipped":
-        return "status-shipped";
+      case "pending": return "status-pending";
+      case "processing": return "status-processing";
+      case "shipped": return "status-shipped";
       case "completed":
-      case "delivered":
-        return "status-completed";
-      case "cancelled":
-        return "status-cancelled";
-      default:
-        return "";
+      case "delivered": return "status-completed";
+      case "cancelled": return "status-cancelled";
+      default: return "";
     }
   };
 
@@ -145,24 +186,12 @@ export default function AdminOrders() {
         </button>
 
         <nav className={`dashboard-nav ${isNavOpen ? "show" : ""}`}>
-          <button className="nav-item" onClick={() => navigate("/admin/dashboard")}>
-            DASHBOARD
-          </button>
-          <button className="nav-item" onClick={() => navigate("/admin/users")}>
-            USERS
-          </button>
-          <button className="nav-item" onClick={() => navigate("/admin/arts")}>
-            ARTS
-          </button>
-          <button className="nav-item" onClick={() => navigate("/admin/artists")}>
-            ARTISTS
-          </button>
-          <button className="nav-item active" onClick={() => navigate("/admin/orders")}>
-            ORDERS
-          </button>
-          <button className="nav-item" onClick={() => navigate("/admin/messages")}>
-            MESSAGES
-          </button>
+          <button className="nav-item" onClick={() => navigate("/admin/dashboard")}>DASHBOARD</button>
+          <button className="nav-item" onClick={() => navigate("/admin/users")}>USERS</button>
+          <button className="nav-item" onClick={() => navigate("/admin/arts")}>ARTS</button>
+          <button className="nav-item" onClick={() => navigate("/admin/artists")}>ARTISTS</button>
+          <button className="nav-item active" onClick={() => navigate("/admin/orders")}>ORDERS</button>
+          <button className="nav-item" onClick={() => navigate("/admin/messages")}>MESSAGES</button>
         </nav>
 
         <div className="icon-section">
@@ -176,7 +205,6 @@ export default function AdminOrders() {
               </div>
             )}
           </div>
-
           <div className="icon-wrapper">
             <FaUserCircle className="icon-btn" onClick={toggleProfile} />
             {showProfile && (
@@ -188,7 +216,6 @@ export default function AdminOrders() {
           </div>
         </div>
       </header>
-
 
       {/* MAIN CONTENT */}
       <main className="admin-main">
@@ -203,11 +230,7 @@ export default function AdminOrders() {
             <button className="btn" onClick={handleSearch}>
               <FaSearch /> Search
             </button>
-            <select
-              className="select-field"
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value)}
-            >
+            <select className="select-field" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
               <option value="none">Sort...</option>
               <option value="latest">Latest</option>
               <option value="oldest">Oldest</option>
@@ -234,45 +257,24 @@ export default function AdminOrders() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.length === 0 ? (
-                  <tr className="empty-row">
-                    <td colSpan="7">No orders found</td>
-                  </tr>
+                {isLoading ? (
+                    <tr><td colSpan="7" style={{textAlign:"center"}}>Loading Data...</td></tr>
+                ) : filtered.length === 0 ? (
+                  <tr className="empty-row"><td colSpan="7">No orders found</td></tr>
                 ) : (
                   filtered.map((o) => (
                     <tr key={o.id}>
                       <td>{o.id}</td>
                       <td>{o.customer}</td>
                       <td>{o.dateOrdered}</td>
+                      <td>{o.dateDelivered || "—"}</td>
+                      <td>₱{Number(o.total).toLocaleString()}</td>
                       <td>
-                        {o.status.toLowerCase() === "completed" ||
-                        o.status.toLowerCase() === "delivered"
-                          ? o.dateDelivered || "— Delivered —"
-                          : o.status.toLowerCase() === "cancelled"
-                          ? o.dateCancelled || "— Cancelled —"
-                          : "— Pending —"}
-                      </td>
-                      <td>₱{o.total}</td>
-                      <td>
-                        <span
-                          className={`status-badge ${getStatusClass(o.status)}`}
-                        >
-                          {o.status}
-                        </span>
+                        <span className={`status-badge ${getStatusClass(o.status)}`}>{o.status}</span>
                       </td>
                       <td>
-                        <button
-                          className="action-btn save"
-                          onClick={() => handleViewOrder(o)}
-                        >
-                          View
-                        </button>
-                        <button
-                          className="action-btn edit"
-                          onClick={() => handleEdit(o)}
-                        >
-                          Edit
-                        </button>
+                        <button className="action-btn save" onClick={() => handleViewOrder(o)}>View</button>
+                        <button className="action-btn edit" onClick={() => handleEdit(o)}>Edit</button>
                       </td>
                     </tr>
                   ))
@@ -292,29 +294,20 @@ export default function AdminOrders() {
             <p><strong>Date Ordered:</strong> {viewOrder.dateOrdered}</p>
             <p><strong>Date Delivered:</strong> {viewOrder.dateDelivered || "— Not Delivered —"}</p>
             <p><strong>Status:</strong> {viewOrder.status}</p>
-            <p><strong>Payment Method:</strong> {viewOrder.paymentMethod}</p>
-            <p><strong>Total:</strong> ₱{viewOrder.total}</p>
+            <p><strong>Total:</strong> ₱{Number(viewOrder.total).toLocaleString()}</p>
 
             <h3>Artworks Ordered:</h3>
             <ul>
               {viewOrder.items.map((item, i) => (
                 <li key={i} style={{ marginBottom: "10px" }}>
-                  <strong>{item.name}</strong> — ₱{item.price}
-                  <br />
-                  <span>Artist: {item.artist}</span>
-                  <br />
-                  <span>Type: {item.artistType}</span>
+                  <strong>{item.name}</strong> — ₱{Number(item.price).toLocaleString()}
                 </li>
               ))}
             </ul>
 
             <div className="overlay-actions">
-              <button className="btn delete" onClick={() => handleDelete(viewOrder.id)}>
-                Delete
-              </button>
-              <button className="btn" onClick={() => setShowViewOverlay(false)}>
-                Close
-              </button>
+              <button className="btn delete" onClick={() => handleDelete(viewOrder.id)}>Delete</button>
+              <button className="btn" onClick={() => setShowViewOverlay(false)}>Close</button>
             </div>
           </div>
         </div>
@@ -329,9 +322,7 @@ export default function AdminOrders() {
             <select
               className="overlay-input"
               value={editedOrder.status}
-              onChange={(e) =>
-                setEditedOrder({ ...editedOrder, status: e.target.value })
-              }
+              onChange={(e) => setEditedOrder({ ...editedOrder, status: e.target.value })}
             >
               <option value="Pending">Pending</option>
               <option value="Processing">Processing</option>
@@ -340,24 +331,9 @@ export default function AdminOrders() {
               <option value="Cancelled">Cancelled</option>
             </select>
             <div className="overlay-actions">
-              <button className="btn save" onClick={handleSaveEdit}>
-                Save
-              </button>
-              <button
-                className="btn cancel"
-                onClick={() => {
-                  setShowEditOverlay(false);
-                  setEditedOrder(null);
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn delete"
-                onClick={() => handleDelete(editedOrder.id)}
-              >
-                Delete
-              </button>
+              <button className="btn save" onClick={handleSaveEdit}>Save</button>
+              <button className="btn cancel" onClick={() => { setShowEditOverlay(false); setEditedOrder(null); }}>Cancel</button>
+              <button className="btn delete" onClick={() => handleDelete(editedOrder.id)}>Delete</button>
             </div>
           </div>
         </div>

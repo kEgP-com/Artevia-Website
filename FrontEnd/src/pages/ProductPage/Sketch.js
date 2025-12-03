@@ -1,80 +1,83 @@
-import React, { useState } from "react";
+// src/pages/ProductPage/Sketch.js
+import React, { useState, useEffect } from "react";
 import Navbar from "../../components/navbar";
 import Footer from "../../components/footer";
 import "../../css/Category.css";
-import Sketch from "../../data/IllustrationSketch.json";
 import ProductCard from "../../components/ProductCard";
+import { productAPI } from "../../services/api";
 
-
-const images = require.context("../../images", true);
-
-function IllustrationSketch() {
+function Sketch() {
   const [selectedArt, setSelectedArt] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterCategory, setFilterCategory] = useState("All");
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSketches = async () => {
+      try {
+        setLoading(true);
+        const response = await productAPI.getAllProducts();
+        
+        let allProducts = [];
+        if (Array.isArray(response)) {
+          allProducts = response;
+        } else if (response && Array.isArray(response.data)) {
+          allProducts = response.data;
+        }
+        
+        // Filter for sketches
+        const sketches = allProducts.filter(product => 
+          product.category?.toLowerCase().includes('sketch') ||
+          product.category?.toLowerCase().includes('illustration')
+        );
+        
+        setProducts(sketches);
+      } catch (error) {
+        console.error("Error fetching sketches:", error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSketches();
+  }, []);
 
   const handleView = (art) => setSelectedArt(art);
   const closeOverlay = () => setSelectedArt(null);
 
- 
-  const getImagePath = (path) => {
-    try {
-      const cleanPath = path.replace(/^(\.\.\/)+images\//, "");
-      return images(`./${cleanPath}`);
-    } catch (err) {
-      console.warn("Image not found:", path);
-      return "";
-    }
-  };
-
-
-  const filteredSketches = Sketch.filter((art) => {
-    const matchesSearch = art.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = filterCategory === "All" || art.category === filterCategory;
-    return matchesSearch && matchesCategory;
+  const filteredSketches = products.filter((art) => {
+    return art.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   return (
     <>
       <Navbar />
-
       <div className="sculpture-page">
         <section className="sculpture-hero">
           <h1>Illustrations & Sketch</h1>
+          
+          <div className="database-info">
+            <p>Found {products.length} sketches in database</p>
+          </div>
 
-    
           <div className="sculpture-filters">
             <input
               type="text"
-              placeholder="Search artworks..."
+              placeholder="Search sketches..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="sculpture-search-input"
             />
-            <select
-              className="sculpture-filter-select"
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-            >
-              <option value="All">All Categories</option>
-              <option value="Sketch">Sketch</option>
-              <option value="Illustration">Illustration</option>
-              <option value="Concept Art">Concept Art</option>
-            </select>
           </div>
 
-    
           <div className="discovery-grid">
             {filteredSketches.length > 0 ? (
               filteredSketches.map((art) => (
-                <ProductCard
-                  key={art.id}
-                  item={art}
-                  onView={handleView}
-                />
+                <ProductCard key={art.id} item={art} onView={handleView} />
               ))
             ) : (
-              <p className="no-results">No artworks found.</p>
+              <p className="no-results">No sketches found.</p>
             )}
           </div>
         </section>
@@ -82,18 +85,15 @@ function IllustrationSketch() {
 
       <Footer />
 
-   
       {selectedArt && (
         <div className="overlay-backdrop" onClick={closeOverlay}>
           <div className="overlay-content" onClick={(e) => e.stopPropagation()}>
             <button className="close-btn" onClick={closeOverlay}>×</button>
-
             <img
-              src={getImagePath(selectedArt.imageUrl)}
+              src={selectedArt.image_url || '/images/default-product.jpg'}
               alt={selectedArt.name}
               className="overlay-image"
             />
-
             <h2>{selectedArt.name}</h2>
             <p><strong>{selectedArt.artist}</strong></p>
             <p><em>{selectedArt.category}</em></p>
@@ -106,4 +106,4 @@ function IllustrationSketch() {
   );
 }
 
-export default IllustrationSketch;
+export default Sketch;

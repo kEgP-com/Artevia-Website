@@ -7,9 +7,7 @@ import { useNavigate } from "react-router-dom";
 import "../../css/DashboardResponsive.css";
 
 
-import usersData from "../../data/users.json";
-import ordersData from "../../data/orders.json";
-import messagesData from "../../data/messages.json";
+const API_URL = "http://localhost:8082/api";
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -17,15 +15,50 @@ const DashboardPage = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [showNav, setShowNav] = useState(false);
 
+
   const [userCount, setUserCount] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
   const [messageCount, setMessageCount] = useState(0);
+  const [totalSales, setTotalSales] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // ✅ Load counts from JSON on mount
+
   useEffect(() => {
-    setUserCount(usersData.length);
-    setOrderCount(ordersData.length);
-    setMessageCount(messagesData.length);
+    const fetchDashboardData = async () => {
+      try {
+        // 1. Fetch Users Count
+        const usersRes = await fetch(`${API_URL}/users`);
+        if (usersRes.ok) {
+            const users = await usersRes.json();
+            setUserCount(users.length);
+        }
+
+        // 2. Fetch Orders & Calculate Sales
+        const ordersRes = await fetch(`${API_URL}/orders`);
+        if (ordersRes.ok) {
+            const orders = await ordersRes.json();
+            setOrderCount(orders.length);
+            
+            // Sum up 'total_amount' from database
+            const sales = orders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
+            setTotalSales(sales);
+        }
+
+        // 3. Fetch Messages Count
+        const messagesRes = await fetch(`${API_URL}/messages`);
+        if (messagesRes.ok) {
+            const messages = await messagesRes.json();
+            setMessageCount(messages.length);
+        }
+
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
   }, []);
 
   const toggleNav = () => setShowNav(!showNav);
@@ -36,6 +69,10 @@ const DashboardPage = () => {
   const toggleProfile = () => {
     setShowProfile(!showProfile);
     setShowSettings(false);
+  };
+
+  const handleLogout = () => {
+    navigate("/admin/login");
   };
 
   return (
@@ -100,7 +137,7 @@ const DashboardPage = () => {
               <div className="dropdown-menu">
                 <button>Account Settings</button>
                 <button>Preferences</button>
-                <button onClick={() => navigate("/admin/login")}>Logout</button>
+                <button onClick={handleLogout}>Logout</button>
               </div>
             )}
           </div>
@@ -122,29 +159,30 @@ const DashboardPage = () => {
         <h1>Welcome Admin!</h1>
         <p>Monitor your users, products, and activity all in one place.</p>
 
-        <div className="stats-container">
-          <div className="stat-card">
-            <h3>Users</h3>
-            <p>{userCount}</p>
-          </div>
-          <div className="stat-card">
-            <h3>Orders</h3>
-            <p>{orderCount}</p>
-          </div>
-          <div className="stat-card">
-            <h3>Messages</h3>
-            <p>{messageCount}</p>
-          </div>
-          <div className="stat-card">
-            <h3>Sales</h3>
-            <p>
-              ₱
-              {ordersData
-                .reduce((sum, order) => sum + order.total, 0)
-                .toLocaleString()}
-            </p>
-          </div>
-        </div>
+        {isLoading ? (
+            <div style={{textAlign: "center", marginTop: "50px", fontSize: "1.2rem"}}>
+                Loading Dashboard Data...
+            </div>
+        ) : (
+            <div className="stats-container">
+            <div className="stat-card">
+                <h3>Users</h3>
+                <p>{userCount}</p>
+            </div>
+            <div className="stat-card">
+                <h3>Orders</h3>
+                <p>{orderCount}</p>
+            </div>
+            <div className="stat-card">
+                <h3>Messages</h3>
+                <p>{messageCount}</p>
+            </div>
+            <div className="stat-card">
+                <h3>Sales</h3>
+                <p>₱{totalSales.toLocaleString()}</p>
+            </div>
+            </div>
+        )}
       </main>
     </div>
   );

@@ -1,0 +1,167 @@
+[
+  {
+    "id": 1,
+    "name": "Alice Santos",
+    "email": "alice.santos@example.com",
+    "password": "password123",
+    "address": "Cabuyao, Laguna",
+    "contact": "09171234567",
+    "age": 23,
+    "gcash": "0917 123 4567",
+    "paypal": "paypal.me/alicesantos"
+  },
+  {
+    "id": 2,
+    "name": "Ben Cruz",
+    "email": "ben.cruz@example.com",
+    "password": "password123",
+    "address": "Binan, Laguna",
+    "contact": "09179876543",
+    "age": 29,
+    "gcash": "0917 987 6543",
+    "paypal": "paypal.me/bencruz"
+  },
+  {
+    "id": 3,
+    "name": "Carla Reyes",
+    "email": "carla.reyes@example.com",
+    "password": "password123",
+    "address": "San Pedro, Laguna",
+    "contact": "09170001111",
+    "age": 21,
+    "gcash": "0917 000 1111",
+    "paypal": "paypal.me/carlareyes"
+  },
+  {
+    "id": 4,
+    "name": "Darren Lopez",
+    "email": "darren.lopez@example.com",
+    "password": "password123",
+    "address": "Sta. Rosa, Laguna",
+    "contact": "09281231234",
+    "age": 34,
+    "gcash": "0928 123 1234",
+    "paypal": "paypal.me/darrenlopez"
+  },
+  {
+    "id": 5,
+    "name": "Ella Villanueva",
+    "email": "ella.villanueva@example.com",
+    "password": "password123",
+    "address": "Calamba, Laguna",
+    "contact": "09190002222",
+    "age": 27,
+    "gcash": "0919 000 2222",
+    "paypal": "paypal.me/ellav"
+  },
+  {
+    "id": 6,
+    "name": "Francis Dela Cruz",
+    "email": "francis.delacruz@example.com",
+    "password": "password123",
+    "address": "Los Baños, Laguna",
+    "contact": "09998887777",
+    "age": 30,
+    "gcash": "0999 888 7777",
+    "paypal": "paypal.me/francisdc"
+  },
+  {
+    "id": 7,
+    "name": "Gina Ramos",
+    "email": "gina.ramos@example.com",
+    "password": "password123",
+    "address": "Cabuyao, Laguna",
+    "contact": "09274561234",
+    "age": 25,
+    "gcash": "0927 456 1234",
+    "paypal": "paypal.me/ginaramos"
+  },
+  {
+    "id": 8,
+    "name": "Harold Bautista",
+    "email": "harold.bautista@example.com",
+    "password": "password123",
+    "address": "Cabuyao, Laguna",
+    "contact": "09451234567",
+    "age": 32,
+    "gcash": "0945 123 4567",
+    "paypal": "paypal.me/haroldb"
+  },
+  {
+    "id": 9,
+    "name": "Isabel Torres",
+    "email": "isabel.torres@example.com",
+    "password": "password123",
+    "address": "Cabuyao, Laguna",
+    "contact": "09778889999",
+    "age": 28,
+    "gcash": "0977 888 9999",
+    "paypal": "paypal.me/isabeltorres"
+  },
+  {
+    "id": 10,
+    "name": "James Rivera",
+    "email": "james.rivera@example.com",
+    "password": "password123",
+    "address": "Calamba, Laguna",
+    "contact": "09361239876",
+    "age": 26,
+    "gcash": "0936 123 9876",
+    "paypal": "paypal.me/jamesrivera"
+  },
+  {
+    "id": 11,
+    "name": "Katrina Mendoza",
+    "email": "katrina.mendoza@example.com",
+    "password": "password123",
+    "address": "Los Baños, Laguna",
+    "contact": "09172349876",
+    "age": 24,
+    "gcash": "0917 234 9876",
+    "paypal": "paypal.me/katrinam"
+  },
+  {
+    "id": 12,
+    "name": "Leo Gutierrez",
+    "email": "leo.gutierrez@example.com",
+    "password": "password123",
+    "address": "Sta. Rosa, Laguna",
+    "contact": "09453451234",
+    "age": 33,
+    "gcash": "0945 345 1234",
+    "paypal": "paypal.me/leogutierrez"
+  },
+  {
+    "id": 13,
+    "name": "Monica Flores",
+    "email": "monica.flores@example.com",
+    "password": "password123",
+    "address": "Binan, Laguna",
+    "contact": "09569876543",
+    "age": 22,
+    "gcash": "0956 987 6543",
+    "paypal": "paypal.me/monicaflores"
+  },
+  {
+    "id": 14,
+    "name": "Nathan Cruz",
+    "email": "nathan.cruz@example.com",
+    "password": "password123",
+    "address": "San Pedro, Laguna",
+    "contact": "09779812345",
+    "age": 31,
+    "gcash": "0977 981 2345",
+    "paypal": "paypal.me/nathancruz"
+  },
+  {
+    "id": 15,
+    "name": "Olivia Garcia",
+    "email": "olivia.garcia@example.com",
+    "password": "password123",
+    "address": "Cabuyao, Laguna",
+    "contact": "09663456789",
+    "age": 27,
+    "gcash": "0966 345 6789",
+    "paypal": "paypal.me/oliviagarcia"
+  }
+]
