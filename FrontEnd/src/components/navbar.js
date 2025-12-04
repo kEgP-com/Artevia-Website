@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "./Compo.css";
+import "./Compo.css"; // Assuming this is where your CSS is
 import { FaBars, FaTimes, FaEnvelope, FaPhoneAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -8,7 +8,8 @@ import CartIcon from "../images/images/cart.png";
 import HelpIcon from "../images/images/help.png";
 import Logo from "../images/images/logo_clear.png";
 
-function Navbar() {
+// ✅ Accept 'onSearch' as a prop
+function Navbar({ onSearch }) {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [showLeftMenu, setShowLeftMenu] = useState(false);
@@ -41,25 +42,29 @@ function Navbar() {
     setShowRightMenu(false);
   };
 
-  // ✅ PUBLIC NAVIGATION (No login required)
   const goToPage = (path) => {
     navigate(path);
     setShowLeftMenu(false);
     setShowRightMenu(false);
   };
 
-  // 🔒 PROTECTED NAVIGATION (Requires Login)
-  // Used for: Account, Orders, Cart
   const checkAuthAndNavigate = (path) => {
-    const isLoggedIn = localStorage.getItem("accountInfo");
+    const isLoggedIn = localStorage.getItem("accountInfo"); // Or "user" depending on your logic
 
     if (!isLoggedIn) {
-      // Alert the user and offer to go to login
       if (window.confirm("You need to login to access this page. Go to Login?")) {
         navigate("/customer/login");
       }
     } else {
       goToPage(path);
+    }
+  };
+
+  // ✅ Helper to handle typing
+  const handleSearchChange = (e) => {
+    // Only call onSearch if it exists (prevents errors on other pages)
+    if (onSearch) {
+        onSearch(e.target.value);
     }
   };
 
@@ -76,7 +81,7 @@ function Navbar() {
             {showLeftMenu ? <FaTimes /> : <FaBars />}
           </button>
 
-          {/* Logo (Public) */}
+          {/* Logo */}
           <div
             className="nav-left"
             onClick={() => goToPage("/customer/homepage")}
@@ -85,30 +90,30 @@ function Navbar() {
             <img src={Logo} alt="Logo" className="logo-img" />
           </div>
 
-          {/* Search Bar */}
+          {/* ✅ UPDATED SEARCH BAR */}
           <div className="nav-center">
-            <input type="text" className="search-bar" placeholder="Search..." />
+            <input 
+                type="text" 
+                className="search-bar" 
+                placeholder="Search art..." 
+                onChange={handleSearchChange} // Triggers the filter in Homepage
+            />
           </div>
 
           {/* Right Icons */}
           <div className="nav-right">
-            {/* 🔒 PROTECTED: Profile */}
             <img
               src={ProfileIcon}
               alt="Profile"
               className="icon-img"
               onClick={() => checkAuthAndNavigate("/customer/account")}
             />
-            
-            {/* 🔒 PROTECTED: Cart (Updated) */}
             <img
               src={CartIcon}
               alt="Cart"
               className="icon-img"
               onClick={() => checkAuthAndNavigate("/customer/cart")}
             />
-            
-            {/* 🌍 PUBLIC: Help */}
             <img
               src={HelpIcon}
               alt="Help"
@@ -132,10 +137,7 @@ function Navbar() {
             <li onClick={() => goToPage("/customer/homepage")}>HOME</li>
             <li onClick={scrollToFooter}>ABOUT</li>
             <li onClick={() => goToPage("/customer/artpage")}>ART</li> 
-            
-            {/* 🔒 PROTECTED: Orders */}
             <li onClick={() => checkAuthAndNavigate("/customer/order")}>ORDERS</li>
-            
             <li className="nav-link-dropdown">
               CATEGORIES
               <div className="dropdown-content">
@@ -156,10 +158,7 @@ function Navbar() {
               <li onClick={() => goToPage("/customer/homepage")}>HOME</li>
               <li onClick={scrollToFooter}>ABOUT</li>
               <li onClick={() => goToPage("/customer/artpage")}>ART</li> 
-              
-              {/* 🔒 PROTECTED: Orders */}
               <li onClick={() => checkAuthAndNavigate("/customer/order")}>ORDERS</li>
-              
               <li className="nav-link-dropdown">
                 CATEGORIES
                 <div className="dropdown-content">
@@ -178,24 +177,27 @@ function Navbar() {
         {showRightMenu && (
           <div className="mobile-dropdown right-dropdown">
             <div className="mobile-search-alt">
-              <input type="text" className="search-bar" placeholder="Search..." />
+              {/* ✅ UPDATED MOBILE SEARCH */}
+              <input 
+                type="text" 
+                className="search-bar" 
+                placeholder="Search..." 
+                onChange={handleSearchChange}
+              />
             </div>
             <div className="mobile-icons">
-              {/* 🔒 PROTECTED: Profile */}
               <img
                 src={ProfileIcon}
                 alt="Profile"
                 className="icon-img"
                 onClick={() => checkAuthAndNavigate("/customer/account")}
               />
-              {/* 🔒 PROTECTED: Cart */}
               <img
                 src={CartIcon}
                 alt="Cart"
                 className="icon-img"
                 onClick={() => checkAuthAndNavigate("/customer/cart")}
               />
-              {/* 🌍 PUBLIC: Help */}
               <img
                 src={HelpIcon}
                 alt="Help"

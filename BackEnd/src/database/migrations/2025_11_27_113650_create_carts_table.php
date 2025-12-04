@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('carts', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id'); // Links cart to the user
+            $table->foreignId('user_id')->constrained('users_info')->onDelete('cascade'); // Links cart to the user
             $table->string('name');
             $table->string('artist')->nullable();
             $table->string('type')->nullable();

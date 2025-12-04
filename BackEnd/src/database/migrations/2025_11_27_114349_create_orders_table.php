@@ -10,7 +10,8 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id'); // Links to User
+            // This tells the DB: user_id must exist in the 'users_info' table's 'id' column
+            $table->foreignId('user_id')->constrained('users_info')->onDelete('cascade');
             
             // Item Details (Snapshot of what they bought)
             $table->string('name');

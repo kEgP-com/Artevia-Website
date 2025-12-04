@@ -7,6 +7,10 @@ import ProductCard from "../../components/ProductCard";
 import { productAPI } from "../../services/api";
 
 function ArtPageList() {
+  // 3. New State to store API data
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [selectedArt, setSelectedArt] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("All");
@@ -227,9 +231,13 @@ Please check:
 
           {/* Product grid */}
           <div className="discovery-grid">
-            {filteredArts.length > 0 ? (
+            {loading ? (
+                 <p>Loading artworks...</p>
+            ) : filteredArts.length > 0 ? (
               filteredArts.map((art) => (
-                <ProductCard key={art.id} item={art} onView={handleView} />
+                // Ensure your ProductCard uses the new image path logic if needed, 
+                // or pass the processed URL down
+                <ProductCard key={art.id} item={{...art, imageUrl: getImagePath(art.imageUrl)}} onView={handleView} />
               ))
             ) : (
               <div className="no-products">

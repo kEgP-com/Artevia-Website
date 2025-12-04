@@ -1,32 +1,137 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+// import { Link } from "react-router-dom"; 
 import Navbar from "../../components/navbar";
 import Footer from "../../components/footer";
 import "../../css/Homepage.css";
+
+// Static Backgrounds & UI Elements
 import WaveBg from "../../images/images/wavebg.png";
 import SaleBadge from "../../images/images/Sale.png";
-// Import a few main images manually for the top sections
-import DigitalArt1 from "../../images/Digital Art/Searching for peace.png";
-import Painting1 from "../../images/Painting/Pag Akbay Series VII by Leti watersong.jpg";
-import Sculpture1 from "../../images/Sculpture/blossom-v-wood-sculpture-by-wouter-van-der-vlugt-1-300x200.png";
-import Sketch1 from "../../images/Sketch arts/cat portrait.png";
-import DigitalArt2 from "../../images/Digital Art/A_Taste_of_Honey.png";
+
+// Static Category Images
 import Handmadedecor2 from "../../images/Handmade Decor/dovy_oak.png";
 import Painting2 from "../../images/Painting/Oil_On_Canvas_By_Shan_Arts.jpg";
 import Sculpture2 from "../../images/Sculpture/la-grande-ourse-animal-sculpture-by-eric-valat_7-550x769.png";
 import Sketch2 from "../../images/Sketch arts/Custom_Portrait_2.png";
+import DigitalArt2 from "../../images/Digital Art/A_Taste_of_Honey.png";
 
-//Import 12345.
-import digitalArts from "../../data/DigitalArts.json";
-import handmadeDecors from "../../data/HandmadeDecors.json";
-import paintings from "../../data/Painting.json";
-import sculptures from "../../data/Sculpture.json";
-import sketches from "../../data/IllustrationSketch.json";
+const API_URL = "http://localhost:8082"; 
 
 function Homepage() {
   const [activePage, setActivePage] = useState(1);
   const [selectedArt, setSelectedArt] = useState(null);
+  
+  // Data State
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+  
+  // ✅ SEARCH STATE
+  const [searchTerm, setSearchTerm] = useState("");
 
+  // FETCH DATA & CHECK LOGIN
+  useEffect(() => {
+    // ⚠️ CRITICAL FIX: Check BOTH 'user' and 'accountInfo' keys
+    // This solves the issue where Navbar sees login but Homepage does not.
+    const storedUser = localStorage.getItem("user") || localStorage.getItem("accountInfo");
+    
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        console.log("Logged in User:", parsedUser); // Debugging Log
+        setCurrentUser(parsedUser);
+      } catch (e) {
+        console.error("User data corrupted");
+      }
+    } else {
+        console.warn("No user found in localStorage");
+    }
+
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/products`); 
+        if (response.ok) {
+            const data = await response.json();
+            const mappedData = data.map(item => ({
+                ...item,
+                title: item.name,      
+                image: item.image_url, 
+                artist: item.artist_name || item.artist || "Unknown"
+            }));
+            setProducts(mappedData);
+        }
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // IMAGE URL HELPER
+  const getImageUrl = (path) => {
+      if (!path) return "https://via.placeholder.com/300";
+      if (path.startsWith("http")) return path;
+      return `${API_URL}${path}`;
+  };
+
+  // ADD TO CART
+  const handleAddToCart = async (art) => {
+    // Debugging: Check why it fails
+    if (!currentUser) {
+      console.log("Cart Check Failed: currentUser is null");
+      alert("You need to login first to add items to your cart!");
+      return;
+    }
+
+    // Ensure we have a valid ID (Handles both 'id' and 'user_id' formats)
+    const userId = currentUser.id || currentUser.user_id;
+
+    if (!userId) {
+        alert("User ID missing. Please re-login.");
+        return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/cart`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          name: art.name,
+          artist: art.artist, 
+          type: art.category,
+          price: art.price,
+          quantity: 1,
+          image: art.image_url
+        }),
+      });
+
+      if (response.ok) alert(`${art.title} added to cart!`);
+      else alert("Failed to add to cart.");
+    } catch (error) {
+      console.error("Cart Error:", error);
+    }
+  };
+
+  // ✅ FILTERING LOGIC
+  const filteredProducts = products.filter((art) => {
+    const query = searchTerm.toLowerCase();
+    return (
+      art.title.toLowerCase().includes(query) ||
+      (art.category && art.category.toLowerCase().includes(query)) ||
+      (art.artist && art.artist.toLowerCase().includes(query))
+    );
+  });
+
+  // LAYOUT LOGIC
+  const featuredArt = filteredProducts.length > 0 ? filteredProducts[0] : null;
+  const sideArts = filteredProducts.length > 1 ? filteredProducts.slice(1, 3) : [];
+  const discoveryArts = filteredProducts.length > 3 ? filteredProducts.slice(3, 9) : []; // Limit to top 6
+
+  // Static Categories
   const allCategories = [
     { id: 1, name: "Paintings", image: Painting2 },
     { id: 2, name: "Sculpture", image: Sculpture2 },
@@ -35,46 +140,16 @@ function Homepage() {
     { id: 5, name: "Handmade Decor", image: Handmadedecor2 },
   ];
 
-  const discoveryImages = [
-    { src: DigitalArt1, name: "Searching for peace", price: "₱1,750", category: "Digital Art" },
-    { src: Painting1, name: "Pag Akbay Series", price: "₱5,500", category: "Painting" },
-    { src: Sculpture1, name: "Blossom V Wood", price: "₱5,954", category: "Sculpture" },
-    { src: Sketch1, name: "Cat Portrait", price: "₱2,826", category: "Sketch" },
-    { src: DigitalArt2, name: "A Taste of Honey", price: "₱7,700", category: "Digital Art" },
-    { src: Handmadedecor2, name: "Dovy Oak Wood", price: "₱2,890", category: "Handmade Decor" },
-  ];
-
   const slideAmount = (activePage - 1) * 280;
-
-  //  Helper — find the artwork details by name
-  const getArtDetails = (name) => {
-    const allArtData = [...digitalArts, ...handmadeDecors, ...paintings, ...sculptures, ...sketches];
-    return allArtData.find((art) => art.name.toLowerCase().includes(name.toLowerCase()));
-  };
-
-
-  const handleView = (name) => {
-    const artData = getArtDetails(name);
-    if (artData) setSelectedArt(artData);
-  };
-
+  const handleView = (art) => setSelectedArt(art);
   const closeOverlay = () => setSelectedArt(null);
 
-
-  const getImagePath = (relativePath) => {
-    try {
-      // remove leading ../../images/ if present
-      const cleanPath = relativePath.replace(/^(\.\.\/)+images\//, "");
-      return require(`../../images/${cleanPath}`);
-    } catch (err) {
-      console.warn("Image not found:", relativePath);
-      return "";
-    }
-  };
+  if (isLoading) return <div className="homepage" style={{paddingTop: "100px", textAlign:"center"}}>Loading Art...</div>;
 
   return (
     <>
-      <Navbar />
+      {/* ✅ Pass setSearchTerm to Navbar */}
+      <Navbar onSearch={setSearchTerm} />
 
       <div className="homepage">
         {/* ==== HERO SECTION ==== */}
@@ -92,55 +167,66 @@ function Homepage() {
           <p>“Art should comfort the disturbed and disturb the comfortable.” – Banksy</p>
         </section>
 
-        {/* ==== ART DISPLAY ==== */}
+        {/* ==== ART DISPLAY (TOP 3) ==== */}
         <section className="art-display">
           <div className="section-title">TOP</div>
-          <div className="art-gallery">
-            <div className="gallery-column-left">
-              <div className="art-frame-large">
-                <img src={DigitalArt1} alt="Digital Art" className="art-image-large" />
-                <div className="art-overlay">
-                  <div className="art-info">
-                    <span>Searching for Peace</span>
-                    <span>₱1,750</span>
-                  </div>
-                  <div className="art-buttons-container">
-                    <button className="btn-overlay">ADD TO CART</button>
-                    <button className="btn-overlay" onClick={() => handleView("Searching for peace")}>
-                      VIEW
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="gallery-column-right">
-              {[Painting1, Sculpture1].map((img, i) => {
-                const names = ["Pag Akbay Series", "Blossom V Wood"];
-                const prices = ["₱5,500", "₱5,954"];
-                return (
-                  <div className="art-frame-small" key={i}>
-                    <img src={img} alt={names[i]} className="art-image-small" />
+          
+          {filteredProducts.length === 0 ? (
+             <div style={{textAlign: "center", padding: "40px", color: "#666"}}>
+               <h3>No artworks found for "{searchTerm}"</h3>
+             </div>
+          ) : (
+            <div className="art-gallery">
+                {/* LEFT COLUMN */}
+                <div className="gallery-column-left">
+                {featuredArt && (
+                    <div className="art-frame-large">
+                    <img 
+                        src={getImageUrl(featuredArt.image)} 
+                        alt={featuredArt.title} 
+                        className="art-image-large" 
+                    />
                     <div className="art-overlay">
-                      <div className="art-info">
-                        <span>{names[i]}</span>
-                        <span>{prices[i]}</span>
-                      </div>
-                      <div className="art-buttons-container">
-                        <button className="btn-overlay">ADD TO CART</button>
-                        <button className="btn-overlay" onClick={() => handleView(names[i])}>
-                          VIEW
-                        </button>
-                      </div>
+                        <div className="art-info">
+                        <span>{featuredArt.title}</span>
+                        <span>₱{Number(featuredArt.price).toLocaleString()}</span>
+                        </div>
+                        <div className="art-buttons-container">
+                        <button className="btn-overlay" onClick={() => handleAddToCart(featuredArt)}>ADD TO CART</button>
+                        <button className="btn-overlay" onClick={() => handleView(featuredArt)}>VIEW</button>
+                        </div>
                     </div>
-                  </div>
-                );
-              })}
+                    </div>
+                )}
+                </div>
+
+                {/* RIGHT COLUMN */}
+                <div className="gallery-column-right">
+                {sideArts.map((art) => (
+                    <div className="art-frame-small" key={art.id}>
+                    <img 
+                        src={getImageUrl(art.image)} 
+                        alt={art.title} 
+                        className="art-image-small" 
+                    />
+                    <div className="art-overlay">
+                        <div className="art-info">
+                        <span>{art.title}</span>
+                        <span>₱{Number(art.price).toLocaleString()}</span>
+                        </div>
+                        <div className="art-buttons-container">
+                        <button className="btn-overlay" onClick={() => handleAddToCart(art)}>ADD TO CART</button>
+                        <button className="btn-overlay" onClick={() => handleView(art)}>VIEW</button>
+                        </div>
+                    </div>
+                    </div>
+                ))}
+                </div>
             </div>
-          </div>
+          )}
         </section>
 
-        {/* ==== CATEGORIES ==== */}
+        {/* ==== CATEGORIES (Static) ==== */}
         <section className="promo">
           <div className="promo-title-container">
             <img src={SaleBadge} alt="Sale" className="sale-badge" />
@@ -179,40 +265,42 @@ function Homepage() {
           </div>
         </section>
 
-        {/* ==== DISCOVERY ==== */}
-        <section
-          className="discovery"
-          style={{
-            backgroundImage: `url(${WaveBg}), linear-gradient(to bottom, white, #E49E69)`,
-          }}
-        >
-          <div className="section-title">DISCOVERY</div>
-          <div className="discovery-content-wrapper">
-            <div className="discovery-grid">
-              {discoveryImages.map((art, index) => (
-                <div key={index} className="discovery-frame">
-                  <img src={art.src} alt={art.name} />
-                  <div className="discovery-overlay">
-                    <div className="discovery-info">
-                      <span>{art.name}</span>
-                      <span>{art.price}</span>
-                    </div>
-                    <div className="discovery-buttons-container">
-                      <button className="btn-discovery-overlay">ADD TO CART</button>
-                      <button
-                        className="btn-discovery-overlay"
-                        onClick={() => handleView(art.name)}
-                      >
-                        VIEW
-                      </button>
+        {/* ==== DISCOVERY (Top 6 Items) ==== */}
+        {discoveryArts.length > 0 && (
+          <section
+            className="discovery"
+            style={{
+              backgroundImage: `url(${WaveBg}), linear-gradient(to bottom, white, #E49E69)`,
+            }}
+          >
+            <div className="section-title">DISCOVERY</div>
+            <div className="discovery-content-wrapper">
+              <div className="discovery-grid">
+                {discoveryArts.map((art) => (
+                  <div key={art.id} className="discovery-frame">
+                    <img src={getImageUrl(art.image)} alt={art.title} />
+                    <div className="discovery-overlay">
+                      <div className="discovery-info">
+                        <span>{art.title}</span>
+                        <span>₱{Number(art.price).toLocaleString()}</span>
+                      </div>
+                      <div className="discovery-buttons-container">
+                        <button className="btn-discovery-overlay" onClick={() => handleAddToCart(art)}>ADD TO CART</button>
+                        <button
+                          className="btn-discovery-overlay"
+                          onClick={() => handleView(art)}
+                        >
+                          VIEW
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              <button className="btn-browse-more">Browse More</button>
             </div>
-            <button className="btn-browse-more">Browse More</button>
-          </div>
-        </section>
+          </section>
+        )}
       </div>
 
       <Footer />
@@ -225,15 +313,15 @@ function Homepage() {
               ×
             </button>
             <img
-              src={getImagePath(selectedArt.imageUrl)}
-              alt={selectedArt.name}
+              src={getImageUrl(selectedArt.image)}
+              alt={selectedArt.title}
               className="overlay-image"
             />
-            <h2>{selectedArt.name}</h2>
+            <h2>{selectedArt.title}</h2>
             <p><strong>{selectedArt.artist}</strong></p>
             <p><em>{selectedArt.category}</em></p>
             <p>{selectedArt.description}</p>
-            <h3>₱{selectedArt.price.toLocaleString()}</h3>
+            <h3>₱{Number(selectedArt.price).toLocaleString()}</h3>
           </div>
         </div>
       )}

@@ -13,6 +13,18 @@ class ProductController extends Controller
     {
         // Returns the list including the 'image_url' needed for the frontend
         return response()->json(Product::all());
+
+        
+    }
+    public function indexOn()
+    {
+    
+        $products = \Illuminate\Support\Facades\DB::table('products')
+            ->join('artists', 'products.artist_id', '=', 'artists.id')
+            ->select('products.*', 'artists.name as artist_name') // Get product data + artist name
+            ->get();
+
+        return response()->json($products);
     }
 
     // 2. GET SINGLE PRODUCT
@@ -38,11 +50,10 @@ class ProductController extends Controller
         $data = $request->all();
         $imageUrl = null; // Default if upload fails
 
-        // ✅ Handle File Upload
-        // This saves to: storage/app/public/products/randomName.jpg
+
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('products', 'public');
-            $imageUrl = '/storage/' . $path; // The link the frontend needs
+            $imageUrl = '/storage/' . $path; 
         }
 
         $product = Product::create([

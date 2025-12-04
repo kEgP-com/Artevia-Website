@@ -7,6 +7,10 @@ import ProductCard from "../../components/ProductCard";
 import { productAPI } from "../../services/api";
 
 function HandmadeDecors() {
+  // 1. New state to hold the data coming from your database
+  const [handmadeDecors, setHandmadeDecors] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [selectedArt, setSelectedArt] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState([]);
@@ -71,7 +75,10 @@ function HandmadeDecors() {
           </div>
 
           <div className="discovery-grid">
-            {filteredDecors.length > 0 ? (
+            {loading ? (
+              // A simple loading message so the user knows something is happening
+              <p>Loading collection...</p>
+            ) : filteredDecors.length > 0 ? (
               filteredDecors.map((art) => (
                 <ProductCard key={art.id} item={art} onView={handleView} />
               ))
@@ -94,10 +101,16 @@ function HandmadeDecors() {
               className="overlay-image"
             />
             <h2>{selectedArt.name}</h2>
-            <p><strong>{selectedArt.artist}</strong></p>
-            <p><em>{selectedArt.category}</em></p>
+            <p>
+              <strong>{selectedArt.artist}</strong>
+            </p>
+            <p>
+              <em>{selectedArt.category}</em>
+            </p>
             <p>{selectedArt.description}</p>
-            <h3>₱{selectedArt.price.toLocaleString()}</h3>
+            <h3>
+              ₱{selectedArt.price ? selectedArt.price.toLocaleString() : 0}
+            </h3>
           </div>
         </div>
       )}

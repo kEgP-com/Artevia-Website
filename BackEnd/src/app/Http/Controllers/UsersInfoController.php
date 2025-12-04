@@ -11,7 +11,7 @@ class UsersInfoController extends Controller
     // 1. REGISTER
     public function register(Request $request) {
         $request->validate([
-            'email' => 'required|email|unique:users_infos',
+            'email' => 'required|email|unique:users_info',
             'password' => 'required'
         ]);
 

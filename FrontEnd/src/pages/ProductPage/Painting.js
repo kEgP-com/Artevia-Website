@@ -7,6 +7,10 @@ import ProductCard from "../../components/ProductCard";
 import { productAPI } from "../../services/api";
 
 function Painting() {
+  // 1. State for API data
+  const [paintings, setPaintings] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [selectedArt, setSelectedArt] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState([]);
@@ -112,7 +116,7 @@ function Painting() {
             <p><strong>{selectedArt.artist}</strong></p>
             <p><em>{selectedArt.category}</em></p>
             <p>{selectedArt.description}</p>
-            <h3>₱{selectedArt.price.toLocaleString()}</h3>
+            <h3>₱{selectedArt.price ? selectedArt.price.toLocaleString() : 0}</h3>
           </div>
         </div>
       )}
