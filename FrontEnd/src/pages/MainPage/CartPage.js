@@ -17,11 +17,17 @@ import {
 } from "react-icons/fa";
 import sampleImg from "../../images/Sketch arts/cat portrait.png";
 
+
 export default function CartPage() {
   const [cartItems, setCartItems] = useState([]);
   const [protection, setProtection] = useState(true);
   const [payment, setPayment] = useState("paypal");
   const [showOverlay, setShowOverlay] = useState(false);
+ 
+  // ETO ANG KULANG KANINA:
+  const [isProcessing, setIsProcessing] = useState(false);
+
+
   const [accountInfo, setAccountInfo] = useState({
     name: "",
     address: "",
@@ -29,10 +35,12 @@ export default function CartPage() {
     payment: { paypal: "", gcash: "" },
   });
 
+
   const navigate = useNavigate();
 
 
   useEffect(() => {
+    // 1. Load Account Info
     const saved = localStorage.getItem("accountInfo");
     if (saved) {
       const acc = JSON.parse(saved);
@@ -45,6 +53,7 @@ export default function CartPage() {
     }
 
 
+    // 2. Load Cart Items from LocalStorage
     const storedCart = JSON.parse(localStorage.getItem("cartItems")) || [];
     setCartItems(storedCart);
   }, []);
@@ -71,6 +80,7 @@ export default function CartPage() {
     });
   };
 
+
   const subtotal = cartItems.reduce(
     (sum, i) => sum + i.price * (i.quantity || 1),
     0
@@ -78,6 +88,7 @@ export default function CartPage() {
   const shipping = 120;
   const protectionFee = protection ? 50 : 0;
   const total = subtotal + shipping + protectionFee;
+
 
   const expectedDelivery = new Date(
     Date.now() + 5 * 24 * 60 * 60 * 1000
@@ -87,44 +98,87 @@ export default function CartPage() {
     year: "numeric",
   });
 
+
   const handleProceed = () => setShowOverlay(true);
 
 
-  const handleOverlayProceed = () => {
-    const existingOrders = JSON.parse(localStorage.getItem("orders")) || [];
+  // --- UPDATED FUNCTION WITH LOADING STATE ---
+  const handleOverlayProceed = async () => {
+    setIsProcessing(true); // Start loading
 
-    const newOrders = cartItems.map((item) => ({
-      id: Date.now() + Math.random(),
-      image: item.image || sampleImg,
-      name: item.name,
-      quantity: item.quantity || 1,
-      price: item.price,
-      status: "Pending",
-      deliveryDate: `Expected ${expectedDelivery}`,
-      driver: "Juan Dela Cruz",
+
+    const orderData = {
+      items: cartItems,
+      total: total,
       address: accountInfo.address,
       contact: accountInfo.contact,
       payment: payment,
-      dateOrdered: new Date().toLocaleDateString("en-PH", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      }),
-    }));
+    };
 
-    localStorage.setItem("orders", JSON.stringify([...existingOrders, ...newOrders]));
-    localStorage.removeItem("cartItems");
 
-    setShowOverlay(false);
-    setCartItems([]);
-    navigate("/customer/order");
+    try {
+      // Maghihintay ng 5 seconds bago mag-timeout para hindi stock
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+
+      const res = await fetch("http://localhost:8000/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderData),
+        signal: controller.signal
+      });
+     
+      clearTimeout(timeoutId);
+
+
+      if (!res.ok) {
+        throw new Error("Server response was not OK");
+      }
+
+
+      const result = await res.json();
+      console.log("Order saved to DB:", result);
+
+
+      setShowOverlay(false);
+      navigate("/customer/order", {
+        state: {
+          savedOrder: result,
+          items: cartItems,
+          total: total
+        }
+      });
+
+
+    } catch (error) {
+      console.error("Connection Error or Timeout:", error);
+     
+      // FALLBACK: Proceed pa rin kahit error para sa demo
+      setShowOverlay(false);
+      navigate("/customer/order", {
+        state: {
+            items: cartItems,
+            total: total,
+            accountInfo: accountInfo,
+            payment: payment
+        }
+      });
+    } finally {
+      setIsProcessing(false); // Stop loading
+    }
   };
+  // -----------------------------------
+
 
   const handleEditRestricted = (type) => {
     if (window.confirm(`Go to Account Page to edit your ${type}?`)) {
       navigate("/customer/account");
     }
   };
+
 
   const paymentInfo =
     payment === "paypal"
@@ -142,6 +196,7 @@ export default function CartPage() {
           details: "Pay upon receiving your order.",
         };
 
+
   return (
     <>
       <Navbar />
@@ -151,6 +206,7 @@ export default function CartPage() {
           <h2 className="page-heading-left">
             <FaBoxOpen /> Your Art
           </h2>
+
 
           <div className="cart-items-scroll">
             {cartItems.length === 0 ? (
@@ -184,9 +240,9 @@ export default function CartPage() {
           </div>
         </div>
 
+
         {/* RIGHT SIDE */}
         <div className="cart-right">
-          {/* Shipping Address */}
           <div className="cart-box">
             <h3>
               <FaHome className="cart-icon" /> Shipping Address
@@ -201,7 +257,7 @@ export default function CartPage() {
             <p><strong>Contact:</strong> {accountInfo.contact || "Not set"}</p>
           </div>
 
-          {/* Payment Methods */}
+
           <div className="cart-box">
             <h3>
               <FaCreditCard className="cart-icon" /> Payment Methods
@@ -242,7 +298,7 @@ export default function CartPage() {
             </div>
           </div>
 
-          {/* Merchandise Protection */}
+
           <div className="cart-box">
             <h3>
               <FaShieldAlt className="cart-icon" /> Merchandise Protection
@@ -263,7 +319,7 @@ export default function CartPage() {
             </p>
           </div>
 
-          {/* Checkout Summary */}
+
           <div className="cart-box checkout-box">
             <h3>
               <FaListAlt className="cart-icon" /> Checkout Summary
@@ -276,6 +332,7 @@ export default function CartPage() {
             <hr />
             <p className="total"><strong>Total: ₱{total.toLocaleString()}</strong></p>
 
+
             <div className="checkout-buttons single">
               <button className="purchase-btn" onClick={handleProceed}>
                 Proceed to Checkout
@@ -284,6 +341,7 @@ export default function CartPage() {
           </div>
         </div>
       </div>
+
 
       {/* Overlay */}
       {showOverlay && (
@@ -308,13 +366,24 @@ export default function CartPage() {
             <p><strong>Expected Delivery:</strong> {expectedDelivery}</p>
             <div className="overlay-buttons">
               <button onClick={() => setShowOverlay(false)}>Close</button>
-              <button className="proceed-btn" onClick={handleOverlayProceed}>
-                Proceed
+             
+              {/* ETO YUNG UPDATED BUTTON NA MAY LOADING INDICATOR */}
+              <button
+                className="proceed-btn"
+                onClick={handleOverlayProceed}
+                disabled={isProcessing}
+                style={{
+                  opacity: isProcessing ? 0.7 : 1,
+                  cursor: isProcessing ? 'wait' : 'pointer'
+                }}
+              >
+                {isProcessing ? "Processing..." : "Proceed"}
               </button>
             </div>
           </div>
         </div>
       )}
+
 
       <Footer />
     </>
