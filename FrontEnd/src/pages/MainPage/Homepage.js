@@ -32,7 +32,6 @@ function Homepage() {
   // FETCH DATA & CHECK LOGIN
   useEffect(() => {
     // ⚠️ CRITICAL FIX: Check BOTH 'user' and 'accountInfo' keys
-    // This solves the issue where Navbar sees login but Homepage does not.
     const storedUser = localStorage.getItem("user") || localStorage.getItem("accountInfo");
     
     if (storedUser) {
@@ -79,14 +78,12 @@ function Homepage() {
 
   // ADD TO CART
   const handleAddToCart = async (art) => {
-    // Debugging: Check why it fails
     if (!currentUser) {
       console.log("Cart Check Failed: currentUser is null");
       alert("You need to login first to add items to your cart!");
       return;
     }
 
-    // Ensure we have a valid ID (Handles both 'id' and 'user_id' formats)
     const userId = currentUser.id || currentUser.user_id;
 
     if (!userId) {
@@ -144,11 +141,8 @@ function Homepage() {
   const handleView = (art) => setSelectedArt(art);
   const closeOverlay = () => setSelectedArt(null);
 
-  if (isLoading) return <div className="homepage" style={{paddingTop: "100px", textAlign:"center"}}>Loading Art...</div>;
-
   return (
     <>
-      {/* ✅ Pass setSearchTerm to Navbar */}
       <Navbar onSearch={setSearchTerm} />
 
       <div className="homepage">
@@ -168,10 +162,33 @@ function Homepage() {
         </section>
 
         {/* ==== ART DISPLAY (TOP 3) ==== */}
-        <section className="art-display">
+        <section className="art-display" style={{ minHeight: "400px", position: "relative" }}>
           <div className="section-title">TOP</div>
           
-          {filteredProducts.length === 0 ? (
+          {/* ✅ LOCALIZED LOADING INDICATOR */}
+          {isLoading ? (
+             <div style={{
+                 display: "flex", 
+                 justifyContent: "center", 
+                 alignItems: "center", 
+                 height: "300px", 
+                 color: "#555",
+                 fontSize: "1.2rem"
+             }}>
+                 {/* Simple CSS Spinner or Text */}
+                 <div className="spinner" style={{
+                     border: "4px solid #f3f3f3", 
+                     borderTop: "4px solid #3498db", 
+                     borderRadius: "50%", 
+                     width: "40px", 
+                     height: "40px", 
+                     animation: "spin 2s linear infinite",
+                     marginRight: "10px"
+                 }}></div>
+                 <span>Loading Gallery...</span>
+                 <style>{`@keyframes spin {0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); }}`}</style>
+             </div>
+          ) : filteredProducts.length === 0 ? (
              <div style={{textAlign: "center", padding: "40px", color: "#666"}}>
                <h3>No artworks found for "{searchTerm}"</h3>
              </div>
@@ -266,7 +283,9 @@ function Homepage() {
         </section>
 
         {/* ==== DISCOVERY (Top 6 Items) ==== */}
-        {discoveryArts.length > 0 && (
+        {/* Only show discovery section if not loading, or handle loading inside it if you prefer. 
+            Here we hide it until data exists to avoid double loading spinners. */}
+        {!isLoading && discoveryArts.length > 0 && (
           <section
             className="discovery"
             style={{

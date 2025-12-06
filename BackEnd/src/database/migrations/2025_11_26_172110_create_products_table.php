@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             // Link to the 'artists' table
-            $table->foreignId('artist_id')->constrained('artists')->onDelete('cascade');        
+            $table->foreignId('artist_id')->constrained('artists')->onDelete('cascade');     
+            $table->string('name');   
             $table->string('artist');
             $table->string('category');
             $table->decimal('price', 10, 2); // 10 digits total, 2 decimal places

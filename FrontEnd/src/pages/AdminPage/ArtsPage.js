@@ -6,12 +6,46 @@ import logo from "../../images/logo/logo_clear.png";
 import wavebg from "../../images/images/login_bg.png";
 import { useNavigate } from "react-router-dom";
 
-
 const API_URL = "http://localhost:8082"; 
+
+// --- STYLES FOR LOCAL TABLE OVERLAY ---
+const tableOverlayStyle = {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  width: "100%",
+  height: "100%",
+  backgroundColor: "rgba(255, 255, 255, 0.5)", // Semi-transparent white
+  backdropFilter: "blur(2px)", // Blur effect
+  zIndex: 10,
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  flexDirection: "column",
+  color: "#333",
+  fontWeight: "bold",
+  fontSize: "1.2rem",
+  borderRadius: "8px" // Matches card radius
+};
+
+const spinnerStyle = {
+  width: "50px",
+  height: "50px",
+  border: "5px solid rgba(0, 0, 0, 0.1)",
+  borderTop: "5px solid #007bff",
+  borderRadius: "50%",
+  animation: "spin 1s linear infinite",
+  marginBottom: "15px"
+};
 
 export default function AdminArts() {
   const navigate = useNavigate();
+  
+  // ==========================
+  // 1. STATE MANAGEMENT
+  // ==========================
   const [arts, setArts] = useState([]);
+  const [artists, setArtists] = useState([]); 
   const [query, setQuery] = useState("");
   const [sortOrder, setSortOrder] = useState("none");
   const [showNav, setShowNav] = useState(false);
@@ -19,28 +53,47 @@ export default function AdminArts() {
   const [showSettings, setShowSettings] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
+  // Overlays
   const [showAddOverlay, setShowAddOverlay] = useState(false);
   const [showEditOverlay, setShowEditOverlay] = useState(false);
   const [showPreviewOverlay, setShowPreviewOverlay] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
 
-
+  // Form State
   const [newArt, setNewArt] = useState({
     title: "", 
-    artist: "",
+    artist_id: "", 
+    category: "",
     price: "",
     description: "",
-    category: "",
-    file: null, // Stores the actual file to upload
+    file: null, 
   });
 
   const [editedArt, setEditedArt] = useState(null);
   const [previewArt, setPreviewArt] = useState(null);
 
-  // FETCH PRODUCTS
-  const fetchProducts = async () => {
-    setIsLoading(true);
+  // ==========================
+  // 2. FETCH DATA FUNCTIONS
+  // ==========================
+
+  const fetchArtists = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/artists`);
+      if (response.ok) {
+        const data = await response.json();
+        setArtists(data);
+      }
+    } catch (error) {
+      console.error("Error fetching artists:", error);
+    }
+  };
+
+  // Fetch Products
+  const fetchProducts = async (suppressLoading = false) => {
+    // Only show loading if we are NOT suppressing it (e.g., Manual Refresh button)
+    if (!suppressLoading) setIsLoading(true);
+    
     try {
         const response = await fetch(`${API_URL}/api/products`);
         if (response.ok) {
@@ -49,29 +102,44 @@ export default function AdminArts() {
                 ...item,
                 title: item.name, 
                 image: item.image_url, 
-                origin: "Unknown"
+                artist: item.artist || (item.artist_relation ? item.artist_relation.name : "Unknown") 
             }));
             setArts(mappedData);
         }
     } catch (error) {
         console.error("Error fetching products:", error);
     } finally {
-        setIsLoading(false);
+        if (!suppressLoading) setIsLoading(false);
     }
   };
 
+  // Silent Initial Load
   useEffect(() => {
-    fetchProducts();
+    const loadInitialData = async () => {
+      try {
+        await Promise.all([
+          fetchProducts(false), // Let it trigger the local loader initially if desired, or keep true for silent
+          fetchArtists()
+        ]);
+      } catch (error) {
+        console.error("Error loading initial data", error);
+      }
+    };
+
+    loadInitialData();
   }, []);
 
-  const toggleSettings = () => {
-    setShowSettings(!showSettings);
-    setShowProfile(false);
-  };
+  // ==========================
+  // 3. HELPER FUNCTIONS
+  // ==========================
+  const toggleSettings = () => { setShowSettings(!showSettings); setShowProfile(false); };
+  const toggleProfile = () => { setShowProfile(!showProfile); setShowSettings(false); };
+  const toggleNav = () => setShowNav(!showNav);
 
-  const toggleProfile = () => {
-    setShowProfile(!showProfile);
-    setShowSettings(false);
+  const getImageUrl = (path) => {
+      if (!path) return "https://via.placeholder.com/300";
+      if (path.startsWith("http")) return path;
+      return `${API_URL}${path}`;
   };
 
   const filtered = useMemo(() => {
@@ -87,54 +155,116 @@ export default function AdminArts() {
       );
     }
 
-    if (sortOrder === "a-z") {
-      data.sort((a, b) => a.title.localeCompare(b.title));
-    } else if (sortOrder === "z-a") {
-      data.sort((a, b) => b.title.localeCompare(a.title));
-    } else if (sortOrder === "price") {
-      data.sort((a, b) => Number(a.price) - Number(b.price));
-    }
+    if (sortOrder === "a-z") data.sort((a, b) => a.title.localeCompare(b.title));
+    else if (sortOrder === "z-a") data.sort((a, b) => b.title.localeCompare(a.title));
+    else if (sortOrder === "price") data.sort((a, b) => Number(a.price) - Number(b.price));
 
     return data;
   }, [arts, query, sortOrder]);
 
+  // ==========================
+  // 4. ACTION HANDLERS
+  // ==========================
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this artwork?")) return;
-
+    setIsLoading(true); 
     try {
-        await fetch(`${API_URL}/api/products/${id}`, {
-            method: "DELETE"
-        });
+        await fetch(`${API_URL}/api/products/${id}`, { method: "DELETE" });
         setArts((prev) => prev.filter((a) => a.id !== id));
     } catch (error) {
         alert("Failed to delete product.");
+    } finally {
+        setIsLoading(false);
     }
   };
 
   const handleEdit = (art) => {
-    // When editing, we don't set a new file immediately
-    setEditedArt({ ...art, file: null });
+    setEditedArt({ 
+        ...art, 
+        artist_id: art.artist_id || "", 
+        file: null 
+    });
     setShowEditOverlay(true);
   };
-  
-  const toggleNav = () => setShowNav(!showNav);
 
+  const handleViewArt = (art) => {
+    setPreviewArt(art);
+    setShowPreviewOverlay(true);
+  };
+
+  const handleAddArtClick = () => {
+    setShowAddOverlay(true);
+  };
+
+  // SAVE NEW ART
+  const handleSaveNewArt = async () => {
+    if(!newArt.artist_id) { alert("Please select an artist"); return; } 
+
+    setIsLoading(true); 
+    try {
+        const formData = new FormData();
+        formData.append("artist_id", newArt.artist_id); 
+        formData.append("name", newArt.title);
+        
+        const selectedArtist = artists.find(a => a.id == newArt.artist_id);
+        formData.append("artist", selectedArtist ? selectedArtist.name : "Unknown"); 
+
+        formData.append("category", newArt.category);
+        formData.append("price", newArt.price);
+        formData.append("description", newArt.description);
+        
+        if (newArt.file) formData.append("image", newArt.file);
+
+        const response = await fetch(`${API_URL}/api/products`, {
+            method: "POST",
+            body: formData 
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            const savedProduct = result.product;
+            
+            setArts((prev) => [...prev, {
+                ...savedProduct,
+                title: savedProduct.name,
+                image: savedProduct.image_url,
+                artist: savedProduct.artist 
+            }]);
+
+            setShowAddOverlay(false);
+            setNewArt({ title: "", artist_id: "", price: "", description: "", category: "", file: null });
+            alert("Product added!");
+        } else {
+            alert("Failed to add product.");
+        }
+    } catch (error) {
+        console.error("Add error", error);
+    } finally {
+        setIsLoading(false); 
+    }
+  };
+
+  // SAVE EDIT
   const handleSaveEdit = async () => {
-    setIsLoading(true);
+    setIsLoading(true); 
     try {
         const formData = new FormData();
         formData.append("name", editedArt.title);
-        formData.append("artist", editedArt.artist);
+        
+        if(editedArt.artist_id) {
+            formData.append("artist_id", editedArt.artist_id);
+            const selectedArtist = artists.find(a => a.id == editedArt.artist_id);
+            if(selectedArtist) formData.append("artist", selectedArtist.name);
+        } else {
+            formData.append("artist", editedArt.artist); 
+        }
+
         formData.append("category", editedArt.category);
         formData.append("price", editedArt.price);
         formData.append("description", editedArt.description);
         
-        // Only append image if the user selected a new one
-        if (editedArt.file) {
-            formData.append("image", editedArt.file);
-        }
+        if (editedArt.file) formData.append("image", editedArt.file);
         
-
         formData.append("_method", "PUT"); 
 
         const response = await fetch(`${API_URL}/api/products/${editedArt.id}`, {
@@ -144,7 +274,6 @@ export default function AdminArts() {
 
         if (response.ok) {
             const result = await response.json();
-            // Update the list with the new data from server
             const updatedProduct = result.product;
             setArts((prev) => prev.map((a) => (a.id === editedArt.id ? {
                 ...updatedProduct,
@@ -161,77 +290,22 @@ export default function AdminArts() {
     } catch (error) {
         console.error("Update error", error);
     } finally {
-        setIsLoading(false);
+        setIsLoading(false); 
     }
-  };
-
-  const handleViewArt = (art) => {
-    setPreviewArt(art);
-    setShowPreviewOverlay(true);
-  };
-
-  const handleAddArtClick = () => {
-    setShowAddOverlay(true);
-  };
-
-  const handleSaveNewArt = async () => {
-    setIsLoading(true);
-    try {
-        // Create FormData object
-        const formData = new FormData();
-        formData.append("name", newArt.title);
-        formData.append("artist", newArt.artist);
-        formData.append("category", newArt.category);
-        formData.append("price", newArt.price);
-        formData.append("description", newArt.description);
-        
-        // Append the file object, NOT the string
-        if (newArt.file) {
-            formData.append("image", newArt.file);
-        }
-
-        const response = await fetch(`${API_URL}/api/products`, {
-            method: "POST",
-            body: formData 
-        });
-
-        if (response.ok) {
-            const result = await response.json();
-            const savedProduct = result.product;
-            
-            setArts((prev) => [...prev, {
-                ...savedProduct,
-                title: savedProduct.name,
-                image: savedProduct.image_url,
-                origin: "Unknown"
-            }]);
-
-            setShowAddOverlay(false);
-            setNewArt({
-                title: "", artist: "", price: "", description: "", category: "", file: null
-            });
-            alert("Product added!");
-        } else {
-            alert("Failed to add product. Make sure all fields are filled.");
-        }
-    } catch (error) {
-        console.error("Add error", error);
-    } finally {
-        setIsLoading(false);
-    }
-  };
-
-  // Helper to resolve Image URL
-  const getImageUrl = (path) => {
-      if (!path) return "https://via.placeholder.com/300";
-      // If path is a full URL (e.g. from internet), return it
-      if (path.startsWith("http")) return path;
-      // Otherwise append backend URL
-      return `${API_URL}${path}`;
   };
 
   return (
     <div className="admin-root" style={{ backgroundImage: `url(${wavebg})` }}>
+         {/* INJECT ANIMATION STYLE FOR SPINNER */}
+         <style>
+            {`
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+            `}
+         </style>
+
          {/* HEADER */}
          <header className="dashboard-header">
            <div className="brand">
@@ -243,24 +317,12 @@ export default function AdminArts() {
            </button>
    
          <nav className="dashboard-nav">
-          <button className="nav-item" onClick={() => navigate("/admin/dashboard")}>
-            DASHBOARD
-          </button>
-          <button className="nav-item" onClick={() => navigate("/admin/users")}>
-            USERS
-          </button>
-          <button className="nav-item active" onClick={() => navigate("/admin/arts")}>
-            ARTS
-          </button>
-          <button className="nav-item" onClick={() => navigate("/admin/artists")}>
-            ARTISTS
-          </button>
-          <button className="nav-item" onClick={() => navigate("/admin/orders")}>
-            ORDERS
-          </button>
-          <button className="nav-item" onClick={() => navigate("/admin/messages")}>
-            MESSAGES
-          </button>
+          <button className="nav-item" onClick={() => navigate("/admin/dashboard")}>DASHBOARD</button>
+          <button className="nav-item" onClick={() => navigate("/admin/users")}>USERS</button>
+          <button className="nav-item active" onClick={() => navigate("/admin/arts")}>ARTS</button>
+          <button className="nav-item" onClick={() => navigate("/admin/artists")}>ARTISTS</button>
+          <button className="nav-item" onClick={() => navigate("/admin/orders")}>ORDERS</button>
+          <button className="nav-item" onClick={() => navigate("/admin/messages")}>MESSAGES</button>
         </nav>
    
            <div className="icon-section">
@@ -310,18 +372,29 @@ export default function AdminArts() {
             <button className="btn-add" onClick={handleAddArtClick}>
               Add Art
             </button>
-            <button className="btn" onClick={fetchProducts} style={{marginLeft: '10px'}}>
+            <button className="btn" onClick={() => fetchProducts(false)} style={{marginLeft: '10px'}}>
                 Refresh
             </button>
           </div>
         </section>
 
+        {/* TABLE SECTION */}
         <section className="table-section">
-          <div className="table-card scrollable-table">
+          {/* ✅ ADDED: Position relative to container */}
+          <div className="table-card scrollable-table" style={{ position: "relative", minHeight: "200px" }}>
+            
+            {/* ✅ ADDED: Local Loading Overlay */}
+            {isLoading && (
+                <div style={tableOverlayStyle}>
+                    <div style={spinnerStyle}></div>
+                    <span>Processing...</span>
+                </div>
+            )}
+
             <table className="users-table">
               <thead>
                 <tr>
-                  <th>Image</th> {/* Added Image Column */}
+                  <th>Image</th>
                   <th>Title</th>
                   <th>Artist</th>
                   <th>Category</th>
@@ -330,37 +403,36 @@ export default function AdminArts() {
                 </tr>
               </thead>
               <tbody>
-                {isLoading ? (
-                    <tr><td colSpan="6" style={{textAlign: "center", padding: "20px"}}>Loading Data...</td></tr>
-                ) : filtered.length === 0 ? (
+                {filtered.length === 0 ? (
                   <tr className="empty-row">
-                    <td colSpan="6">No artworks found</td>
+                    <td colSpan="6">
+                        No artworks found
+                    </td>
                   </tr>
                 ) : (
                   filtered.map((a) => (
                     <tr key={a.id}>
-                  
                       <td>
                         <img 
                             src={getImageUrl(a.image)} 
                             alt="art" 
+                            loading="lazy" 
+                            decoding="async"
                             style={{width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px'}}
                         />
                       </td>
-                      <td>{a.title}</td>
-                      <td>{a.artist}</td>
+                      <td style={{ whiteSpace: "normal", maxWidth: "200px", wordWrap: "break-word", lineHeight: "1.4" }}>
+                        {a.title}
+                      </td>
+                      <td style={{ whiteSpace: "normal", maxWidth: "150px" }}>
+                        {a.artist}
+                      </td>
                       <td>{a.category}</td>
                       <td>₱{a.price}</td>
                       <td>
-                        <button className="action-btn save" onClick={() => handleViewArt(a)}>
-                          View
-                        </button>
-                        <button className="action-btn edit" onClick={() => handleEdit(a)}>
-                          Edit
-                        </button>
-                        <button className="action-btn delete" onClick={() => handleDelete(a.id)}>
-                          Delete
-                        </button>
+                        <button className="action-btn save" onClick={() => handleViewArt(a)}>View</button>
+                        <button className="action-btn edit" onClick={() => handleEdit(a)}>Edit</button>
+                        <button className="action-btn delete" onClick={() => handleDelete(a.id)}>Delete</button>
                       </td>
                     </tr>
                   ))
@@ -371,7 +443,7 @@ export default function AdminArts() {
         </section>
       </main>
 
- 
+      {/* OVERLAY - ADD ART */}
       {showAddOverlay && (
         <div className="overlay">
           <div className="overlay-content">
@@ -382,18 +454,31 @@ export default function AdminArts() {
               onChange={(e) => setNewArt({ ...newArt, title: e.target.value })}
               className="overlay-input"
             />
-            <input
-              placeholder="Artist"
-              value={newArt.artist}
-              onChange={(e) => setNewArt({ ...newArt, artist: e.target.value })}
-              className="overlay-input"
-            />
+            <select
+                className="overlay-input"
+                value={newArt.artist_id}
+                onChange={(e) => setNewArt({ ...newArt, artist_id: e.target.value })}
+            >
+                <option value="">-- Select Artist --</option>
+                {artists.map(artist => (
+                    <option key={artist.id} value={artist.id}>
+                        {artist.name}
+                    </option>
+                ))}
+            </select>
             <input
               placeholder="Category"
+              list="category-options-new"
               value={newArt.category}
               onChange={(e) => setNewArt({ ...newArt, category: e.target.value })}
               className="overlay-input"
             />
+            <datalist id="category-options-new">
+              {[...new Set(arts.map(item => item.category))].map((cat, index) => (
+                <option key={index} value={cat} />
+              ))}
+            </datalist>
+
             <input
               placeholder="Price (₱)"
               type="number"
@@ -408,8 +493,6 @@ export default function AdminArts() {
               className="overlay-input"
               rows={3}
             />
-            
-      
             <label style={{display:'block', textAlign:'left', marginBottom:'5px', fontSize:'14px'}}>Upload Image:</label>
             <input
               type="file"
@@ -421,7 +504,7 @@ export default function AdminArts() {
 
             <div className="overlay-actions">
               <button className="btn" onClick={handleSaveNewArt} disabled={isLoading}>
-                {isLoading ? "Saving..." : "Save"}
+                Save
               </button>
               <button className="btn" onClick={() => setShowAddOverlay(false)}>
                 Cancel
@@ -442,18 +525,30 @@ export default function AdminArts() {
               onChange={(e) => setEditedArt({ ...editedArt, title: e.target.value })}
               className="overlay-input"
             />
-            <input
-              placeholder="Artist"
-              value={editedArt.artist}
-              onChange={(e) => setEditedArt({ ...editedArt, artist: e.target.value })}
-              className="overlay-input"
-            />
+            <select
+                className="overlay-input"
+                value={editedArt.artist_id || ""}
+                onChange={(e) => setEditedArt({ ...editedArt, artist_id: e.target.value })}
+            >
+                <option value="">-- Select Artist --</option>
+                {artists.map(artist => (
+                    <option key={artist.id} value={artist.id}>
+                        {artist.name}
+                    </option>
+                ))}
+            </select>
             <input
               placeholder="Category"
+              list="category-options-edit"
               value={editedArt.category}
               onChange={(e) => setEditedArt({ ...editedArt, category: e.target.value })}
               className="overlay-input"
             />
+            <datalist id="category-options-edit">
+              {[...new Set(arts.map(item => item.category))].map((cat, index) => (
+                <option key={index} value={cat} />
+              ))}
+            </datalist>
             <input
               placeholder="Price (₱)"
               type="number"
@@ -468,8 +563,6 @@ export default function AdminArts() {
               className="overlay-input"
               rows={3}
             />
-            
-            {/* ✅ FILE INPUT FOR EDIT */}
             <label style={{display:'block', textAlign:'left', marginBottom:'5px', fontSize:'14px'}}>Change Image (Optional):</label>
             <input
               type="file"
@@ -478,10 +571,9 @@ export default function AdminArts() {
               className="overlay-input"
               style={{paddingTop: '10px'}}
             />
-
             <div className="overlay-actions">
               <button className="btn" onClick={handleSaveEdit} disabled={isLoading}>
-                {isLoading ? "Saving..." : "Save"}
+                Save
               </button>
               <button
                 className="btn"
@@ -502,7 +594,6 @@ export default function AdminArts() {
         <div className="overlay">
           <div className="overlay-content preview">
             <h2>{previewArt.title}</h2>
-            {/* ✅ FIXED PREVIEW IMAGE SOURCE */}
             <img
               src={getImageUrl(previewArt.image)}
               alt={previewArt.title}
@@ -518,7 +609,6 @@ export default function AdminArts() {
             <p><strong>Category:</strong> {previewArt.category}</p>
             <p><strong>Price:</strong> ₱{previewArt.price}</p>
             <p><strong>Description:</strong> {previewArt.description}</p>
-
             <div className="overlay-actions">
               <button
                 className="btn"
@@ -532,7 +622,7 @@ export default function AdminArts() {
             </div>
           </div>
         </div>
-      )}
+      )}     
     </div>
   );
 }

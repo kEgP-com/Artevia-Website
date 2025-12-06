@@ -15,6 +15,7 @@ class ProductSeeder extends Seeder
 
         foreach ($products as $product) {
             Product::create([
+                'artist_id' => 1,
                 'name' => $product['name'],
                 'artist' => $product['artist'],
                 'category' => $product['category'],

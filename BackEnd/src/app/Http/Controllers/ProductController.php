@@ -57,6 +57,7 @@ class ProductController extends Controller
         }
 
         $product = Product::create([
+            'artist_id' => $request->artist_id, 
             'name' => $data['name'],
             'artist' => $data['artist'] ?? 'Unknown', // Default value
             'category' => $data['category'],
@@ -68,13 +69,13 @@ class ProductController extends Controller
         return response()->json(['message' => 'Product created', 'product' => $product], 201);
     }
 
-    // 4. UPDATE PRODUCT
+
     public function update(Request $request, $id)
     {
         $product = Product::find($id);
         if (!$product) return response()->json(['message' => 'Product not found'], 404);
 
-        // Validation (Image is explicitly OPTIONAL here)
+
         $request->validate([
             'name' => 'sometimes|string',
             'price' => 'sometimes|numeric',
@@ -83,7 +84,7 @@ class ProductController extends Controller
 
         $data = $request->all();
 
-        // ✅ Handle Image Update
+    
         if ($request->hasFile('image')) {
             // 1. Delete old image to save space (Optional but recommended)
             if ($product->image_url) {

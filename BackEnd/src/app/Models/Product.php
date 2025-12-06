@@ -10,6 +10,7 @@ class Product extends Model
     use HasFactory;
     protected $table = 'products';
     protected $fillable = [
+        'artist_id',
         'name',
         'artist',
         'category',
