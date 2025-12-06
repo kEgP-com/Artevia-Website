@@ -1,41 +1,50 @@
-import React, { useState, useEffect } from "react"; // 1. Added useEffect
+/* * ------------------------------------------------------------------
+ * reantaso-product-integration
+ * COMPONENT: ArtPageList (Connected to Laravel Backend)
+ * ------------------------------------------------------------------
+ */
+
+import React, { useState, useEffect } from "react";
 import Navbar from "../../components/navbar";
 import Footer from "../../components/footer";
 import "../../css/Category.css";
-// import productList from "../../data/productList.json"; // 2. REMOVED JSON Import
 import ProductCard from "../../components/ProductCard";
 
 function ArtPageList() {
-  // 3. New State to store API data
+  // State for data and UI
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  
+  // State for filters and interaction
   const [selectedArt, setSelectedArt] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("All");
   const [sortBy, setSortBy] = useState("default");
 
-  const handleView = (art) => setSelectedArt(art);
-  const closeOverlay = () => setSelectedArt(null);
-
-  // 4. Fetch Data from Laravel API
+  // WATERMARK LOGGING & DATA FETCHING
   useEffect(() => {
     const fetchProducts = async () => {
+      console.log("🚀 Launching: reantaso-product-integration build");
+
       try {
-        // Ensure this matches your Laravel server URL
-        const response = await fetch("http://127.0.0.1:8000/api/products");
+        // Ensure this URL matches your Laravel Serve (http://127.0.0.1:8000 or http://localhost:8000)
+        const response = await fetch("http://localhost:8000/api/products");
         
         if (!response.ok) {
-          throw new Error("Failed to fetch products");
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        // Check if your API returns the array directly or inside a 'data' key
-        // Example: setProducts(data.data ? data.data : data);
-        setProducts(data); 
+        console.log("✅ Data received:", data);
+
+        // Handle Laravel's "Wrap" (sometimes Laravel sends { data: [...] })
+        const productArray = Array.isArray(data) ? data : (data.data || []);
+        
+        setProducts(productArray);
         setLoading(false);
+
       } catch (error) {
-        console.error("Error fetching products:", error);
+        console.error("❌ Connection Failed:", error);
         setLoading(false);
       }
     };
@@ -43,41 +52,38 @@ function ArtPageList() {
     fetchProducts();
   }, []);
 
-  // 5. Updated Image Handling for API
-  // NOTE: Your Laravel ProductController should return the full image URL 
-  // or a path relative to the public folder.
-  const getImagePath = (imageUrl) => {
-    if (!imageUrl) return "https://via.placeholder.com/300"; // Fallback image
+  // Handlers
+  const handleView = (art) => setSelectedArt(art);
+  const closeOverlay = () => setSelectedArt(null);
+
+  // Image URL Processor (Handles database paths)
+  const getImageUrl = (item) => {
+    if (!item || !item.image_url) return "https://via.placeholder.com/300";
     
-    // If the image path from DB already has http, use it. 
-    if (imageUrl.startsWith('http')) {
-        return imageUrl;
-    }
-    
-    // Otherwise, prepend your Laravel base URL
-    return `http://127.0.0.1:8000/${imageUrl}`; 
+    // If it's a full URL (external), return it
+    if (item.image_url.startsWith("http")) return item.image_url;
+
+    // If it's a relative path from Laravel Storage
+    // Remove any leading slash to avoid double slashes
+    const cleanPath = item.image_url.startsWith('/') ? item.image_url.substring(1) : item.image_url;
+    return `http://localhost:8000/${cleanPath}`;
   };
 
-  // 6. Changed 'productList' to 'products' state variable
-  let filteredArts = products.filter((art) => {
-    // Ensure properties exist to prevent crashing on incomplete data
-    const name = art.name || "";
-    const category = art.category || "";
-    
-    const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = filterCategory === "All" || category === filterCategory;
+  // Filter Logic
+  const filteredArts = products.filter((art) => {
+    const matchesSearch = art.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = filterCategory === "All" || art.category === filterCategory;
     return matchesSearch && matchesCategory;
   });
 
-  if (sortBy === "priceLowHigh") {
-    filteredArts.sort((a, b) => a.price - b.price);
-  } else if (sortBy === "priceHighLow") {
-    filteredArts.sort((a, b) => b.price - a.price);
-  } else if (sortBy === "nameAZ") {
-    filteredArts.sort((a, b) => a.name.localeCompare(b.name));
-  } else if (sortBy === "nameZA") {
-    filteredArts.sort((a, b) => b.name.localeCompare(a.name));
-  }
+  // Sort Logic
+  const sortedArts = [...filteredArts].sort((a, b) => {
+    if (sortBy === "priceLowHigh") return a.price - b.price;
+    if (sortBy === "priceHighLow") return b.price - a.price;
+    if (sortBy === "nameAZ") return a.name.localeCompare(b.name);
+    if (sortBy === "nameZA") return b.name.localeCompare(a.name);
+    return 0;
+  });
 
   return (
     <>
@@ -87,6 +93,7 @@ function ArtPageList() {
         <section className="sculpture-hero">
           <h1>Art Collections</h1>
 
+          {/* Search & Filter Bar */}
           <div className="sculpture-filters">
             <input
               type="text"
@@ -122,14 +129,23 @@ function ArtPageList() {
             </select>
           </div>
 
+          {/* Product Grid */}
           <div className="discovery-grid">
             {loading ? (
-                 <p>Loading artworks...</p>
-            ) : filteredArts.length > 0 ? (
-              filteredArts.map((art) => (
-                // Ensure your ProductCard uses the new image path logic if needed, 
-                // or pass the processed URL down
-                <ProductCard key={art.id} item={{...art, imageUrl: getImagePath(art.imageUrl)}} onView={handleView} />
+              <div className="loading-container">
+                <p>Loading Artworks...</p>
+              </div>
+            ) : sortedArts.length > 0 ? (
+              sortedArts.map((art) => (
+                <ProductCard 
+                  key={art.id} 
+                  item={{
+                    ...art,
+                    // Inject the processed image URL directly into the item prop
+                    image_url: getImageUrl(art) 
+                  }} 
+                  onView={handleView} 
+                />
               ))
             ) : (
               <p className="no-results">No artworks found.</p>
@@ -140,14 +156,14 @@ function ArtPageList() {
 
       <Footer />
 
+      {/* Detail Overlay */}
       {selectedArt && (
         <div className="overlay-backdrop" onClick={closeOverlay}>
           <div className="overlay-content" onClick={(e) => e.stopPropagation()}>
             <button className="close-btn" onClick={closeOverlay}>×</button>
 
             <img
-              // Use the helper function here
-              src={getImagePath(selectedArt.imageUrl)}
+              src={getImageUrl(selectedArt)}
               alt={selectedArt.name}
               className="overlay-image"
             />
@@ -156,7 +172,7 @@ function ArtPageList() {
             <p><strong>{selectedArt.artist}</strong></p>
             <p><em>{selectedArt.category}</em></p>
             <p>{selectedArt.description}</p>
-            <h3>₱{selectedArt.price ? selectedArt.price.toLocaleString() : 0}</h3>
+            <h3>₱{parseFloat(selectedArt.price).toLocaleString()}</h3>
           </div>
         </div>
       )}
