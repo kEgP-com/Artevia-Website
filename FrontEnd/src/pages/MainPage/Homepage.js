@@ -15,8 +15,8 @@ import Sculpture2 from "../../images/Sculpture/la-grande-ourse-animal-sculpture-
 import Sketch2 from "../../images/Sketch arts/Custom_Portrait_2.png";
 import DigitalArt2 from "../../images/Digital Art/A_Taste_of_Honey.png";
 
-const API_URL = "http://localhost:8082"; 
-
+const
+ API_URL = "http://localhost:8000"; 
 function Homepage() {
   const [activePage, setActivePage] = useState(1);
   const [selectedArt, setSelectedArt] = useState(null);
