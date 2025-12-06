@@ -1,43 +1,56 @@
+/* * ------------------------------------------------------------------
+ * reantaso-product-integration
+ * COMPONENT: DigitalArts (Connected to Laravel Backend)
+ * ------------------------------------------------------------------
+ */
+
 import React, { useState, useEffect } from "react";
 import Navbar from "../../components/navbar";
 import Footer from "../../components/footer";
 import "../../css/Category.css";
-// import digitalArts from "../../data/DigitalArts.json"; // REMOVED JSON
 import ProductCard from "../../components/ProductCard";
 
 function DigitalArts() {
-  // 1. State for API data
-  const [digitalArts, setDigitalArts] = useState([]); 
+  // State for data and UI
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const [selectedArt, setSelectedArt] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterCategory, setFilterCategory] = useState("All");
+  const [selectedArt, setSelectedArt] = useState(null);
 
-  const handleView = (art) => setSelectedArt(art);
-  const closeOverlay = () => setSelectedArt(null);
-
-  // 2. Fetch Data
+  // WATERMARK LOGGING & DATA FETCHING
   useEffect(() => {
     const fetchDigitalArts = async () => {
+      console.log("🚀 Launching: reantaso-product-integration (DigitalArts)");
+
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/products");
+        setLoading(true);
+        // Connect to Laravel Backend
+        const response = await fetch("http://localhost:8000/api/products");
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
+        console.log("✅ Digital Arts Data received:", data);
 
-        // 3. Pre-filter: Ensure we ONLY keep Digital Arts for this page
-        // Depending on how your DB saves categories, we check if the category 
-        // matches one of the digital types or the main 'Digital Art' category.
-        const digitalOnly = data.filter(art => {
-           const cat = art.category || ""; 
-           // List of categories that belong on this page:
-           const validCategories = ["Digital Art", "3D Art", "Digital Painting", "Vector Art", "Concept Art"];
-           return validCategories.includes(cat);
+        // Handle Laravel response structure
+        const allProducts = Array.isArray(data) ? data : (data.data || []);
+
+        // Filter specifically for Digital Art categories
+        // We check for "Digital" in the name, or specific types like "3D Art", "Vector", etc.
+        const digitalOnly = allProducts.filter(product => {
+          const cat = product.category || "";
+          const validCategories = ["Digital Art", "3D Art", "Digital Painting", "Vector Art", "Concept Art"];
+          return validCategories.includes(cat) || cat.toLowerCase().includes("digital");
         });
+        
+        setProducts(digitalOnly);
 
-        setDigitalArts(digitalOnly);
-        setLoading(false);
       } catch (error) {
-        console.error("Error fetching digital arts:", error);
+        console.error("❌ Connection Failed:", error);
+        setProducts([]);
+      } finally {
         setLoading(false);
       }
     };
@@ -45,32 +58,34 @@ function DigitalArts() {
     fetchDigitalArts();
   }, []);
 
-  // 4. Image Helper for API
-  const getImagePath = (imageUrl) => {
-    if (!imageUrl) return "https://via.placeholder.com/300";
-    if (imageUrl.startsWith('http')) return imageUrl;
-    return `http://127.0.0.1:8000/${imageUrl}`;
+  // Image URL Processor
+  const getImageUrl = (item) => {
+    if (!item || !item.image_url) return "/images/default-product.jpg";
+    
+    // If it's a full URL, return it
+    if (item.image_url.startsWith("http")) return item.image_url;
+
+    // If it's a relative path from Laravel Storage
+    const cleanPath = item.image_url.startsWith('/') ? item.image_url.substring(1) : item.image_url;
+    return `http://localhost:8000/${cleanPath}`;
   };
 
-  // 5. Filtering based on User Selection (Search / Dropdown)
-  const filteredArts = digitalArts.filter((art) => {
-    const name = art.name || "";
-    const category = art.category || "";
+  const handleView = (art) => setSelectedArt(art);
+  const closeOverlay = () => setSelectedArt(null);
 
-    const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = filterCategory === "All" || category === filterCategory;
-    
-    return matchesSearch && matchesCategory;
+  // Search Filter
+  const filteredDigitalArts = products.filter((art) => {
+    return art.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   return (
     <>
       <Navbar />
-
       <div className="sculpture-page">
         <section className="sculpture-hero">
           <h1>Digital Arts</h1>
-
+          
+          {/* Search Bar */}
           <div className="sculpture-filters">
             <input
               type="text"
@@ -79,35 +94,30 @@ function DigitalArts() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="sculpture-search-input"
             />
-            <select
-              className="sculpture-filter-select"
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-            >
-              <option value="All">All Categories</option>
-              {/* Ensure these values match exactly what is in your Database */}
-              <option value="3D Art">3D Art</option>
-              <option value="Digital Painting">Digital Painting</option>
-              <option value="Vector Art">Vector Art</option>
-              <option value="Concept Art">Concept Art</option>
-            </select>
-            {/* Search button is visual only since input updates live, but kept for design */}
-            <button className="sculpture-search-btn">Search</button>
           </div>
 
+          {/* Product Grid */}
           <div className="discovery-grid">
             {loading ? (
-                <p>Loading digital arts...</p>
-            ) : filteredArts.length > 0 ? (
-              filteredArts.map((art) => (
-                <ProductCard
-                  key={art.id}
-                  item={{...art, imageUrl: getImagePath(art.imageUrl)}}
-                  onView={handleView}
+              <div className="loading-container">
+                <p>Loading Digital Arts...</p>
+              </div>
+            ) : filteredDigitalArts.length > 0 ? (
+              filteredDigitalArts.map((art) => (
+                <ProductCard 
+                  key={art.id} 
+                  item={{
+                    ...art,
+                    // Inject processed URL
+                    image_url: getImageUrl(art)
+                  }} 
+                  onView={handleView} 
                 />
               ))
             ) : (
-              <p className="no-results">No artworks found.</p>
+              <div className="no-products">
+                <p>No digital arts found.</p>
+              </div>
             )}
           </div>
         </section>
@@ -115,22 +125,33 @@ function DigitalArts() {
 
       <Footer />
 
+      {/* Overlay */}
       {selectedArt && (
         <div className="overlay-backdrop" onClick={closeOverlay}>
           <div className="overlay-content" onClick={(e) => e.stopPropagation()}>
             <button className="close-btn" onClick={closeOverlay}>×</button>
-
+            
             <img
-              src={getImagePath(selectedArt.imageUrl)}
+              src={getImageUrl(selectedArt)}
               alt={selectedArt.name}
               className="overlay-image"
             />
-
+            
             <h2>{selectedArt.name}</h2>
             <p><strong>{selectedArt.artist}</strong></p>
             <p><em>{selectedArt.category}</em></p>
             <p>{selectedArt.description}</p>
-            <h3>₱{selectedArt.price ? selectedArt.price.toLocaleString() : 0}</h3>
+            <h3>₱{parseFloat(selectedArt.price).toLocaleString()}</h3>
+            
+            <button 
+              className="buy-now-btn"
+              onClick={() => {
+                alert(`"${selectedArt.name}" added to cart!`);
+                closeOverlay();
+              }}
+            >
+              Add to Cart
+            </button>
           </div>
         </div>
       )}
