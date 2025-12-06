@@ -1,26 +1,24 @@
-// src/pages/ProductPage/Sculpture.js
 import React, { useState, useEffect } from "react";
 import Navbar from "../../components/navbar";
 import Footer from "../../components/footer";
 import "../../css/Category.css";
 import ProductCard from "../../components/ProductCard";
-import { productAPI } from "../../services/api"; // ADD THIS
+import { productAPI } from "../../services/api";
 
 function Sculpture() {
   const [selectedArt, setSelectedArt] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("All");
-  const [products, setProducts] = useState([]); // CHANGE: State instead of import
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // ADD: Fetch from API
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
         const data = await productAPI.getAllProducts();
         
-        // Filter for sculptures
         let allProducts = [];
         if (Array.isArray(data)) {
           allProducts = data;
@@ -45,50 +43,60 @@ function Sculpture() {
   }, []);
 
   const handleView = (art) => setSelectedArt(art);
+  
+  const addToCart = async (product) => {
+      const savedUser = localStorage.getItem("accountInfo");
+      if (!savedUser) {
+          alert("Please log in first to add items to your cart.");
+          return;
+      }
+
+      const currentUser = JSON.parse(savedUser);
+      setIsSubmitting(true);
+  
+      const payload = {
+          user_id: currentUser.id,
+          product_id: product.id,
+          quantity: 1,
+          name: product.name,
+          price: product.price,
+          image: product.image_url || product.image
+      };
+
+      try {
+          const response = await fetch("http://localhost:8000/api/cart/add", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+          });
+
+          if (response.ok) {
+              alert("Item added to cart successfully!");
+              setSelectedArt(null);
+          } else {
+              alert("Failed to add item to cart.");
+          }
+      } catch (error) {
+          console.error("Add to cart error:", error);
+      } finally {
+          setIsSubmitting(false);
+      }
+  };
+
   const closeOverlay = () => setSelectedArt(null);
 
-  // KEEP ORIGINAL filtering
   const filteredSculptures = products.filter((art) => {
     const matchesSearch = art.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = filterCategory === "All" || art.category === filterCategory;
     return matchesSearch && matchesCategory;
   });
 
-  // KEEP ORIGINAL image handling
-  const images = require.context("../../images", true);
-  const getImagePath = (path) => {
-    try {
-      const cleanPath = path.replace(/^(\.\.\/)+images\//, "");
-      return images(`./${cleanPath}`);
-    } catch (err) {
-      console.warn("Image not found:", path);
-      return "";
-    }
-  };
-
-  if (loading) {
-    return (
-      <>
-        <Navbar />
-        <div className="sculpture-page">
-          <section className="sculpture-hero">
-            <h1>Sculptures</h1>
-            <p style={{ textAlign: 'center' }}>Loading...</p>
-          </section>
-        </div>
-        <Footer />
-      </>
-    );
-  }
-
-  // RETURN ORIGINAL JSX
   return (
     <>
       <Navbar />
       <div className="sculpture-page">
         <section className="sculpture-hero">
           <h1>Sculptures</h1>
-
           <div className="sculpture-filters">
             <input
               type="text"
@@ -108,17 +116,12 @@ function Sculpture() {
               <option value="Wood">Wood</option>
               <option value="Steel">Steel</option>
             </select>
-            <button className="sculpture-search-btn">Search</button>
           </div>
 
           <div className="discovery-grid">
             {filteredSculptures.length > 0 ? (
               filteredSculptures.map((art) => (
-                <ProductCard
-                  key={art.id}
-                  item={art}
-                  onView={handleView}
-                />
+                <ProductCard key={art.id} item={art} onView={handleView} />
               ))
             ) : (
               <p className="no-results">No sculptures found.</p>
@@ -126,17 +129,13 @@ function Sculpture() {
           </div>
         </section>
       </div>
-
       <Footer />
-
       {selectedArt && (
         <div className="overlay-backdrop" onClick={closeOverlay}>
           <div className="overlay-content" onClick={(e) => e.stopPropagation()}>
-            <button className="close-btn" onClick={closeOverlay}>
-              ×
-            </button>
+            <button className="close-btn" onClick={closeOverlay}>×</button>
             <img
-              src={getImagePath(selectedArt.imageUrl)}
+              src={selectedArt.image_url || '/images/default-product.jpg'}
               alt={selectedArt.name}
               className="overlay-image"
             />
@@ -144,7 +143,18 @@ function Sculpture() {
             <p><strong>{selectedArt.artist}</strong></p>
             <p><em>{selectedArt.category}</em></p>
             <p>{selectedArt.description}</p>
-            <h3>₱{selectedArt.price.toLocaleString()}</h3>
+            <h3>₱{selectedArt.price ? selectedArt.price.toLocaleString() : 0}</h3>
+            <button 
+                className="buy-now-btn"
+                style={{
+                  backgroundColor: '#e49e69', color: 'white', padding: '10px 20px', 
+                  border: 'none', cursor: 'pointer', marginTop: '15px', width: '100%', fontSize: '1.1rem'
+                }}
+                onClick={() => addToCart(selectedArt)} 
+                disabled={isSubmitting}
+            >
+                {isSubmitting ? "Adding..." : "Add to Cart"}
+            </button>
           </div>
         </div>
       )}

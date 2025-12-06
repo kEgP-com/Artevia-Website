@@ -6,21 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
+    public function up()
     {
         Schema::create('carts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users_info')->onDelete('cascade'); // Links cart to the user
+            $table->unsignedBigInteger('user_id'); // Importante para alam kung kaninong cart ito
+            $table->unsignedBigInteger('product_id');
             $table->string('name');
             $table->string('artist')->nullable();
             $table->string('type')->nullable();
             $table->decimal('price', 10, 2);
-            $table->integer('quantity')->default(1);
             $table->string('image')->nullable();
+            $table->integer('quantity')->default(1);
             $table->timestamps();
         });
     }
-
     public function down(): void
     {
         Schema::dropIfExists('carts');

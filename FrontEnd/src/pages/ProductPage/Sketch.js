@@ -1,4 +1,3 @@
-// src/pages/ProductPage/Sketch.js
 import React, { useState, useEffect } from "react";
 import Navbar from "../../components/navbar";
 import Footer from "../../components/footer";
@@ -8,6 +7,7 @@ import { productAPI } from "../../services/api";
 
 function Sketch() {
   const [selectedArt, setSelectedArt] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +25,6 @@ function Sketch() {
           allProducts = response.data;
         }
         
-        // Filter for sketches
         const sketches = allProducts.filter(product => 
           product.category?.toLowerCase().includes('sketch') ||
           product.category?.toLowerCase().includes('illustration')
@@ -44,6 +43,48 @@ function Sketch() {
   }, []);
 
   const handleView = (art) => setSelectedArt(art);
+  
+  // 👇 FIXED ADD TO CART FUNCTION
+  const addToCart = async (product) => {
+      const savedUser = localStorage.getItem("accountInfo");
+      if (!savedUser) {
+          alert("Please log in first to add items to your cart.");
+          return;
+      }
+
+      const currentUser = JSON.parse(savedUser);
+      setIsSubmitting(true);
+  
+      const payload = {
+          user_id: currentUser.id,
+          product_id: product.id,
+          quantity: 1,
+          name: product.name,
+          price: product.price,
+          image: product.image_url || product.image
+      };
+
+      try {
+          const response = await fetch("http://localhost:8000/api/cart/add", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+          });
+
+          if (response.ok) {
+              alert("Item added to cart successfully!");
+              setSelectedArt(null); // Close modal
+          } else {
+              alert("Failed to add item to cart.");
+          }
+      } catch (error) {
+          console.error("Add to cart error:", error);
+          alert("Error connecting to server.");
+      } finally {
+          setIsSubmitting(false);
+      }
+  };
+
   const closeOverlay = () => setSelectedArt(null);
 
   const filteredSketches = products.filter((art) => {
@@ -56,10 +97,6 @@ function Sketch() {
       <div className="sculpture-page">
         <section className="sculpture-hero">
           <h1>Illustrations & Sketch</h1>
-          
-          <div className="database-info">
-            <p>Found {products.length} sketches in database</p>
-          </div>
 
           <div className="sculpture-filters">
             <input
@@ -98,7 +135,25 @@ function Sketch() {
             <p><strong>{selectedArt.artist}</strong></p>
             <p><em>{selectedArt.category}</em></p>
             <p>{selectedArt.description}</p>
-            <h3>₱{selectedArt.price.toLocaleString()}</h3>
+            <h3>₱{selectedArt.price ? selectedArt.price.toLocaleString() : 0}</h3>
+
+            <button 
+                className="buy-now-btn"
+                style={{
+                  backgroundColor: '#e49e69', 
+                  color: 'white', 
+                  padding: '10px 20px', 
+                  border: 'none', 
+                  cursor: 'pointer',
+                  marginTop: '15px',
+                  width: '100%',
+                  fontSize: '1.1rem'
+                }}
+                onClick={() => addToCart(selectedArt)} 
+                disabled={isSubmitting}
+            >
+                {isSubmitting ? "Adding..." : "Add to Cart"}
+            </button>
           </div>
         </div>
       )}

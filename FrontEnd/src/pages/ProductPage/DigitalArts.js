@@ -2,15 +2,12 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../../components/navbar";
 import Footer from "../../components/footer";
 import "../../css/Category.css";
-// import digitalArts from "../../data/DigitalArts.json"; // REMOVED JSON
 import ProductCard from "../../components/ProductCard";
+import { productAPI } from "../../services/api";
 
 function DigitalArts() {
-  // 1. State for API data
-  const [digitalArts, setDigitalArts] = useState([]); 
-  const [loading, setLoading] = useState(true);
-
   const [selectedArt, setSelectedArt] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +25,6 @@ function DigitalArts() {
           allProducts = response.data;
         }
         
-        // Filter for digital arts
         const digitalArts = allProducts.filter(product => 
           product.category?.toLowerCase().includes('digital')
         );
@@ -46,52 +42,50 @@ function DigitalArts() {
   }, []);
 
   const handleView = (art) => setSelectedArt(art);
-  const closeOverlay = () => setSelectedArt(null);
 
-  // 2. Fetch Data
-  useEffect(() => {
-    const fetchDigitalArts = async () => {
-      try {
-        const response = await fetch("http://127.0.0.1:8000/api/products");
-        const data = await response.json();
-
-        // 3. Pre-filter: Ensure we ONLY keep Digital Arts for this page
-        // Depending on how your DB saves categories, we check if the category 
-        // matches one of the digital types or the main 'Digital Art' category.
-        const digitalOnly = data.filter(art => {
-           const cat = art.category || ""; 
-           // List of categories that belong on this page:
-           const validCategories = ["Digital Art", "3D Art", "Digital Painting", "Vector Art", "Concept Art"];
-           return validCategories.includes(cat);
-        });
-
-        setDigitalArts(digitalOnly);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching digital arts:", error);
-        setLoading(false);
+  const addToCart = async (product) => {
+      const savedUser = localStorage.getItem("accountInfo");
+      if (!savedUser) {
+          alert("Please log in first to add items to your cart.");
+          return;
       }
-    };
 
-    fetchDigitalArts();
-  }, []);
+      const currentUser = JSON.parse(savedUser);
+      setIsSubmitting(true);
+  
+      const payload = {
+          user_id: currentUser.id,
+          product_id: product.id,
+          quantity: 1,
+          name: product.name,
+          price: product.price,
+          image: product.image_url || product.image
+      };
 
-  // 4. Image Helper for API
-  const getImagePath = (imageUrl) => {
-    if (!imageUrl) return "https://via.placeholder.com/300";
-    if (imageUrl.startsWith('http')) return imageUrl;
-    return `http://127.0.0.1:8000/${imageUrl}`;
+      try {
+          const response = await fetch("http://localhost:8000/api/cart/add", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+          });
+
+          if (response.ok) {
+              alert("Item added to cart successfully!");
+              setSelectedArt(null);
+          } else {
+              alert("Failed to add item to cart.");
+          }
+      } catch (error) {
+          console.error("Add to cart error:", error);
+      } finally {
+          setIsSubmitting(false);
+      }
   };
 
-  // 5. Filtering based on User Selection (Search / Dropdown)
-  const filteredArts = digitalArts.filter((art) => {
-    const name = art.name || "";
-    const category = art.category || "";
+  const closeOverlay = () => setSelectedArt(null);
 
-    const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = filterCategory === "All" || category === filterCategory;
-    
-    return matchesSearch && matchesCategory;
+  const filteredDigitalArts = products.filter((art) => {
+    return art.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   return (
@@ -100,11 +94,6 @@ function DigitalArts() {
       <div className="sculpture-page">
         <section className="sculpture-hero">
           <h1>Digital Arts</h1>
-          
-          <div className="database-info">
-            <p>Found {products.length} digital arts in database</p>
-          </div>
-
           <div className="sculpture-filters">
             <input
               type="text"
@@ -113,32 +102,11 @@ function DigitalArts() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="sculpture-search-input"
             />
-            <select
-              className="sculpture-filter-select"
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-            >
-              <option value="All">All Categories</option>
-              {/* Ensure these values match exactly what is in your Database */}
-              <option value="3D Art">3D Art</option>
-              <option value="Digital Painting">Digital Painting</option>
-              <option value="Vector Art">Vector Art</option>
-              <option value="Concept Art">Concept Art</option>
-            </select>
-            {/* Search button is visual only since input updates live, but kept for design */}
-            <button className="sculpture-search-btn">Search</button>
           </div>
-
           <div className="discovery-grid">
-            {loading ? (
-                <p>Loading digital arts...</p>
-            ) : filteredArts.length > 0 ? (
-              filteredArts.map((art) => (
-                <ProductCard
-                  key={art.id}
-                  item={{...art, imageUrl: getImagePath(art.imageUrl)}}
-                  onView={handleView}
-                />
+            {filteredDigitalArts.length > 0 ? (
+              filteredDigitalArts.map((art) => (
+                <ProductCard key={art.id} item={art} onView={handleView} />
               ))
             ) : (
               <p className="no-results">No digital arts found.</p>
@@ -146,9 +114,7 @@ function DigitalArts() {
           </div>
         </section>
       </div>
-
       <Footer />
-
       {selectedArt && (
         <div className="overlay-backdrop" onClick={closeOverlay}>
           <div className="overlay-content" onClick={(e) => e.stopPropagation()}>
@@ -163,6 +129,17 @@ function DigitalArts() {
             <p><em>{selectedArt.category}</em></p>
             <p>{selectedArt.description}</p>
             <h3>₱{selectedArt.price ? selectedArt.price.toLocaleString() : 0}</h3>
+            <button 
+                className="buy-now-btn"
+                style={{
+                  backgroundColor: '#e49e69', color: 'white', padding: '10px 20px', 
+                  border: 'none', cursor: 'pointer', marginTop: '15px', width: '100%', fontSize: '1.1rem'
+                }}
+                onClick={() => addToCart(selectedArt)} 
+                disabled={isSubmitting}
+            >
+                {isSubmitting ? "Adding..." : "Add to Cart"}
+            </button>
           </div>
         </div>
       )}

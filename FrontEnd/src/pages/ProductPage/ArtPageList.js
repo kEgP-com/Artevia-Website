@@ -1,4 +1,3 @@
-// src/pages/ProductPage/ArtPageList.js - UPDATED WITH DEBUGGING
 import React, { useState, useEffect } from "react";
 import Navbar from "../../components/navbar";
 import Footer from "../../components/footer";
@@ -7,68 +6,42 @@ import ProductCard from "../../components/ProductCard";
 import { productAPI } from "../../services/api";
 
 function ArtPageList() {
-  // 3. New State to store API data
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
+  // 1. STATE DECLARATIONS
   const [selectedArt, setSelectedArt] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("All");
   const [sortBy, setSortBy] = useState("default");
+  
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [apiStatus, setApiStatus] = useState('Testing API...');
-
-  // Fetch products from API
+  
+  // 2. FETCH PRODUCTS
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        setApiStatus('Connecting to backend...');
         
-        console.log('🔄 Calling: GET http://localhost:8000/api/products');
-        
+        // Note: Assumes productAPI calls the correct endpoint internally
         const data = await productAPI.getAllProducts();
-        setApiStatus('✅ Connected successfully!');
         
-        console.log('📦 Raw API response:', data);
-        
-        // Handle Laravel response format
+        // Handle varying Laravel response formats
         let productList = [];
-        
         if (Array.isArray(data)) {
-          // Direct array: [{"id":1,...}, {"id":2,...}]
           productList = data;
         } else if (data && Array.isArray(data.data)) {
-          // Paginated: {"data":[{"id":1,...}]}
           productList = data.data;
         } else if (data && data.products && Array.isArray(data.products)) {
-          // Wrapped: {"products":[{"id":1,...}]}
           productList = data.products;
-        } else {
-          console.warn('⚠️ Unexpected response format:', data);
-          productList = [];
         }
         
-        console.log(`✅ Processed ${productList.length} products`);
         setProducts(productList);
         setError(null);
         
       } catch (err) {
-        console.error('❌ API Error details:', err);
-        
-        setApiStatus('❌ Connection failed');
-        setError(`Cannot connect to backend. 
-        
-Error: ${err.message}
-
-Please check:
-1. Laravel is running on http://localhost:8000
-2. Visit http://localhost:8000/api/test to test
-3. Check Docker containers are running
-4. Browser console (F12) for CORS errors`);
-        
+        console.error('API Error:', err);
+        setError(`Cannot connect to backend. Error: ${err.message}`);
         setProducts([]);
       } finally {
         setLoading(false);
@@ -78,43 +51,97 @@ Please check:
     fetchProducts();
   }, []);
 
-  const handleView = (art) => setSelectedArt(art);
-  const closeOverlay = () => setSelectedArt(null);
-
-  // Filter products
-  let filteredArts = products.filter((art) => {
-    if (!art) return false;
-    
-    const matchesSearch = art.name?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = filterCategory === "All" || art.category === filterCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  // Sort products
-  if (sortBy === "priceLowHigh") {
-    filteredArts.sort((a, b) => (a.price || 0) - (b.price || 0));
-  } else if (sortBy === "priceHighLow") {
-    filteredArts.sort((a, b) => (b.price || 0) - (a.price || 0));
-  } else if (sortBy === "nameAZ") {
-    filteredArts.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-  } else if (sortBy === "nameZA") {
-    filteredArts.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
-  }
-
-  // Get image URL
+  // 3. HELPER FUNCTIONS (Restored original URL logic)
   const getImageUrl = (item) => {
     if (!item || !item.image_url) {
       return '/images/default-product.jpg';
     }
-    
-    // Your image paths: /images/Handmade Decor/Anava.png
+    // Ibinalik ko sa dating logic mo:
     if (item.image_url.startsWith('/')) {
       return `http://localhost:8000${item.image_url}`;
     }
-    
     return item.image_url;
   };
 
+  const handleView = (art) => setSelectedArt(art);
+  const closeOverlay = () => setSelectedArt(null);
+
+  // 4. ADD TO CART FUNCTION
+  const addToCart = async (product) => {
+    // A. Check User Login
+    const savedUser = localStorage.getItem("accountInfo");
+    if (!savedUser) {
+        alert("Please log in first to add items to your cart.");
+        return;
+    }
+
+    let userId;
+    try {
+        const currentUser = JSON.parse(savedUser);
+        userId = currentUser.id;
+    } catch (e) {
+        alert("Session error. Please logout and login again.");
+        return;
+    }
+
+    setIsSubmitting(true);
+
+    // B. Prepare Payload
+    const payload = {
+        user_id: userId,
+        product_id: product.id,
+        name: product.name,
+        artist: product.artist || 'Unknown',
+        type: product.category, 
+        price: product.price,
+        image: product.image_url, 
+        quantity: 1
+    };
+
+    // C. Send to Backend (Ibinalik ang original URL string)
+    try {
+        const response = await fetch('http://localhost:8000/api/cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert(`✅ Success! ${product.name} added to cart.`);
+            if(selectedArt) closeOverlay(); 
+        } else {
+            console.error("Server Error:", result);
+            alert("❌ Failed to add: " + (result.message || "Unknown error"));
+        }
+
+    } catch (error) {
+        console.error("Connection Error:", error);
+        alert("❌ Cannot connect to server.");
+    } finally {
+        setIsSubmitting(false);
+    }
+  };
+
+  // 5. FILTERS & SORTING
+  const filteredArts = products.filter((art) => {
+    if (!art) return false;
+    const matchesSearch = art.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = filterCategory === "All" || art.category === filterCategory;
+    return matchesSearch && matchesCategory;
+  }).sort((a, b) => {
+      if (sortBy === "priceLowHigh") return (a.price || 0) - (b.price || 0);
+      if (sortBy === "priceHighLow") return (b.price || 0) - (a.price || 0);
+      if (sortBy === "nameAZ") return (a.name || '').localeCompare(b.name || '');
+      if (sortBy === "nameZA") return (b.name || '').localeCompare(a.name || '');
+      return 0; 
+  });
+
+  // 6. RENDER
   if (loading) {
     return (
       <>
@@ -122,16 +149,7 @@ Please check:
         <div className="sculpture-page">
           <section className="sculpture-hero">
             <h1>Art Collections</h1>
-            <div className="api-debug">
-              <h3>🔍 API Integration Test</h3>
-              <p className="api-status">{apiStatus}</p>
-              <div className="debug-info">
-                <p><strong>Endpoint:</strong> http://localhost:8000/api/products</p>
-                <p><strong>Method:</strong> GET</p>
-                <p><strong>Expected:</strong> JSON array of products</p>
-                <p>Check browser console (F12) for detailed logs</p>
-              </div>
-            </div>
+            <p>Loading artworks...</p>
           </section>
         </div>
         <Footer />
@@ -146,25 +164,8 @@ Please check:
         <div className="sculpture-page">
           <section className="sculpture-hero">
             <h1>Art Collections</h1>
-            <div className="api-error">
-              <h3>⚠️ API Connection Issue</h3>
-              <pre className="error-details">{error}</pre>
-              <div className="troubleshooting">
-                <h4>Quick Fixes:</h4>
-                <ol>
-                  <li>Open <a href="http://localhost:8000/api/test" target="_blank">http://localhost:8000/api/test</a></li>
-                  <li>Check if Laravel is running: <code>docker ps</code></li>
-                  <li>Check backend container logs</li>
-                  <li>Press F12 → Console tab → Look for CORS errors</li>
-                </ol>
-                <button 
-                  onClick={() => window.location.reload()}
-                  className="retry-btn"
-                >
-                  Retry Connection
-                </button>
-              </div>
-            </div>
+            <p style={{color: 'red'}}>{error}</p>
+            <button onClick={() => window.location.reload()}>Retry</button>
           </section>
         </div>
         <Footer />
@@ -179,14 +180,8 @@ Please check:
       <div className="sculpture-page">
         <section className="sculpture-hero">
           <h1>Art Collections</h1>
-          
-          {/* API Status */}
-          <div className="api-success">
-            <p className="success-msg">✅ Connected to backend API</p>
-            <small>Loaded {products.length} products from database</small>
-          </div>
 
-          {/* Search and filters */}
+          {/* Filters */}
           <div className="sculpture-filters">
             <input
               type="text"
@@ -221,28 +216,21 @@ Please check:
               <option value="nameZA">Name: Z–A</option>
             </select>
           </div>
-
-          {/* Results info */}
-          <div className="results-info">
-            Showing {filteredArts.length} of {products.length} products
-            {searchQuery && ` for "${searchQuery}"`}
-            {filterCategory !== "All" && ` in ${filterCategory}`}
-          </div>
-
-          {/* Product grid */}
+          {/* Grid */}
           <div className="discovery-grid">
-            {loading ? (
-                 <p>Loading artworks...</p>
-            ) : filteredArts.length > 0 ? (
+            {filteredArts.length > 0 ? (
               filteredArts.map((art) => (
-                // Ensure your ProductCard uses the new image path logic if needed, 
-                // or pass the processed URL down
-                <ProductCard key={art.id} item={{...art, imageUrl: getImagePath(art.imageUrl)}} onView={handleView} />
+                <ProductCard 
+                    key={art.id} 
+                    // Pinapasa natin yung imageUrl na galing sa helper function mo
+                    item={{...art, imageUrl: getImageUrl(art)}} 
+                    onView={handleView} 
+                    onAddToCart={() => addToCart(art)} 
+                />
               ))
             ) : (
               <div className="no-products">
-                <p>No artworks found matching your criteria.</p>
-                <p>Try a different search or category.</p>
+                <p>No artworks found.</p>
               </div>
             )}
           </div>
@@ -251,7 +239,7 @@ Please check:
 
       <Footer />
 
-      {/* Product detail overlay */}
+      {/* Overlay Modal */}
       {selectedArt && (
         <div className="overlay-backdrop" onClick={closeOverlay}>
           <div className="overlay-content" onClick={(e) => e.stopPropagation()}>
@@ -271,18 +259,28 @@ Please check:
             
             <button 
               className="buy-now-btn"
-              onClick={() => {
-                alert(`"${selectedArt.name}" added to cart!`);
-                closeOverlay();
+              onClick={() => addToCart(selectedArt)}
+              disabled={isSubmitting}
+              style={{ 
+                  opacity: isSubmitting ? 0.7 : 1, 
+                  cursor: isSubmitting ? 'wait' : 'pointer',
+                  backgroundColor: '#e49e69',
+                  color: 'white',
+                  padding: '10px 20px',
+                  marginTop: '15px',
+                  width: '100%',
+                  border: 'none',
+                  fontSize: '1rem',
+                  borderRadius: '5px'
               }}
             >
-              Add to Cart
+              {isSubmitting ? "Adding to Cart..." : "Add to Cart"}
             </button>
           </div>
         </div>
       )}
     </>
-  );
+   );
 }
 
 export default ArtPageList;

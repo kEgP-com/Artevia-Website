@@ -50,6 +50,7 @@ Route::post('/checkout', [CartController::class, 'checkout']);
 Route::get('/orders', [OrderController::class, 'index']);       // Get All (Admin) or Specific (Customer)
 Route::post('/orders', [OrderController::class, 'store']);      // Create Order
 Route::put('/orders/{id}', [OrderController::class, 'update']); // Admin Update Status
+Route::delete('/orders/clear', [OrderController::class, 'clearHistory']);
 Route::delete('/orders/{id}', [OrderController::class, 'destroy']); // Admin Delete
 Route::put('/orders/{id}/cancel', [OrderController::class, 'cancel']); // Customer Cancel
 Route::put('/orders/{id}/rate', [OrderController::class, 'rate']);     // Customer Rate

@@ -12,102 +12,150 @@ import {
   FaFilter,
   FaExclamationTriangle,
 } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 export default function OrderPage() {
   const [orders, setOrders] = useState([]);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [filter, setFilter] = useState("All");
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const navigate = useNavigate();
 
-  // Vendor messaging overlay states
+  // --- STATE DEFINITIONS ---
+  const [filter, setFilter] = useState("All");
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  
+  // Modals
   const [showVendorOverlay, setShowVendorOverlay] = useState(false);
   const [currentVendorOrder, setCurrentVendorOrder] = useState(null);
   const [vendorMessage, setVendorMessage] = useState("");
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  // Load Orders from LocalStorage
+  // --- 1. FETCH ORDERS ---
   useEffect(() => {
-    const storedOrders = JSON.parse(localStorage.getItem("orders")) || [];
-    setOrders(storedOrders);
+    const fetchOrders = async () => {
+      const savedInfo = JSON.parse(localStorage.getItem("accountInfo"));
+      const userId = savedInfo ? savedInfo.id : null;
+
+      if (!userId) return;
+
+      try {
+        // Fetch lang ng simple list galing sa orders table
+        const response = await fetch(`http://localhost:8000/api/orders?user_id=${userId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setOrders(data);
+        }
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    };
+
+    fetchOrders();
   }, []);
 
-  // Save back to LocalStorage
-  const updateOrders = (newOrders) => {
-    setOrders(newOrders);
-    localStorage.setItem("orders", JSON.stringify(newOrders));
-  };
+  // --- 2. ACTION HANDLERS ---
 
-  // Cancel Order
-  const handleCancel = (id) => {
-    if (window.confirm("Are you sure you want to cancel this order?")) {
-      const updated = orders.map((o) =>
-        o.id === id ? { ...o, status: "Cancelled" } : o
-      );
-      updateOrders(updated);
+  // Cancel Order (Update Status)
+  const handleCancel = async (orderId) => {
+    if (!window.confirm("Are you sure you want to cancel this item?")) return;
+    try {
+        const res = await fetch(`http://localhost:8000/api/orders/${orderId}/cancel`, {
+            method: 'PUT'
+        });
+        if (res.ok) {
+            alert("Item cancelled.");
+            // Update local state
+            setOrders(orders.map(o => o.id === orderId ? {...o, status: 'Cancelled'} : o));
+            setSelectedOrder(null);
+        } else {
+            alert("Failed to cancel.");
+        }
+    } catch (error) {
+        console.error(error);
     }
   };
 
-  // Rate Order
-  const handleRate = (id) => {
-    const rating = prompt("Rate your order (1–5 stars):");
-    if (!rating || rating < 1 || rating > 5) {
-      alert("Please enter a valid rating between 1 and 5.");
-      return;
+  // Delete Order (Permanent Remove)
+  const handleDelete = async (orderId) => {
+    if (!window.confirm("Permanently delete this record from history?")) return;
+    try {
+        const res = await fetch(`http://localhost:8000/api/orders/${orderId}`, {
+            method: 'DELETE',
+        });
+        if (res.ok) {
+            setOrders(orders.filter(o => o.id !== orderId));
+            alert("Record deleted.");
+        }
+    } catch (error) {
+        console.error("Error deleting order:", error);
     }
-    const updated = orders.map((o) =>
-      o.id === id ? { ...o, rating: parseInt(rating) } : o
-    );
-    updateOrders(updated);
-    alert(`Thank you! You rated this order ${rating}⭐`);
   };
 
-  // Contact Driver
-  const handleContactDriver = (driver) =>
-    alert(`Calling ${driver}...`);
+  // Clear All History
+  const handleClearAll = async () => {
+    const savedInfo = JSON.parse(localStorage.getItem("accountInfo"));
+    if(!savedInfo) return;
 
-  // Open Vendor Messaging Overlay
+    try {
+        const res = await fetch(`http://localhost:8000/api/orders/clear?user_id=${savedInfo.id}`, {
+            method: 'DELETE',
+        });
+        if (res.ok) {
+            setOrders([]);
+            setShowClearConfirm(false);
+            alert("All history has been deleted.");
+        }
+    } catch (error) {
+        console.error("Error clearing history:", error);
+    }
+  };
+
+  // --- 3. HELPER FUNCTIONS ---
+  
+  const handleContactDriver = (driverName) => {
+    alert(`Calling driver: ${driverName || "Assigning..."}... 📞`);
+  };
+
   const handleContactVendor = (order) => {
     setCurrentVendorOrder(order);
-    setVendorMessage(""); // reset message
     setShowVendorOverlay(true);
   };
 
-  // Send message to vendor
   const handleSendVendorMessage = () => {
-    const existingMessages = JSON.parse(localStorage.getItem("vendorMessages")) || [];
-    const newMessage = {
-      orderId: currentVendorOrder.id,
-      orderName: currentVendorOrder.name,
-      message: vendorMessage,
-      date: new Date().toLocaleString(),
-    };
-    localStorage.setItem(
-      "vendorMessages",
-      JSON.stringify([...existingMessages, newMessage])
-    );
-    alert("Message sent to vendor!");
+    alert(`Message sent to vendor regarding ${currentVendorOrder?.name}: "${vendorMessage}"`);
+    setVendorMessage("");
     setShowVendorOverlay(false);
   };
 
-  // Clear All Orders
-  const handleClearAll = () => {
-    localStorage.removeItem("orders");
-    setOrders([]);
-    setShowClearConfirm(false);
+  const handleRate = (orderId) => {
+    const rating = prompt("Rate this item (1-5):");
+    if (rating) {
+        alert(`You rated item #${orderId} with ${rating} stars! ⭐`);
+    }
   };
 
-  // Filter Orders
-  const filteredOrders =
-    filter === "All" ? orders : orders.filter((o) => o.status === filter);
+  // Image URL Fixer
+  const getImgUrl = (img) => {
+    if (!img || img === 'no-image.png') return "https://via.placeholder.com/150";
+    if (typeof img === 'string' && img.startsWith("http")) return img;
+    const cleanPath = img.startsWith('/') ? img : `/${img}`;
+    return `http://localhost:8000${cleanPath}`;
+  };
+
+  // --- 4. RENDER ---
+
+  // Filter Logic
+  const filteredOrders = orders.filter((order) => {
+    if (filter === "All") return true;
+    return order.status === filter;
+  });
 
   return (
-    <>
+      <>
       <Navbar />
       <div className="order-history-container">
-        {/* HEADER SECTION */}
+        
+        {/* HEADER */}
         <div className="order-history-header">
-          <h2>
-            <FaBoxOpen /> Order History
-          </h2>
+          <h2><FaBoxOpen /> Order History</h2>
           <div className="order-filter">
             <FaFilter className="filter-icon" />
             <select value={filter} onChange={(e) => setFilter(e.target.value)}>
@@ -122,16 +170,19 @@ export default function OrderPage() {
         {/* ORDER LIST */}
         {filteredOrders.length === 0 ? (
           <div className="empty-order">
-            No {filter.toLowerCase()} orders found
+            No {filter.toLowerCase()} items found
           </div>
         ) : (
           <div className="orders-list">
             {filteredOrders.map((order) => (
               <div key={order.id} className="order-card">
+                
+                {/* Image */}
                 <div className="order-img">
-                  <img src={order.image} alt={order.name} />
+                  <img src={getImgUrl(order.image)} alt={order.name} />
                 </div>
 
+                {/* Info */}
                 <div className="order-info">
                   <h3>{order.name}</h3>
                   <p>
@@ -140,60 +191,45 @@ export default function OrderPage() {
                       {order.status}
                     </span>
                   </p>
-                  <p>
-                    <strong>Quantity:</strong> {order.quantity}
-                  </p>
-                  <p>
-                    <strong>Total:</strong> ₱
-                    {(order.price * order.quantity).toLocaleString()}
-                  </p>
-                  <p>
-                    <strong>Ordered:</strong> {order.dateOrdered}
-                  </p>
-                  <p>
-                    <strong>Expected Delivery:</strong> {order.deliveryDate}
-                  </p>
+                  <p><strong>Quantity:</strong> {order.quantity}</p>
+                  <p><strong>Total:</strong> ₱{parseFloat(order.total_amount).toLocaleString()}</p>
+                  <p><strong>Date:</strong> {new Date(order.created_at).toLocaleDateString()}</p>
                 </div>
 
-                {/* ACTION BUTTONS */}
+                {/* Buttons */}
                 <div className="order-actions">
-                  <button
-                    className="details-btn"
-                    onClick={() => setSelectedOrder(order)}
-                  >
+                  <button className="details-btn" onClick={() => setSelectedOrder(order)}>
                     <FaEye /> View
                   </button>
 
                   {order.status === "Pending" && (
-                    <button
-                      className="cancel-btn"
-                      onClick={() => handleCancel(order.id)}
-                    >
+                    <button className="cancel-btn" onClick={() => handleCancel(order.id)}>
                       <FaTrashAlt /> Cancel
                     </button>
                   )}
 
+                  {["Cancelled", "Delivered"].includes(order.status) && (
+                     <button 
+                        className="cancel-btn" 
+                        style={{ backgroundColor: "#d32f2f" }} 
+                        onClick={() => handleDelete(order.id)}
+                     >
+                        <FaTrashAlt /> Delete
+                     </button>
+                  )}
+
                   {["Pending", "Delivered"].includes(order.status) && (
-                    <button
-                      className="driver-btn"
-                      onClick={() => handleContactDriver(order.driver)}
-                    >
+                    <button className="driver-btn" onClick={() => handleContactDriver(order.driver)}>
                       <FaPhoneAlt /> Driver
                     </button>
                   )}
 
-                  <button
-                    className="vendor-btn"
-                    onClick={() => handleContactVendor(order)}
-                  >
+                  <button className="vendor-btn" onClick={() => handleContactVendor(order)}>
                     <FaUserTie /> Vendor
                   </button>
 
                   {order.status === "Delivered" && (
-                    <button
-                      className="rate-btn"
-                      onClick={() => handleRate(order.id)}
-                    >
+                    <button className="rate-btn" onClick={() => handleRate(order.id)}>
                       <FaStar /> Rate
                     </button>
                   )}
@@ -201,12 +237,9 @@ export default function OrderPage() {
               </div>
             ))}
 
-            {/* Clear History Button */}
+            {/* Clear All Button */}
             <div className="clear-history-container">
-              <button
-                className="clear-history-btn"
-                onClick={() => setShowClearConfirm(true)}
-              >
+              <button className="clear-history-btn" onClick={() => setShowClearConfirm(true)}>
                 <FaTrashAlt /> Clear All History
               </button>
             </div>
@@ -214,122 +247,69 @@ export default function OrderPage() {
         )}
       </div>
 
-      {/* ORDER DETAILS MODAL */}
+      {/* --- MODALS --- */}
+
+      {/* 1. Details Modal */}
       {selectedOrder && (
         <div className="overlay">
           <div className="overlay-content">
-            <button
-              className="close-btn"
-              onClick={() => setSelectedOrder(null)}
-            >
-              ✕
-            </button>
-            <h2>Order Details</h2>
-            <img
-              src={selectedOrder.image}
-              alt={selectedOrder.name}
-              className="overlay-img"
+            <button className="close-btn" onClick={() => setSelectedOrder(null)}>✕</button>
+            <h2>Item Details</h2>
+            <img 
+                src={getImgUrl(selectedOrder.image)} 
+                alt={selectedOrder.name} 
+                className="overlay-img" 
             />
-            <p>
-              <strong>Item:</strong> {selectedOrder.name}
-            </p>
+            <p><strong>Item:</strong> {selectedOrder.name}</p>
             <p>
               <strong>Status:</strong>{" "}
-              <span
-                className={`order-status ${selectedOrder.status.toLowerCase()}`}
-              >
+              <span className={`order-status ${selectedOrder.status.toLowerCase()}`}>
                 {selectedOrder.status}
               </span>
             </p>
-            <p>
-              <strong>Quantity:</strong> {selectedOrder.quantity}
-            </p>
-            <p>
-              <strong>Total:</strong> ₱
-              {(selectedOrder.price * selectedOrder.quantity).toLocaleString()}
-            </p>
-            <p>
-              <strong>Driver:</strong> {selectedOrder.driver}
-            </p>
-            <p>
-              <strong>Address:</strong> {selectedOrder.address}
-            </p>
-            <p>
-              <strong>Payment:</strong> {selectedOrder.payment}
-            </p>
-            <p>
-              <strong>Date Ordered:</strong> {selectedOrder.dateOrdered}
-            </p>
-            <p>
-              <strong>Expected Delivery:</strong> {selectedOrder.deliveryDate}
-            </p>
-            {selectedOrder.rating && (
-              <p>
-                <strong>Your Rating:</strong> {selectedOrder.rating}⭐
-              </p>
-            )}
+            <p><strong>Quantity:</strong> {selectedOrder.quantity}</p>
+            <p><strong>Total Price:</strong> ₱{parseFloat(selectedOrder.total_amount).toLocaleString()}</p>
+            <p><strong>Driver:</strong> {selectedOrder.driver || "Unassigned"}</p>
+            <p><strong>Address:</strong> {selectedOrder.address}</p>
+            <p><strong>Payment:</strong> {selectedOrder.payment_method}</p>
           </div>
         </div>
       )}
 
-      {/* VENDOR CONTACT MODAL */}
+      {/* 2. Vendor Message Modal */}
       {showVendorOverlay && currentVendorOrder && (
         <div className="overlay">
           <div className="overlay-content">
-            <button
-              className="close-btn"
-              onClick={() => setShowVendorOverlay(false)}
-            >
-              ✕
-            </button>
+            <button className="close-btn" onClick={() => setShowVendorOverlay(false)}>✕</button>
             <h2>Message Vendor</h2>
-            <p>
-              You are sending a message regarding: <strong>{currentVendorOrder.name}</strong>
-            </p>
+            <p> regarding: <strong>{currentVendorOrder.name}</strong></p>
             <textarea
-              placeholder="Type your message to the vendor..."
+              placeholder="Type your message..."
               value={vendorMessage}
               onChange={(e) => setVendorMessage(e.target.value)}
               style={{ width: "100%", height: "120px", margin: "10px 0", padding: "8px" }}
             />
-            <button
-              className="confirm-btn"
-              onClick={handleSendVendorMessage}
-              disabled={!vendorMessage.trim()}
-            >
-              Send Message
-            </button>
+            <button className="confirm-btn" onClick={handleSendVendorMessage}>Send Message</button>
           </div>
         </div>
       )}
 
-      {/* CLEAR CONFIRMATION MODAL */}
+      {/* 3. Clear History Confirmation Modal */}
       {showClearConfirm && (
         <div className="overlay">
           <div className="overlay-content">
-            <FaExclamationTriangle
-              style={{ color: "#e53935", fontSize: "32px", marginBottom: "10px" }}
-            />
+            <FaExclamationTriangle style={{ color: "#e53935", fontSize: "32px", marginBottom: "10px" }} />
             <h2>Clear All Orders?</h2>
-            <p style={{ textAlign: "center", marginBottom: "20px" }}>
-              This will permanently delete all your order history.
-            </p>
+            <p style={{ textAlign: "center", marginBottom: "20px" }}>This will delete history.</p>
             <div className="confirm-buttons">
-              <button
-                className="cancel-btn"
-                onClick={() => setShowClearConfirm(false)}
-              >
-                Cancel
-              </button>
-              <button className="confirm-btn" onClick={handleClearAll}>
-                Yes, Clear
-              </button>
+              <button className="cancel-btn" onClick={() => setShowClearConfirm(false)}>Cancel</button>
+              <button className="confirm-btn" onClick={handleClearAll}>Yes, Clear</button>
             </div>
           </div>
         </div>
       )}
 
       <Footer />
-    </>
+      </>
   );
 }

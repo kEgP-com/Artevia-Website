@@ -2,27 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Orders; 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB; // Needed for Joins
+use Illuminate\Support\Facades\DB;
+use App\Models\Orders;
+use App\Models\Cart;
 
 class OrderController extends Controller
 {
-    // 1. GET ORDERS (Handles both Customer & Admin)
+    // 1. GET ORDERS
     public function index(Request $request)
     {
         $userId = $request->query('user_id'); 
 
         if ($userId) {
-            // Case A: Customer fetching their own orders
             return response()->json(
                 Orders::where('user_id', $userId)
-                     ->orderBy('created_at', 'desc')
-                     ->get()
+                      ->orderBy('created_at', 'desc')
+                      ->get()
             );
         } else {
-            // Case B: Admin fetching ALL orders
-            // We join with 'users_info' to get the customer's name
+            // Admin View
             $orders = DB::table('orders')
                 ->join('users_info', 'orders.user_id', '=', 'users_info.id')
                 ->select('orders.*', 'users_info.name as customer_name')
@@ -33,40 +32,61 @@ class OrderController extends Controller
         }
     }
 
-    // 2. CHECKOUT (Create New Order)
+    // 2. CHECKOUT (One Row Per Item)
     public function store(Request $request)
     {
-        $order = Orders::create([
-            'user_id' => $request->user_id,
-            'name' => $request->name,
-            'price' => $request->price,
-            'quantity' => $request->quantity,
-            'image' => $request->image,
-            'status' => 'Pending',
-            'address' => $request->address,
-            'contact' => $request->contact,
-            'payment_method' => $request->payment_method,
-            'total_amount' => $request->total_amount,
-            'delivery_date' => 'Expected in 3-5 days',
-            'driver' => 'Assigning Driver...'
+        // Validate Data
+        $validated = $request->validate([
+            'user_id' => 'required|integer',
+            'items'   => 'required|array',
+            'total'   => 'required|numeric',
+            'address' => 'required|string',
+            'payment' => 'required|string',
         ]);
 
-        return response()->json(['message' => 'Order placed successfully', 'order' => $order]);
+        // Loop items and save individually
+        foreach ($validated['items'] as $itemData) {
+            $item = (object) $itemData;
+            
+            // Image handling
+            $itemImage = isset($item->image) ? $item->image : 'no-image.png';
+            
+            // Compute Item Total
+            $qty = $item->quantity ?? 1;
+            $itemTotal = $item->price * $qty;
+
+            Orders::create([
+                'user_id'        => $validated['user_id'],
+                'name'           => $item->name,
+                'price'          => $item->price,
+                'quantity'       => $qty,
+                'image'          => $itemImage,
+                'total_amount'   => $itemTotal,
+                'address'        => $validated['address'],
+                'contact'        => $request->input('contact'),
+                'payment_method' => $validated['payment'],
+                'status'         => 'Pending',
+            ]);
+        }
+
+        // Clear Cart
+        DB::table('carts')->where('user_id', $validated['user_id'])->delete();
+
+        return response()->json(['message' => 'Orders placed successfully!']);
     }
 
-    // 3. UPDATE ORDER STATUS (Admin Feature)
+    // 3. UPDATE ORDER STATUS
     public function update(Request $request, $id)
     {
         $order = Orders::find($id);
         if ($order) {
-            // Only update fields that are sent
             $order->update($request->only(['status', 'delivery_date', 'driver']));
             return response()->json(['message' => 'Order updated', 'order' => $order]);
         }
         return response()->json(['message' => 'Order not found'], 404);
     }
 
-    // 4. CANCEL ORDER (Customer Feature)
+    // 4. CANCEL ORDER
     public function cancel($id)
     {
         $order = Orders::find($id);
@@ -78,7 +98,7 @@ class OrderController extends Controller
         return response()->json(['message' => 'Cannot cancel this order'], 400);
     }
 
-    // 5. DELETE ORDER (Admin Feature)
+    // 5. DELETE ORDER
     public function destroy($id)
     {
         $order = Orders::find($id);
@@ -100,4 +120,18 @@ class OrderController extends Controller
         }
         return response()->json(['message' => 'Order not found'], 404);
     }
-}
+
+    // 7. CLEAR ALL HISTORY
+    public function clearHistory(Request $request)
+    {
+        $userId = $request->query('user_id');
+
+        if ($userId) {
+            Orders::where('user_id', $userId)->delete();
+            return response()->json(['message' => 'History cleared successfully']);
+        }
+        
+        return response()->json(['message' => 'User ID required'], 400);
+    }
+
+} // 👈 ITO ANG DULONG BRACE NG CLASS. DAPAT ISA LANG NITO SA DULO.

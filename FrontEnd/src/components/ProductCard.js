@@ -1,10 +1,11 @@
-// src/components/ProductCard.js - ORIGINAL STYLE WITH API INTEGRATION
+// src/components/ProductCard.js
 import React, { useState } from "react";
 
-function ProductCard({ item, onView }) {
+// 1. Nagdagdag ako ng `onAddToCart` dito sa props
+function ProductCard({ item, onView, onAddToCart }) {
   const [addedMessage, setAddedMessage] = useState("");
 
-  // Get image URL - ORIGINAL STYLE
+  // Get image URL - ORIGINAL STYLE (Walang binago dito)
   const getImageUrl = (item) => {
     if (!item) return '/images/default-product.jpg';
     
@@ -39,6 +40,15 @@ function ProductCard({ item, onView }) {
   };
 
   const handleAddToCart = () => {
+    // --- IDINAGDAG NA CODE ---
+    // Kung may pinasang onAddToCart galing sa parent (ArtPageList), yun ang gamitin.
+    if (onAddToCart) {
+        onAddToCart(item);
+        return; // Huminto dito para hindi na gumana ang localStorage sa baba
+    }
+    // -------------------------
+
+    // ORIGINAL CODE (Nandito pa rin bilang fallback)
     const storedCart = JSON.parse(localStorage.getItem("cartItems")) || [];
 
     const existingIndex = storedCart.findIndex((i) => i.id === item.id);
@@ -53,7 +63,7 @@ function ProductCard({ item, onView }) {
         artist: item.artist || "Unknown",
         type: item.category || "Art",
         price: item.price,
-        image: getImageUrl(item), // Use the fixed image URL
+        image: getImageUrl(item), 
         quantity: 1,
       });
     }
@@ -70,7 +80,7 @@ function ProductCard({ item, onView }) {
         src={getImageUrl(item)} 
         alt={item.name}
         onError={(e) => {
-          console.error('Image failed to load:', e.target.src);
+          // console.error('Image failed to load:', e.target.src); // Optional: Commented out para malinis console
           e.target.src = '/images/default-product.jpg';
         }}
       />
