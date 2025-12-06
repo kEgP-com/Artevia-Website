@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react"; // 1. Added useEffect
+import React, { useState, useEffect } from "react"; 
 import Navbar from "../../components/navbar";
 import Footer from "../../components/footer";
 import "../../css/Category.css";
-// import productList from "../../data/productList.json"; // 2. REMOVED JSON Import
+
 import ProductCard from "../../components/ProductCard";
 
 function ArtPageList() {
-  // 3. New State to store API data
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -18,11 +18,11 @@ function ArtPageList() {
   const handleView = (art) => setSelectedArt(art);
   const closeOverlay = () => setSelectedArt(null);
 
-  // 4. Fetch Data from Laravel API
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // Ensure this matches your Laravel server URL
+
         const response = await fetch("http://127.0.0.1:8000/api/products");
         
         if (!response.ok) {

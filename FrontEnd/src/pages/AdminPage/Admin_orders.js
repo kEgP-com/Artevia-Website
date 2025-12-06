@@ -36,7 +36,7 @@ export default function AdminOrders() {
         const response = await fetch(`${API_URL}/orders`);
         if (response.ok) {
             const data = await response.json();
-            // Map DB fields to Frontend structure
+
             const mappedData = data.map(o => ({
                 ...o,
                 id: o.id,

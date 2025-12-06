@@ -6,7 +6,6 @@ import { FaUserCircle, FaCog, FaBars } from "react-icons/fa";
 import logo from "../../images/logo/logo_clear.png";
 import wavebg from "../../images/images/login_bg.png";
 
-// ✅ 1. Configuration
 const API_URL = "http://localhost:8082"; 
 
 export default function AdminArtists() {
@@ -26,7 +25,6 @@ export default function AdminArtists() {
   
   const [isLoading, setIsLoading] = useState(false);
 
-  // ✅ 2. State for New Artist
   const [newArtist, setNewArtist] = useState({
     name: "",
     origin: "",
@@ -39,7 +37,6 @@ export default function AdminArtists() {
   const [editedArtist, setEditedArtist] = useState(null);
   const [previewArtist, setPreviewArtist] = useState(null);
 
-  // ✅ 3. FETCH DATA
   const fetchArtists = async () => {
     setIsLoading(true);
     try {
@@ -59,13 +56,13 @@ export default function AdminArtists() {
     fetchArtists();
   }, []);
 
-  // UI Toggles
+
   const toggleSettings = () => { setShowSettings(!showSettings); setShowProfile(false); };
   const toggleProfile = () => { setShowProfile(!showProfile); setShowSettings(false); };
   const toggleNav = () => setShowNav(!showNav);
   const handleLogout = () => navigate("/admin/login");
 
-  // Filtering
+
   const filtered = useMemo(() => {
     let data = [...artists];
     const q = query.trim().toLowerCase();
@@ -104,7 +101,6 @@ export default function AdminArtists() {
     setShowEditOverlay(true);
   };
 
-  // ✅ 5. SAVE EDIT
   const handleSaveEdit = async () => {
     setIsLoading(true);
     try {
@@ -151,7 +147,6 @@ export default function AdminArtists() {
     setShowAddOverlay(true);
   };
 
-  // ✅ 6. SAVE NEW ARTIST
   const handleSaveNewArtist = async () => {
     setIsLoading(true);
     try {
@@ -187,14 +182,12 @@ export default function AdminArtists() {
     }
   };
 
-  // ✅ Helper: Returns null if no image, so we can show default icon
   const getImageUrl = (path) => {
-      if (!path) return null; // No placeholder, just null
+      if (!path) return null; 
       if (path.startsWith("http")) return path;
       return `${API_URL}${path}`;
   };
 
-  // ✅ Component: Renders Image or Default Icon
   const ArtistProfileImage = ({ path, size = 40 }) => {
       const url = getImageUrl(path);
       if (url) {
@@ -218,7 +211,7 @@ export default function AdminArtists() {
         backgroundPosition: "center",
       }}
     >
-      {/* HEADER */}
+
       <header className="dashboard-header">
         <div className="brand">
           <img src={logo} alt="logo" className="brand-logo" />
@@ -256,7 +249,6 @@ export default function AdminArtists() {
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
       <main className="admin-main">
         <section className="controls">
           <div className="search-group">
@@ -288,7 +280,6 @@ export default function AdminArtists() {
             <table className="users-table">
               <thead>
                 <tr>
-                  {/* ✅ Changed Header to "Profile" */}
                   <th>Profile</th>
                   <th>Name</th>
                   <th className="hide-mobile">Origin</th>
@@ -308,7 +299,6 @@ export default function AdminArtists() {
                   filtered.map((a) => (
                     <tr key={a.id}>
                        <td>
-                        {/* ✅ Use new Component for Default Icon */}
                         <ArtistProfileImage path={a.profile_image} size={40} />
                       </td>
                       <td>{a.name}</td>
@@ -329,7 +319,6 @@ export default function AdminArtists() {
         </section>
       </main>
 
-      {/* OVERLAY: ADD ARTIST */}
       {showAddOverlay && (
         <div className="overlay">
           <div className="overlay-content">
@@ -366,7 +355,6 @@ export default function AdminArtists() {
                 className="overlay-input"
             />
             
-            {/* ✅ Label Changed */}
             <label style={{display:'block', textAlign:'left', fontSize:'14px'}}>Profile (Optional):</label>
             <input 
                 type="file" 
@@ -385,7 +373,6 @@ export default function AdminArtists() {
         </div>
       )}
 
-      {/* OVERLAY: EDIT ARTIST */}
       {showEditOverlay && editedArtist && (
         <div className="overlay">
           <div className="overlay-content">
@@ -422,7 +409,6 @@ export default function AdminArtists() {
                 className="overlay-input"
             />
 
-            {/* ✅ Label Changed */}
             <label style={{display:'block', textAlign:'left', fontSize:'14px'}}>Change Profile (Optional):</label>
             <input 
                 type="file" 
@@ -441,7 +427,6 @@ export default function AdminArtists() {
         </div>
       )}
 
-      {/* OVERLAY: VIEW ARTIST */}
       {showPreviewOverlay && previewArtist && (
         <div className="overlay">
           <div className="overlay-content preview">

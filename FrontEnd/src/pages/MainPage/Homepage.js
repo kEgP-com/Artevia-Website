@@ -16,7 +16,7 @@ import Sketch2 from "../../images/Sketch arts/Custom_Portrait_2.png";
 import DigitalArt2 from "../../images/Digital Art/A_Taste_of_Honey.png";
 
 const
- API_URL = "http://localhost:8000"; 
+ API_URL = "http://localhost:8082"; 
 function Homepage() {
   const [activePage, setActivePage] = useState(1);
   const [selectedArt, setSelectedArt] = useState(null);
@@ -26,18 +26,18 @@ function Homepage() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
   
-  // ✅ SEARCH STATE
+
   const [searchTerm, setSearchTerm] = useState("");
 
-  // FETCH DATA & CHECK LOGIN
+
   useEffect(() => {
-    // ⚠️ CRITICAL FIX: Check BOTH 'user' and 'accountInfo' keys
+  
     const storedUser = localStorage.getItem("user") || localStorage.getItem("accountInfo");
     
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
-        console.log("Logged in User:", parsedUser); // Debugging Log
+        console.log("Logged in User:", parsedUser); 
         setCurrentUser(parsedUser);
       } catch (e) {
         console.error("User data corrupted");
@@ -69,14 +69,14 @@ function Homepage() {
     fetchProducts();
   }, []);
 
-  // IMAGE URL HELPER
+
   const getImageUrl = (path) => {
       if (!path) return "https://via.placeholder.com/300";
       if (path.startsWith("http")) return path;
       return `${API_URL}${path}`;
   };
 
-  // ADD TO CART
+
   const handleAddToCart = async (art) => {
     if (!currentUser) {
       console.log("Cart Check Failed: currentUser is null");
@@ -113,7 +113,7 @@ function Homepage() {
     }
   };
 
-  // ✅ FILTERING LOGIC
+
   const filteredProducts = products.filter((art) => {
     const query = searchTerm.toLowerCase();
     return (
@@ -123,12 +123,12 @@ function Homepage() {
     );
   });
 
-  // LAYOUT LOGIC
+  
   const featuredArt = filteredProducts.length > 0 ? filteredProducts[0] : null;
   const sideArts = filteredProducts.length > 1 ? filteredProducts.slice(1, 3) : [];
   const discoveryArts = filteredProducts.length > 3 ? filteredProducts.slice(3, 9) : []; // Limit to top 6
 
-  // Static Categories
+
   const allCategories = [
     { id: 1, name: "Paintings", image: Painting2 },
     { id: 2, name: "Sculpture", image: Sculpture2 },
@@ -146,7 +146,7 @@ function Homepage() {
       <Navbar onSearch={setSearchTerm} />
 
       <div className="homepage">
-        {/* ==== HERO SECTION ==== */}
+     
         <section className="hero" style={{ backgroundImage: `url(${WaveBg})` }}>
           <h1>Shop art, live inspired.</h1>
           <p>
@@ -156,16 +156,15 @@ function Homepage() {
           <button className="btn-primary">Shop Now</button>
         </section>
 
-        {/* ==== QUOTE ==== */}
+   
         <section className="quote">
           <p>“Art should comfort the disturbed and disturb the comfortable.” – Banksy</p>
         </section>
 
-        {/* ==== ART DISPLAY (TOP 3) ==== */}
         <section className="art-display" style={{ minHeight: "400px", position: "relative" }}>
           <div className="section-title">TOP</div>
           
-          {/* ✅ LOCALIZED LOADING INDICATOR */}
+    
           {isLoading ? (
              <div style={{
                  display: "flex", 
@@ -194,7 +193,7 @@ function Homepage() {
              </div>
           ) : (
             <div className="art-gallery">
-                {/* LEFT COLUMN */}
+    
                 <div className="gallery-column-left">
                 {featuredArt && (
                     <div className="art-frame-large">
@@ -217,7 +216,7 @@ function Homepage() {
                 )}
                 </div>
 
-                {/* RIGHT COLUMN */}
+          
                 <div className="gallery-column-right">
                 {sideArts.map((art) => (
                     <div className="art-frame-small" key={art.id}>
@@ -243,7 +242,6 @@ function Homepage() {
           )}
         </section>
 
-        {/* ==== CATEGORIES (Static) ==== */}
         <section className="promo">
           <div className="promo-title-container">
             <img src={SaleBadge} alt="Sale" className="sale-badge" />
@@ -282,9 +280,6 @@ function Homepage() {
           </div>
         </section>
 
-        {/* ==== DISCOVERY (Top 6 Items) ==== */}
-        {/* Only show discovery section if not loading, or handle loading inside it if you prefer. 
-            Here we hide it until data exists to avoid double loading spinners. */}
         {!isLoading && discoveryArts.length > 0 && (
           <section
             className="discovery"
@@ -324,7 +319,6 @@ function Homepage() {
 
       <Footer />
 
-      {/* ==== OVERLAY MODAL ==== */}
       {selectedArt && (
         <div className="overlay-backdrop" onClick={closeOverlay}>
           <div className="overlay-content" onClick={(e) => e.stopPropagation()}>
