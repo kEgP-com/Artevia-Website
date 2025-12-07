@@ -38,7 +38,7 @@ export default function OrderPage() {
 
       try {
         // Fetch lang ng simple list galing sa orders table
-        const response = await fetch(`http://localhost:8000/api/orders?user_id=${userId}`);
+        const response = await fetch(`http://localhost:8082/api/orders?user_id=${userId}`);
         if (response.ok) {
           const data = await response.json();
           setOrders(data);
@@ -57,7 +57,7 @@ export default function OrderPage() {
   const handleCancel = async (orderId) => {
     if (!window.confirm("Are you sure you want to cancel this item?")) return;
     try {
-        const res = await fetch(`http://localhost:8000/api/orders/${orderId}/cancel`, {
+        const res = await fetch(`http://localhost:8082/api/orders/${orderId}/cancel`, {
             method: 'PUT'
         });
         if (res.ok) {
@@ -77,7 +77,7 @@ export default function OrderPage() {
   const handleDelete = async (orderId) => {
     if (!window.confirm("Permanently delete this record from history?")) return;
     try {
-        const res = await fetch(`http://localhost:8000/api/orders/${orderId}`, {
+        const res = await fetch(`http://localhost:8082/api/orders/${orderId}`, {
             method: 'DELETE',
         });
         if (res.ok) {
@@ -95,7 +95,7 @@ export default function OrderPage() {
     if(!savedInfo) return;
 
     try {
-        const res = await fetch(`http://localhost:8000/api/orders/clear?user_id=${savedInfo.id}`, {
+        const res = await fetch(`http://localhost:8082/api/orders/clear?user_id=${savedInfo.id}`, {
             method: 'DELETE',
         });
         if (res.ok) {
@@ -146,7 +146,7 @@ export default function OrderPage() {
 
     try {
         // 3. Send sa Laravel Backend
-        const res = await fetch("http://localhost:8000/api/contact-messages", {
+        const res = await fetch("http://localhost:8082/api/contact-messages", {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",
@@ -182,7 +182,7 @@ export default function OrderPage() {
     if (!img || img === 'no-image.png') return "https://via.placeholder.com/150";
     if (typeof img === 'string' && img.startsWith("http")) return img;
     const cleanPath = img.startsWith('/') ? img : `/${img}`;
-    return `http://localhost:8000${cleanPath}`;
+    return `http://localhost:8082${cleanPath}`;
   };
 
   // --- 4. RENDER ---

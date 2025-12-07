@@ -64,7 +64,7 @@ function Sculpture() {
       };
 
       try {
-          const response = await fetch("http://localhost:8000/api/cart/add", {
+          const response = await fetch("http://localhost:8082/api/cart/add", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(payload)

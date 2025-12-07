@@ -47,9 +47,9 @@ export default function CartPage() {
 
     const fetchCart = async () => {
       try {
-        let url = "http://localhost:8000/api/cart";
+        let url = "http://localhost:8082/api/cart";
         if (currentUserId) {
-          url = `http://localhost:8000/api/cart?user_id=${currentUserId}`;
+          url = `http://localhost:8082/api/cart?user_id=${currentUserId}`;
         }
 
         const res = await fetch(url);
@@ -96,7 +96,7 @@ export default function CartPage() {
     setSelectedItemIds((prev) => prev.filter((itemId) => itemId !== id)); // Remove from selection if deleted
 
     try {
-      await fetch(`http://localhost:8000/api/cart/${id}`, {
+      await fetch(`http://localhost:8082/api/cart/${id}`, {
         method: "DELETE",
       });
     } catch (error) {
@@ -148,7 +148,7 @@ export default function CartPage() {
     };
 
     try {
-      const res = await fetch("http://localhost:8000/api/orders", {
+      const res = await fetch("http://localhost:8082/api/orders", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -201,7 +201,7 @@ export default function CartPage() {
     if (!img) return sampleImg;
     if (typeof img === 'string' && img.startsWith("http")) return img;
     if (typeof img === 'string' && img.startsWith("/")) {
-        return `http://localhost:8000${img}`;
+        return `http://localhost:8082${img}`;
     }
     return img;
   };

@@ -58,7 +58,7 @@ function ArtPageList() {
     }
     // Ibinalik ko sa dating logic mo:
     if (item.image_url.startsWith('/')) {
-      return `http://localhost:8000${item.image_url}`;
+      return `http://localhost:8082${item.image_url}`;
     }
     return item.image_url;
   };
@@ -100,7 +100,7 @@ function ArtPageList() {
 
     // C. Send to Backend (Ibinalik ang original URL string)
     try {
-        const response = await fetch('http://localhost:8000/api/cart', {
+        const response = await fetch('http://localhost:8082/api/cart', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -6,7 +6,7 @@ import "../../css/Homepage.css";
 import WaveBg from "../../images/images/wavebg.png";
 import SaleBadge from "../../images/images/Sale.png";
 
-// --- FALLBACK IMAGES (Used if database is empty) ---
+// --- FALLBACK IMAGES ---
 import DigitalArt1 from "../../images/Digital Art/Searching for peace.png";
 import Painting1 from "../../images/Painting/Pag Akbay Series VII by Leti watersong.jpg";
 import Sculpture1 from "../../images/Sculpture/blossom-v-wood-sculpture-by-wouter-van-der-vlugt-1-300x200.png";
@@ -20,19 +20,35 @@ function Homepage() {
   const [activePage, setActivePage] = useState(1);
   const [selectedArt, setSelectedArt] = useState(null);
   
-  // New States for Backend Data
+  // Backend & User States
   const [products, setProducts] = useState([]); 
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [searchTerm, setSearchTerm] = useState(""); // Added for Navbar search
   
   const navigate = useNavigate();
   const slideAmount = (activePage - 1) * 280;
 
-  // --- 1. FETCH DATA FROM BACKEND ---
+  // --- 1. FETCH DATA & CHECK AUTH ---
   useEffect(() => {
+    // ⚠️ CRITICAL FIX: Check BOTH 'user' and 'accountInfo' keys
+    const storedUser = localStorage.getItem("user") || localStorage.getItem("accountInfo");
+    
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        console.log("Logged in User:", parsedUser);
+        setCurrentUser(parsedUser);
+      } catch (e) {
+        console.error("User data corrupted");
+      }
+    } else {
+        console.warn("No user found in localStorage");
+    }
+
     const fetchProducts = async () => {
       try {
-        // Change port 8000 to match your Laravel port
-        const response = await fetch("http://localhost:8000/api/products");
+        const response = await fetch("http://localhost:8082/api/products");
         if (response.ok) {
           const data = await response.json();
           setProducts(data);
@@ -49,11 +65,33 @@ function Homepage() {
     fetchProducts();
   }, []);
 
-  // --- 2. ADD TO CART FUNCTION (Connects to DB) ---
+  // --- 2. HELPER: IMAGE URL ---
+  const getImgUrl = (img) => {
+    if (!img) return DigitalArt1; 
+    if (img.startsWith("http")) return img; // Valid URL from DB
+    // Kung local path string galing DB pero walang http, assume local mapping or placeholder
+    return img; 
+  };
+
+  // --- 3. ADD TO CART FUNCTION ---
   const handleAddToCart = async (artItem) => {
+    // Security Check
+    if (!currentUser) {
+      alert("You need to login first to add items to your cart!");
+      return;
+    }
+
+    const userId = currentUser.id || currentUser.user_id;
+    if (!userId) {
+       alert("User ID missing. Please re-login.");
+       return;
+    }
+
+    // Data Preparation
     const cartData = {
-      product_id: artItem.id, // ID from Database
-      name: artItem.name,
+      user_id: userId,
+      product_id: artItem.id,
+      name: artItem.name || artItem.title,
       price: typeof artItem.price === 'string' ? parseFloat(artItem.price.replace(/[^\d.]/g, '')) : artItem.price,
       image: artItem.image,
       artist: artItem.artist || "Unknown",
@@ -62,33 +100,24 @@ function Homepage() {
     };
 
     try {
-      const res = await fetch("http://localhost:8000/api/cart", {
+      const res = await fetch("http://localhost:8082/api/cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(cartData),
       });
 
       if (res.ok) {
-        alert(`${artItem.name} added to cart!`);
+        alert(`${cartData.name} added to cart!`);
       } else {
         alert("Failed to add to cart. Please try again.");
       }
     } catch (error) {
       console.error("Cart Error:", error);
-      // Fallback for demo if offline
-      alert("Added to cart (Offline Mode)");
+      alert("Added to cart (Offline Mode / Demo)");
     }
   };
 
-  // --- 3. HELPER: Handle Images (DB URL vs Local) ---
-  const getImgUrl = (img) => {
-    if (!img) return DigitalArt1; // Default
-    if (img.startsWith("http")) return img; // Valid URL from DB
-    return img; // Local import
-  };
-
   // --- 4. DATA ORGANIZATION ---
-  // If DB has data, use it. If not, use manual fallback for display.
   const displayProducts = products.length > 0 ? products : [
     { id: 101, name: "Searching for peace", price: 1750, image: DigitalArt1, category: "Digital Art", artist: "Unknown" },
     { id: 102, name: "Pag Akbay Series", price: 5500, image: Painting1, category: "Painting", artist: "Leti" },
@@ -97,10 +126,14 @@ function Homepage() {
     { id: 105, name: "Dovy Oak Wood", price: 2890, image: Handmadedecor2, category: "Handmade Decor", artist: "Woodlands" },
   ];
 
-  // Slice data for specific sections
-  const topFeature = displayProducts[0]; // Big Image on Left
-  const sideFeatures = displayProducts.slice(1, 3); // Two small images on Right
-  const discoveryItems = displayProducts; // All items for discovery
+  // Simple Search Filter
+  const filteredProducts = displayProducts.filter(item => 
+    item.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const topFeature = filteredProducts[0]; 
+  const sideFeatures = filteredProducts.slice(1, 3);
+  const discoveryItems = filteredProducts;
 
   const allCategories = [
     { id: 1, name: "Paintings", image: Painting2 },
@@ -118,7 +151,7 @@ function Homepage() {
 
   return (
     <>
-      <Navbar />
+      <Navbar onSearch={setSearchTerm} />
 
       <div className="homepage">
         {/* ==== HERO SECTION ==== */}
@@ -136,49 +169,55 @@ function Homepage() {
           <p>“Art should comfort the disturbed and disturb the comfortable.” – Banksy</p>
         </section>
 
-        {/* ==== ART DISPLAY (TOP PICKS) ==== */}
-        <section className="art-display">
+        {/* ==== ART DISPLAY (TOP) ==== */}
+        <section className="art-display" style={{ minHeight: '400px' }}>
           <div className="section-title">TOP</div>
-          <div className="art-gallery">
-            
-            {/* LEFT COLUMN (1 Large Item) */}
-            <div className="gallery-column-left">
-              {topFeature && (
-                <div className="art-frame-large">
-                  <img src={getImgUrl(topFeature.image)} alt={topFeature.name} className="art-image-large" />
-                  <div className="art-overlay">
-                    <div className="art-info">
-                      <span>{topFeature.name}</span>
-                      <span>₱{topFeature.price.toLocaleString()}</span>
-                    </div>
-                    <div className="art-buttons-container">
-                      <button className="btn-overlay" onClick={() => handleAddToCart(topFeature)}>ADD TO CART</button>
-                      <button className="btn-overlay" onClick={() => handleView(topFeature)}>VIEW</button>
+          
+          {loading ? (
+             <div style={{ textAlign: "center", padding: "50px" }}>Loading Gallery...</div>
+          ) : filteredProducts.length === 0 ? (
+             <div style={{ textAlign: "center", padding: "50px" }}>No artworks found.</div>
+          ) : (
+            <div className="art-gallery">
+              {/* LEFT COLUMN */}
+              <div className="gallery-column-left">
+                {topFeature && (
+                  <div className="art-frame-large">
+                    <img src={getImgUrl(topFeature.image)} alt={topFeature.name} className="art-image-large" />
+                    <div className="art-overlay">
+                      <div className="art-info">
+                        <span>{topFeature.name}</span>
+                        <span>₱{Number(topFeature.price).toLocaleString()}</span>
+                      </div>
+                      <div className="art-buttons-container">
+                        <button className="btn-overlay" onClick={() => handleAddToCart(topFeature)}>ADD TO CART</button>
+                        <button className="btn-overlay" onClick={() => handleView(topFeature)}>VIEW</button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
-            {/* RIGHT COLUMN (2 Small Items) */}
-            <div className="gallery-column-right">
-              {sideFeatures.map((art, i) => (
-                <div className="art-frame-small" key={art.id || i}>
-                  <img src={getImgUrl(art.image)} alt={art.name} className="art-image-small" />
-                  <div className="art-overlay">
-                    <div className="art-info">
-                      <span>{art.name}</span>
-                      <span>₱{art.price.toLocaleString()}</span>
-                    </div>
-                    <div className="art-buttons-container">
-                      <button className="btn-overlay" onClick={() => handleAddToCart(art)}>ADD TO CART</button>
-                      <button className="btn-overlay" onClick={() => handleView(art)}>VIEW</button>
+              {/* RIGHT COLUMN */}
+              <div className="gallery-column-right">
+                {sideFeatures.map((art, i) => (
+                  <div className="art-frame-small" key={art.id || i}>
+                    <img src={getImgUrl(art.image)} alt={art.name} className="art-image-small" />
+                    <div className="art-overlay">
+                      <div className="art-info">
+                        <span>{art.name}</span>
+                        <span>₱{Number(art.price).toLocaleString()}</span>
+                      </div>
+                      <div className="art-buttons-container">
+                        <button className="btn-overlay" onClick={() => handleAddToCart(art)}>ADD TO CART</button>
+                        <button className="btn-overlay" onClick={() => handleView(art)}>VIEW</button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </section>
 
         {/* ==== CATEGORIES ==== */}
@@ -220,35 +259,37 @@ function Homepage() {
           </div>
         </section>
 
-        {/* ==== DISCOVERY (FROM BACKEND) ==== */}
-        <section
-          className="discovery"
-          style={{
-            backgroundImage: `url(${WaveBg}), linear-gradient(to bottom, white, #E49E69)`,
-          }}
-        >
-          <div className="section-title">DISCOVERY</div>
-          <div className="discovery-content-wrapper">
-            <div className="discovery-grid">
-              {discoveryItems.map((art, index) => (
-                <div key={art.id || index} className="discovery-frame">
-                  <img src={getImgUrl(art.image)} alt={art.name} />
-                  <div className="discovery-overlay">
-                    <div className="discovery-info">
-                      <span>{art.name}</span>
-                      <span>₱{art.price.toLocaleString()}</span>
-                    </div>
-                    <div className="discovery-buttons-container">
-                      <button className="btn-discovery-overlay" onClick={() => handleAddToCart(art)}>ADD TO CART</button>
-                      <button className="btn-discovery-overlay" onClick={() => handleView(art)}>VIEW</button>
+        {/* ==== DISCOVERY ==== */}
+        {!loading && discoveryItems.length > 0 && (
+          <section
+            className="discovery"
+            style={{
+              backgroundImage: `url(${WaveBg}), linear-gradient(to bottom, white, #E49E69)`,
+            }}
+          >
+            <div className="section-title">DISCOVERY</div>
+            <div className="discovery-content-wrapper">
+              <div className="discovery-grid">
+                {discoveryItems.map((art, index) => (
+                  <div key={art.id || index} className="discovery-frame">
+                    <img src={getImgUrl(art.image)} alt={art.name} />
+                    <div className="discovery-overlay">
+                      <div className="discovery-info">
+                        <span>{art.name}</span>
+                        <span>₱{Number(art.price).toLocaleString()}</span>
+                      </div>
+                      <div className="discovery-buttons-container">
+                        <button className="btn-discovery-overlay" onClick={() => handleAddToCart(art)}>ADD TO CART</button>
+                        <button className="btn-discovery-overlay" onClick={() => handleView(art)}>VIEW</button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+              <button className="btn-browse-more" onClick={() => navigate("/art")}>Browse More</button>
             </div>
-            <button className="btn-browse-more" onClick={() => navigate("/art")}>Browse More</button>
-          </div>
-        </section>
+          </section>
+        )}
       </div>
 
       <Footer />
@@ -257,9 +298,7 @@ function Homepage() {
       {selectedArt && (
         <div className="overlay-backdrop" onClick={closeOverlay}>
           <div className="overlay-content" onClick={(e) => e.stopPropagation()}>
-            <button className="close-btn" onClick={closeOverlay}>
-              ×
-            </button>
+            <button className="close-btn" onClick={closeOverlay}>×</button>
             <img
               src={getImgUrl(selectedArt.image)}
               alt={selectedArt.name}
@@ -269,7 +308,7 @@ function Homepage() {
             <p><strong>{selectedArt.artist || "Unknown Artist"}</strong></p>
             <p><em>{selectedArt.category || selectedArt.type}</em></p>
             <p>{selectedArt.description || "No description available."}</p>
-            <h3>₱{selectedArt.price.toLocaleString()}</h3>
+            <h3>₱{Number(selectedArt.price).toLocaleString()}</h3>
             
             <button 
                 className="btn-primary" 
@@ -289,4 +328,3 @@ function Homepage() {
 }
 
 export default Homepage;
-
