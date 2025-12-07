@@ -237,10 +237,8 @@ export default function OrderPage() {
                       <h3>{order.name}</h3>
                       <p>
                         <strong>Status:</strong>{" "}
-                        {/* UI FIX: 
-                            - Kung Completed/Delivered: Green BG + White Text
-                            - Kung Pending/Cancelled: Original CSS Classes (walang inline style)
-                        */}
+                        {
+                        }
                         <span 
                             className={`order-status ${order.status.toLowerCase()}`}
                             style={isCompleted ? {
