@@ -58,10 +58,10 @@ Route::put('/orders/{id}/rate', [OrderController::class, 'rate']);     // Custom
 
 
 // Message Routes
-Route::get('/messages', [ContactMessageController::class, 'index']);
-Route::post('/messages', [ContactMessageController::class, 'store']); // For Customer to send
-Route::put('/messages/{id}', [ContactMessageController::class, 'update']); // For Admin to reply
-Route::delete('/messages/{id}', [ContactMessageController::class, 'destroy']);
+Route::get('/contact-messages', [ContactMessageController::class, 'index']);
+Route::post('/contact-messages', [ContactMessageController::class, 'store']); // For Customer to send
+Route::put('/contact-messages/{id}', [ContactMessageController::class, 'update']); // For Admin to reply
+Route::delete('/contact-messages/{id}', [ContactMessageController::class, 'destroy']);
 
 //admin
  Route::post('/admin/login', [AdminAuthController::class, 'login']);

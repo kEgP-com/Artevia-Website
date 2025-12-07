@@ -119,10 +119,55 @@ export default function OrderPage() {
     setShowVendorOverlay(true);
   };
 
-  const handleSendVendorMessage = () => {
-    alert(`Message sent to vendor regarding ${currentVendorOrder?.name}: "${vendorMessage}"`);
-    setVendorMessage("");
-    setShowVendorOverlay(false);
+  // --- SEND MESSAGE TO DATABASE ---
+  const handleSendVendorMessage = async () => {
+    // 1. Kunin ang User Info galing LocalStorage
+    const savedInfo = JSON.parse(localStorage.getItem("accountInfo"));
+    
+    if (!savedInfo) {
+        alert("Please login first to send a message.");
+        return;
+    }
+
+    if (!vendorMessage.trim()) {
+        alert("Please type a message.");
+        return;
+    }
+
+    // 2. Prepare Payload (Dapat match sa Controller validation mo)
+    const payload = {
+        // 👇 UPDATE: Subukan kunin sa .name, kung wala try .fullName, kung wala pa rin -> "Customer"
+        name: savedInfo.name || savedInfo.fullName || "Customer", 
+        
+        email: savedInfo.email || "no-email@provided.com",
+        subject: `Order #${currentVendorOrder.id}: ${currentVendorOrder.name}`,
+        message: vendorMessage
+    };
+
+    try {
+        // 3. Send sa Laravel Backend
+        const res = await fetch("http://localhost:8000/api/contact-messages", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            alert("Message sent to Admin! We will review your concern.");
+            setVendorMessage(""); // Clear textbox
+            setShowVendorOverlay(false); // Close modal
+        } else {
+            const errorData = await res.json();
+            console.error("Server Error:", errorData);
+            alert("Failed to send message. Please try again.");
+        }
+    } catch (error) {
+        console.error("Network Error:", error);
+        alert("Connection error. Is Laravel running?");
+    }
   };
 
   const handleRate = (orderId) => {

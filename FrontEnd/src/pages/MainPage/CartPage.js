@@ -1,4 +1,4 @@
-// src/pages/ProductPage/CartPage.js (Updated Port)
+// src/pages/ProductPage/CartPage.js (Updated with Selection Feature)
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/navbar";
@@ -7,7 +7,8 @@ import "../../css/CartPage.css";
 import {
   FaTrashAlt, FaPaypal, FaMoneyBillAlt, FaCcMastercard,
   FaHome, FaShieldAlt, FaListAlt, FaCreditCard, FaBoxOpen, FaEdit,
-} from "react-icons/fa";
+  FaCheckSquare, FaSquare
+} from "react-icons/fa"; // Added icons for selection if needed
 import sampleImg from "../../images/Sketch arts/cat portrait.png";
 
 export default function CartPage() {
@@ -18,6 +19,8 @@ export default function CartPage() {
   const [showOverlay, setShowOverlay] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // 👇 1. NEW STATE: Para sa mga naka-check na items
+  const [selectedItemIds, setSelectedItemIds] = useState([]);
 
   const [accountInfo, setAccountInfo] = useState({
     name: "", address: "", contact: "", payment: { paypal: "", gcash: "" },
@@ -25,11 +28,8 @@ export default function CartPage() {
 
   const navigate = useNavigate();
 
-  // --- 1. LOAD DATA ---
- // Hanapin ang useEffect na ito sa CartPage.js
-  // Hanapin ang useEffect na ito sa CartPage.js
+  // --- LOAD DATA ---
   useEffect(() => {
-    // 1. Kunin ang User Info
     const saved = localStorage.getItem("accountInfo");
     let currentUserId = null;
 
@@ -41,26 +41,20 @@ export default function CartPage() {
         contact: acc.contact,
         payment: acc.payment || { paypal: "", gcash: "" },
       });
-      currentUserId = acc.id; // Eto yung ID (e.g., 1)
+      currentUserId = acc.id;
       setUserId(acc.id);
     }
 
-    // 2. Fetch Cart mula sa Database
     const fetchCart = async () => {
       try {
-        // 👇 MAHALAGA: I-check kung may user ID
         let url = "http://localhost:8000/api/cart";
-        
         if (currentUserId) {
-            // 👇 IDAGDAG ANG USER ID SA URL
-            url = `http://localhost:8000/api/cart?user_id=${currentUserId}`;
+          url = `http://localhost:8000/api/cart?user_id=${currentUserId}`;
         }
 
         const res = await fetch(url);
-        
         if (res.ok) {
           const data = await res.json();
-          // I-set ang data (siguraduhing array)
           setCartItems(Array.isArray(data) ? data : []);
         } else {
           console.warn("Failed to fetch cart from DB.");
@@ -72,12 +66,36 @@ export default function CartPage() {
 
     fetchCart();
   }, []);
-  // --- 2. DELETE ITEM (UPDATED PORT) ---
+
+  // --- SELECTION LOGIC ---
+  
+  // 👇 Toggle single item
+  const toggleSelect = (id) => {
+    if (selectedItemIds.includes(id)) {
+      setSelectedItemIds(selectedItemIds.filter(itemId => itemId !== id));
+    } else {
+      setSelectedItemIds([...selectedItemIds, id]);
+    }
+  };
+
+  // 👇 Select All / Deselect All
+  const handleSelectAll = () => {
+    if (selectedItemIds.length === cartItems.length) {
+      setSelectedItemIds([]); // Deselect all
+    } else {
+      setSelectedItemIds(cartItems.map(item => item.id)); // Select all
+    }
+  };
+
+  // 👇 Computed Property: Items na isasama lang sa checkout
+  const itemsToCheckout = cartItems.filter(item => selectedItemIds.includes(item.id));
+
+  // --- DELETE ITEM ---
   const handleDelete = async (id) => {
     setCartItems((prev) => prev.filter((item) => item.id !== id));
+    setSelectedItemIds((prev) => prev.filter((itemId) => itemId !== id)); // Remove from selection if deleted
 
     try {
-      // FIX: Changed 8082 to 8000
       await fetch(`http://localhost:8000/api/cart/${id}`, {
         method: "DELETE",
       });
@@ -96,25 +114,33 @@ export default function CartPage() {
     });
   };
 
-  const subtotal = cartItems.reduce((sum, i) => sum + i.price * (i.quantity || 1), 0);
-  const shipping = 120;
-  const protectionFee = protection ? 50 : 0;
+  // 👇 UPDATED COMPUTATION: Base sa itemsToCheckout, hindi sa lahat
+  const subtotal = itemsToCheckout.reduce((sum, i) => sum + i.price * (i.quantity || 1), 0);
+  const shipping = itemsToCheckout.length > 0 ? 120 : 0; // Walang shipping fee kung walang selected
+  const protectionFee = (protection && itemsToCheckout.length > 0) ? 50 : 0;
   const total = subtotal + shipping + protectionFee;
 
   const expectedDelivery = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString("en-PH", {
     month: "long", day: "numeric", year: "numeric",
   });
 
-  const handleProceed = () => setShowOverlay(true);
+  // 👇 UPDATED PROCEED: Check kung may selected
+  const handleProceed = () => {
+    if (itemsToCheckout.length === 0) {
+      alert("Please select at least one item to checkout.");
+      return;
+    }
+    setShowOverlay(true);
+  };
 
-  // --- 3. CHECKOUT (UPDATED PORT) ---
+  // --- CHECKOUT ---
   const handleOverlayProceed = async () => {
     setIsProcessing(true);
 
     const orderData = {
       user_id: userId,
       name: accountInfo.name,
-      items: cartItems,
+      items: itemsToCheckout, // 👈 PASS ONLY SELECTED ITEMS
       total: total,
       address: accountInfo.address,
       contact: accountInfo.contact,
@@ -122,14 +148,11 @@ export default function CartPage() {
     };
 
     try {
-      // FIX: Changed 8082 to 8000
-      // Sa loob ng CartPage.js -> handleOverlayProceed function
-
       const res = await fetch("http://localhost:8000/api/orders", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Accept": "application/json"  // 👈 IDAGDAG MO ITO! Napaka-importante nito sa Laravel.
+          "Accept": "application/json"
         },
         body: JSON.stringify(orderData),
       });
@@ -138,8 +161,16 @@ export default function CartPage() {
 
       const result = await res.json();
       setShowOverlay(false);
+      
+      // 👇 Tanggalin na ang checked items sa Cart UI (visual update)
+      // Note: Sa backend logic mo, dapat burahin din sila sa 'cart' table upon successful order.
+      // Pero kung visual lang muna:
+      const remainingItems = cartItems.filter(item => !selectedItemIds.includes(item.id));
+      setCartItems(remainingItems);
+      setSelectedItemIds([]); 
+
       navigate("/customer/order", {
-        state: { savedOrder: result, items: cartItems, total: total, accountInfo: accountInfo, payment: payment }
+        state: { savedOrder: result, items: itemsToCheckout, total: total, accountInfo: accountInfo, payment: payment }
       });
 
     } catch (error) {
@@ -147,7 +178,7 @@ export default function CartPage() {
       alert("Note: Proceeding with local data (Server might be offline).");
       setShowOverlay(false);
       navigate("/customer/order", {
-        state: { items: cartItems, total: total, accountInfo: accountInfo, payment: payment }
+        state: { items: itemsToCheckout, total: total, accountInfo: accountInfo, payment: payment }
       });
     } finally {
       setIsProcessing(false);
@@ -166,34 +197,54 @@ export default function CartPage() {
       ? { method: "GCash", details: accountInfo.payment?.gcash || "GCash not set" }
       : { method: "Cash on Delivery", details: "Pay upon receiving your order." };
 
- // Helper for Image URL (FIXED for Laravel Backend)
   const getImgUrl = (img) => {
-    // 1. Kung walang image, mag-default
     if (!img) return sampleImg;
-
-    // 2. Kung full URL na (may http), gamitin agad
     if (typeof img === 'string' && img.startsWith("http")) return img;
-
-    // 3. Kung relative path (nagsisimula sa /), dagdagan ng backend URL
     if (typeof img === 'string' && img.startsWith("/")) {
-        return `http://localhost:8000${img}`; // 👈 ITO ANG NAGPAPALABAS NG IMAGE
+        return `http://localhost:8000${img}`;
     }
-
-    // 4. Fallback
     return img;
   };
+
   return (
     <>
       <Navbar />
       <div className="cart-container">
         <div className="cart-left">
-          <h2 className="page-heading-left"><FaBoxOpen /> Your Art</h2>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+             <h2 className="page-heading-left" style={{ margin: 0 }}><FaBoxOpen /> Your Art</h2>
+             
+             {/* 👇 SELECT ALL BUTTON */}
+             {cartItems.length > 0 && (
+                 <label style={{ display: "flex", alignItems: "center", cursor: "pointer", fontWeight: "bold" }}>
+                    <input 
+                        type="checkbox" 
+                        checked={selectedItemIds.length === cartItems.length && cartItems.length > 0}
+                        onChange={handleSelectAll}
+                        style={{ width: "18px", height: "18px", marginRight: "8px", cursor: "pointer" }}
+                    />
+                    Select All
+                 </label>
+             )}
+          </div>
+
           <div className="cart-items-scroll">
             {cartItems.length === 0 ? (
               <p className="empty-cart">Your cart is empty 🛒</p>
             ) : (
               cartItems.map((item) => (
                 <div key={item.id} className="cart-item">
+                  
+                  {/* 👇 CHECKBOX FOR EACH ITEM */}
+                  <div style={{ marginRight: "15px", display: "flex", alignItems: "center" }}>
+                    <input 
+                        type="checkbox" 
+                        checked={selectedItemIds.includes(item.id)}
+                        onChange={() => toggleSelect(item.id)}
+                        style={{ width: "20px", height: "20px", cursor: "pointer", accentColor: "#bfa181" }}
+                    />
+                  </div>
+
                   <div className="cart-item-img">
                     <img src={getImgUrl(item.image)} alt={item.name} />
                   </div>
@@ -238,28 +289,52 @@ export default function CartPage() {
 
           {/* Checkout Summary */}
           <div className="cart-box checkout-box">
-            <h3><FaListAlt className="cart-icon" /> Checkout Summary</h3>
+            <h3>
+              <FaListAlt className="cart-icon" /> Checkout Summary
+            </h3>
             <hr />
-            <p><strong>Total Items:</strong> {cartItems.length}</p>
+            {/* 👇 UPDATED SUMMARY DISPLAYS */}
+            <p><strong>Selected Items:</strong> {itemsToCheckout.length}</p>
             <p><strong>Subtotal:</strong> ₱{subtotal.toLocaleString()}</p>
             <p><strong>Shipping Fee:</strong> ₱{shipping}</p>
+            <p><strong>Protection Fee:</strong> ₱{protectionFee}</p>
             <hr />
             <p className="total"><strong>Total: ₱{total.toLocaleString()}</strong></p>
+
             <div className="checkout-buttons single">
-              <button className="purchase-btn" onClick={handleProceed}>Proceed to Checkout</button>
+              <button className="purchase-btn" onClick={handleProceed} disabled={itemsToCheckout.length === 0} style={{ opacity: itemsToCheckout.length === 0 ? 0.6 : 1 }}>
+                Proceed to Checkout ({itemsToCheckout.length})
+              </button>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Overlay */}
       {showOverlay && (
         <div className="overlay">
           <div className="overlay-content">
             <h2>Order Summary</h2>
+            <p><strong>Recipient:</strong> {accountInfo.name}</p>
+            <p><strong>Address:</strong> {accountInfo.address}</p>
+            <p><strong>Contact:</strong> {accountInfo.contact}</p>
+            <p><strong>Payment Method:</strong> {paymentInfo.method}</p>
+            <p><em>{paymentInfo.details}</em></p>
+            <hr />
+            <ul>
+              {/* 👇 LOOP OVER CHECKED ITEMS ONLY */}
+              {itemsToCheckout.map((item) => (
+                <li key={item.id}>
+                  {item.name} × {item.quantity}
+                </li>
+              ))}
+            </ul>
+            <hr />
             <p><strong>Total:</strong> ₱{total.toLocaleString()}</p>
-             <div className="overlay-buttons">
+            <p><strong>Expected Delivery:</strong> {expectedDelivery}</p>
+            <div className="overlay-buttons">
               <button onClick={() => setShowOverlay(false)}>Close</button>
-              <button className="proceed-btn" onClick={handleOverlayProceed} disabled={isProcessing}>
+              <button className="proceed-btn" onClick={handleOverlayProceed}>
                 {isProcessing ? "Processing..." : "Proceed"}
               </button>
             </div>

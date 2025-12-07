@@ -70,7 +70,11 @@ class OrderController extends Controller
         }
 
         // Clear Cart
-        DB::table('carts')->where('user_id', $validated['user_id'])->delete();
+        // 1. Kunin ang mga ID ng items na inorder mula sa request
+            $orderedItemIds = collect($request->items)->pluck('id');
+
+            // 2. Burahin lang yung mga items na nasa listahan na 'yun
+            Cart::whereIn('id', $orderedItemIds)->delete();
 
         return response()->json(['message' => 'Orders placed successfully!']);
     }
