@@ -13,7 +13,7 @@ import logo from "../../images/logo/logo_clear.png";
 import wavebg from "../../images/images/login_bg.png";
 
 
-const API_URL = "http://localhost:8000/api";
+const API_URL = "http://localhost:8082/api"; // Ensure this matches your Laravel port
 
 export default function AdminMessages() {
   const navigate = useNavigate();
@@ -34,6 +34,7 @@ export default function AdminMessages() {
   const fetchMessages = async () => {
     setIsLoading(true);
     try {
+        // Keep this pointing to your API endpoint
         const response = await fetch(`${API_URL}/contact-messages`);
         if (response.ok) {
             const data = await response.json();
@@ -69,7 +70,7 @@ export default function AdminMessages() {
     if (!window.confirm("Delete this message?")) return;
 
     try {
-        await fetch(`${API_URL}/messages/${id}`, { method: "DELETE" });
+        await fetch(`${API_URL}/contact-messages/${id}`, { method: "DELETE" });
         setMessages((prev) => prev.filter((m) => m.id !== id));
         setViewMessage(null);
     } catch (error) {
@@ -200,7 +201,8 @@ export default function AdminMessages() {
           <button className="nav-item" onClick={() => navigate("/admin/orders")}>
             ORDERS
           </button>
-          <button className="nav-item active" onClick={() => navigate("/admin/contact-messages")}>
+          {/* 👇 FIXED: Changed from /admin/contact-messages to /admin/messages */}
+          <button className="nav-item active" onClick={() => navigate("/admin/messages")}>
             MESSAGES
           </button>
         </nav>
