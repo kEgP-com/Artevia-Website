@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-// import { Link } from "react-router-dom"; 
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
 import Navbar from "../../components/navbar";
 import Footer from "../../components/footer";
 import "../../css/Homepage.css";
@@ -18,8 +18,10 @@ import DigitalArt2 from "../../images/Digital Art/A_Taste_of_Honey.png";
 const
  API_URL = "http://localhost:8082"; 
 function Homepage() {
+  const navigate = useNavigate();
   const [activePage, setActivePage] = useState(1);
   const [selectedArt, setSelectedArt] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Data State
   const [products, setProducts] = useState([]);
@@ -77,39 +79,64 @@ function Homepage() {
   };
 
 
-  const handleAddToCart = async (art) => {
-    if (!currentUser) {
-      console.log("Cart Check Failed: currentUser is null");
-      alert("You need to login first to add items to your cart!");
-      return;
-    }
-
-    const userId = currentUser.id || currentUser.user_id;
-
-    if (!userId) {
-        alert("User ID missing. Please re-login.");
+   // 4. ADD TO CART FUNCTION
+  const handleAddToCart = async (product) => {
+    // A. Check User Login
+    const savedUser = localStorage.getItem("accountInfo");
+    if (!savedUser) {
+        alert("Please log in first to add items to your cart.");
         return;
     }
 
+    let userId;
     try {
-      const response = await fetch(`${API_URL}/api/cart`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: userId,
-          name: art.name,
-          artist: art.artist, 
-          type: art.category,
-          price: art.price,
-          quantity: 1,
-          image: art.image_url
-        }),
-      });
+        const currentUser = JSON.parse(savedUser);
+        userId = currentUser.id;
+    } catch (e) {
+        alert("Session error. Please logout and login again.");
+        return;
+    }
 
-      if (response.ok) alert(`${art.title} added to cart!`);
-      else alert("Failed to add to cart.");
+    setIsSubmitting(true);
+
+    // B. Prepare Payload
+    const payload = {
+        user_id: userId,
+        product_id: product.id,
+        name: product.name,
+        artist: product.artist || 'Unknown',
+        type: product.category, 
+        price: product.price,
+        image: product.image_url, 
+        quantity: 1
+    };
+
+    // C. Send to Backend (Ibinalik ang original URL string)
+    try {
+        const response = await fetch('http://localhost:8082/api/cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert(`✅ Success! ${product.name} added to cart.`);
+            if(selectedArt) closeOverlay(); 
+        } else {
+            console.error("Server Error:", result);
+            alert("❌ Failed to add: " + (result.message || "Unknown error"));
+        }
+
     } catch (error) {
-      console.error("Cart Error:", error);
+        console.error("Connection Error:", error);
+        alert("❌ Cannot connect to server.");
+    } finally {
+        setIsSubmitting(false);
     }
   };
 
@@ -153,7 +180,7 @@ function Homepage() {
             We connect you directly with a global community of artists, making it simple
             to find art that truly reflects you.
           </p>
-          <button className="btn-primary">Shop Now</button>
+          <button className="btn-primary" onClick={() => navigate("/customer/artpage")}>Shop Now</button>
         </section>
 
    
@@ -311,7 +338,7 @@ function Homepage() {
                   </div>
                 ))}
               </div>
-              <button className="btn-browse-more">Browse More</button>
+              <button className="btn-browse-more" onClick={() => navigate("/customer/artpage")}>Browse More</button>
             </div>
           </section>
         )}
