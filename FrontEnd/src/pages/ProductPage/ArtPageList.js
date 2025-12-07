@@ -1,3 +1,5 @@
+ArtPageList.js
+
 /* * ------------------------------------------------------------------
  * reantaso-product-integration
  * COMPONENT: ArtPageList (Connected to Laravel Backend)
@@ -8,41 +10,30 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../../components/navbar";
 import Footer from "../../components/footer";
 import "../../css/Category.css";
-import ProductCard from "../../components/ProductCard";
 
 function ArtPageList() {
-  // State for data and UI
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // State for filters and interaction
+
   const [selectedArt, setSelectedArt] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("All");
   const [sortBy, setSortBy] = useState("default");
 
-  // WATERMARK LOGGING & DATA FETCHING
   useEffect(() => {
     const fetchProducts = async () => {
       console.log("🚀 Launching: reantaso-product-integration build");
 
       try {
-        // Ensure this URL matches your Laravel Serve (http://127.0.0.1:8000 or http://localhost:8000)
         const response = await fetch("http://localhost:8000/api/products");
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const data = await response.json();
         console.log("✅ Data received:", data);
 
-        // Handle Laravel's "Wrap" (sometimes Laravel sends { data: [...] })
         const productArray = Array.isArray(data) ? data : (data.data || []);
-        
         setProducts(productArray);
         setLoading(false);
-
       } catch (error) {
         console.error("❌ Connection Failed:", error);
         setLoading(false);
@@ -52,31 +43,22 @@ function ArtPageList() {
     fetchProducts();
   }, []);
 
-  // Handlers
   const handleView = (art) => setSelectedArt(art);
   const closeOverlay = () => setSelectedArt(null);
 
-  // Image URL Processor (Handles database paths)
   const getImageUrl = (item) => {
     if (!item || !item.image_url) return "https://via.placeholder.com/300";
-    
-    // If it's a full URL (external), return it
     if (item.image_url.startsWith("http")) return item.image_url;
-
-    // If it's a relative path from Laravel Storage
-    // Remove any leading slash to avoid double slashes
-    const cleanPath = item.image_url.startsWith('/') ? item.image_url.substring(1) : item.image_url;
+    const cleanPath = item.image_url.startsWith("/") ? item.image_url.substring(1) : item.image_url;
     return `http://localhost:8000/${cleanPath}`;
   };
 
-  // Filter Logic
   const filteredArts = products.filter((art) => {
     const matchesSearch = art.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = filterCategory === "All" || art.category === filterCategory;
     return matchesSearch && matchesCategory;
   });
 
-  // Sort Logic
   const sortedArts = [...filteredArts].sort((a, b) => {
     if (sortBy === "priceLowHigh") return a.price - b.price;
     if (sortBy === "priceHighLow") return b.price - a.price;
@@ -93,7 +75,6 @@ function ArtPageList() {
         <section className="sculpture-hero">
           <h1>Art Collections</h1>
 
-          {/* Search & Filter Bar */}
           <div className="sculpture-filters">
             <input
               type="text"
@@ -113,7 +94,7 @@ function ArtPageList() {
               <option value="Painting">Painting</option>
               <option value="Illustration & Sketch">Illustration & Sketch</option>
               <option value="Handmade Decor">Handmade Decor</option>
-              <option value="Digital Art">Digital Arts</option> 
+              <option value="Digital Art">Digital Arts</option>
             </select>
 
             <select
@@ -137,15 +118,18 @@ function ArtPageList() {
               </div>
             ) : sortedArts.length > 0 ? (
               sortedArts.map((art) => (
-                <ProductCard 
-                  key={art.id} 
-                  item={{
-                    ...art,
-                    // Inject the processed image URL directly into the item prop
-                    image_url: getImageUrl(art) 
-                  }} 
-                  onView={handleView} 
-                />
+                <div key={art.id} className="art-card" onClick={() => handleView(art)}>
+                  <img
+                    src={getImageUrl(art)}
+                    alt={art.name}
+                    className="art-image"
+                    style={{ width: "100%", height: "auto", objectFit: "cover" }}
+                  />
+                  <h3>{art.name}</h3>
+                  <p><strong>{art.artist}</strong></p>
+                  <p><em>{art.category}</em></p>
+                  <p>₱{parseFloat(art.price).toLocaleString()}</p>
+                </div>
               ))
             ) : (
               <p className="no-results">No artworks found.</p>
