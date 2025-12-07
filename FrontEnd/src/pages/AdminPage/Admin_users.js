@@ -47,7 +47,7 @@ export default function AdminUsers() {
     fetchUsers();
   }, []);
 
-  // --- DROPDOWNS ---
+
   const toggleSettings = () => {
     setShowSettings(!showSettings);
     setShowProfile(false);
@@ -58,7 +58,6 @@ export default function AdminUsers() {
     setShowSettings(false);
   };
 
-  // --- FILTERING & SORTING ---
   const filtered = useMemo(() => {
     let data = [...users];
     const q = query.trim().toLowerCase();
@@ -83,14 +82,13 @@ export default function AdminUsers() {
     return data;
   }, [users, query, sortOrder]);
 
-  // --- CRUD FUNCTIONS ---
-  
+
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this user? This cannot be undone.")) return;
 
     try {
-        const response = await fetch(`http:8082//localhost:/api/users/${id}`, {
+        const response = await fetch(`http://localhost:8082/api/users/${id}`, {
             method: "DELETE"
         });
         
@@ -141,7 +139,6 @@ export default function AdminUsers() {
     }
   };
 
-  // --- ADD USER OVERLAY ---
   const handleAddClick = () => {
     setShowOverlay(true);
     setNewUsers([
@@ -178,7 +175,6 @@ export default function AdminUsers() {
     setNewUsers(updated);
   };
 
-  // ✅ SAVE NEW USERS (Backend Connected)
   const handleSaveNewUsers = async () => {
     setIsLoading(true);
     try {
@@ -220,7 +216,7 @@ export default function AdminUsers() {
         backgroundPosition: "center",
       }}
     >
-      {/* HEADER */}
+
       <header className="dashboard-header">
         <div className="brand">
           <img src={logo} alt="logo" className="brand-logo" />
@@ -274,9 +270,8 @@ export default function AdminUsers() {
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
+
       <main className="admin-main">
-        {/* Controls */}
         <section className="controls">
           <div className="search-group">
             <input
@@ -308,7 +303,6 @@ export default function AdminUsers() {
           </div>
         </section>
 
-        {/* TABLE */}
         <section className="table-section">
           <div className="table-card scrollable-table">
             <table className="users-table">
@@ -401,7 +395,7 @@ export default function AdminUsers() {
                             >
                               Save
                             </button>
-                            {/* ✅ NEW CANCEL BUTTON */}
+                        
                             <button
                                 className="action-btn"
                                 onClick={handleCancelEdit}
@@ -436,7 +430,6 @@ export default function AdminUsers() {
         </section>
       </main>
 
-      {/* Overlay for adding users */}
       {showOverlay && (
         <div className="overlay">
           <div className="overlay-content">
