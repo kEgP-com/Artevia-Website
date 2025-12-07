@@ -18,12 +18,13 @@ return new class extends Migration
             $table->string('name');   
             $table->string('artist');
             $table->string('category');
-            $table->decimal('price', 10, 2); // 10 digits total, 2 decimal places
-            $table->text('description');     // 'text' allows longer descriptions
-            $table->string('image_url');
+            $table->decimal('price', 10, 2); // Supports prices like 2750.00
+            $table->text('description');
+            $table->string('image_url')->nullable();
             $table->timestamps();
         });
     }
+
     /**
      * Reverse the migrations.
      */

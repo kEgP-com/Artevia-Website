@@ -90,7 +90,7 @@ export default function AdminUsers() {
     if (!window.confirm("Delete this user? This cannot be undone.")) return;
 
     try {
-        const response = await fetch(`http://localhost:8082/api/users/${id}`, {
+        const response = await fetch(`http:8082//localhost:/api/users/${id}`, {
             method: "DELETE"
         });
         

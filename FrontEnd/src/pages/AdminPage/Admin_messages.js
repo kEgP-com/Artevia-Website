@@ -13,7 +13,7 @@ import logo from "../../images/logo/logo_clear.png";
 import wavebg from "../../images/images/login_bg.png";
 
 
-const API_URL = "http://localhost:8082/api";
+const API_URL = "http://localhost:8000/api";
 
 export default function AdminMessages() {
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ export default function AdminMessages() {
   const fetchMessages = async () => {
     setIsLoading(true);
     try {
-        const response = await fetch(`${API_URL}/messages`);
+        const response = await fetch(`${API_URL}/contact-messages`);
         if (response.ok) {
             const data = await response.json();
             setMessages(data);
@@ -82,7 +82,7 @@ export default function AdminMessages() {
     if (!responseText.trim()) return alert("Please enter a response before sending.");
 
     try {
-        const response = await fetch(`${API_URL}/messages/${viewMessage.id}`, {
+        const response = await fetch(`${API_URL}/contact-messages/${viewMessage.id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ response: responseText })
@@ -113,7 +113,7 @@ export default function AdminMessages() {
     const payloadText = responseText.trim() || message.response || "Marked as resolved by Admin";
 
     try {
-        const response = await fetch(`${API_URL}/messages/${id}`, {
+        const response = await fetch(`${API_URL}/contact-messages/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ response: payloadText })
@@ -200,7 +200,7 @@ export default function AdminMessages() {
           <button className="nav-item" onClick={() => navigate("/admin/orders")}>
             ORDERS
           </button>
-          <button className="nav-item active" onClick={() => navigate("/admin/messages")}>
+          <button className="nav-item active" onClick={() => navigate("/admin/contact-messages")}>
             MESSAGES
           </button>
         </nav>
