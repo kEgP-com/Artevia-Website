@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { FaUserCircle, FaCog, FaBars } from "react-icons/fa";
+import { 
+  FaUserCircle, FaCog, FaBars, 
+  FaUsers, FaShoppingCart, FaEnvelope, FaMoneyBillWave, FaDownload, FaChartLine 
+} from "react-icons/fa";
 import wavebg from "../../images/images/wavebg.png";
 import logo from "../../images/logo/logo_clear.png";
 import "../../css/Admin.css";
 import { useNavigate } from "react-router-dom";
 import "../../css/DashboardResponsive.css";
-
 
 const API_URL = "http://localhost:8082/api";
 
@@ -15,37 +17,38 @@ const DashboardPage = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [showNav, setShowNav] = useState(false);
 
-
+  // Data States
   const [userCount, setUserCount] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
   const [messageCount, setMessageCount] = useState(0);
   const [totalSales, setTotalSales] = useState(0);
+  const [avgOrderValue, setAvgOrderValue] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // 1. Fetch Users Count
         const usersRes = await fetch(`${API_URL}/users`);
         if (usersRes.ok) {
             const users = await usersRes.json();
             setUserCount(users.length);
         }
 
-        // 2. Fetch Orders & Calculate Sales
         const ordersRes = await fetch(`${API_URL}/orders`);
         if (ordersRes.ok) {
             const orders = await ordersRes.json();
             setOrderCount(orders.length);
             
-            // Sum up 'total_amount' from database
             const sales = orders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
             setTotalSales(sales);
+
+            if (orders.length > 0) {
+                setAvgOrderValue(sales / orders.length);
+            }
         }
 
-        // 3. Fetch Messages Count
-        const messagesRes = await fetch(`${API_URL}/messages`);
+        const messagesRes = await fetch(`${API_URL}/contact-messages`);
         if (messagesRes.ok) {
             const messages = await messagesRes.json();
             setMessageCount(messages.length);
@@ -61,19 +64,39 @@ const DashboardPage = () => {
     fetchDashboardData();
   }, []);
 
-  const toggleNav = () => setShowNav(!showNav);
-  const toggleSettings = () => {
-    setShowSettings(!showSettings);
-    setShowProfile(false);
-  };
-  const toggleProfile = () => {
-    setShowProfile(!showProfile);
-    setShowSettings(false);
+  const handleGenerateReport = () => {
+    setIsGeneratingReport(true);
+    const date = new Date().toLocaleString();
+    const csvRows = [
+        ["ADMIN DASHBOARD REPORT"],
+        [`Generated on: ${date}`],
+        [], 
+        ["Metric", "Value"],
+        ["Total Registered Users", userCount],
+        ["Total Orders Processed", orderCount],
+        ["Total Messages Received", messageCount],
+        ["Total Revenue", `P${totalSales.toLocaleString()}`],
+        ["Average Order Value", `P${avgOrderValue.toFixed(2)}`]
+    ];
+
+    const csvContent = "data:text/csv;charset=utf-8," 
+        + csvRows.map(e => e.join(",")).join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Admin_Report_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setTimeout(() => setIsGeneratingReport(false), 800);
   };
 
-  const handleLogout = () => {
-    navigate("/admin/login");
-  };
+  const toggleNav = () => setShowNav(!showNav);
+  const toggleSettings = () => { setShowSettings(!showSettings); setShowProfile(false); };
+  const toggleProfile = () => { setShowProfile(!showProfile); setShowSettings(false); };
+  const handleLogout = () => { navigate("/admin/login"); };
 
   return (
     <div
@@ -87,54 +110,29 @@ const DashboardPage = () => {
         minHeight: "100vh",
       }}
     >
-      {/* HEADER */}
       <header className="dashboard-header">
         <div className="brand">
           <img src={logo} alt="logo" className="brand-logo" />
         </div>
 
-        {/* Hamburger button visible on mobile */}
         <button className="hamburger" onClick={toggleNav}>
           <FaBars />
         </button>
 
-        {/* Navigation links */}
         <nav className={`dashboard-nav ${showNav ? "show" : ""}`}>
-          <button
-            className="nav-item active"
-            onClick={() => navigate("/admin/dashboard")}
-          >
-            DASHBOARD
-          </button>
-          <button className="nav-item" onClick={() => navigate("/admin/users")}>
-            USERS
-          </button>
-          <button className="nav-item" onClick={() => navigate("/admin/arts")}>
-            ARTS
-          </button>
-          <button
-            className="nav-item"
-            onClick={() => navigate("/admin/artists")}
-          >
-            ARTISTS
-          </button>
-          <button className="nav-item" onClick={() => navigate("/admin/orders")}>
-            ORDERS
-          </button>
-          <button
-            className="nav-item"
-            onClick={() => navigate("/admin/messages")}
-          >
-            MESSAGES
-          </button>
+          <button className="nav-item active" onClick={() => navigate("/admin/dashboard")}>DASHBOARD</button>
+          <button className="nav-item" onClick={() => navigate("/admin/users")}>USERS</button>
+          <button className="nav-item" onClick={() => navigate("/admin/arts")}>ARTS</button>
+          <button className="nav-item" onClick={() => navigate("/admin/artists")}>ARTISTS</button>
+          <button className="nav-item" onClick={() => navigate("/admin/orders")}>ORDERS</button>
+          <button className="nav-item" onClick={() => navigate("/admin/messages")}>MESSAGES</button>
         </nav>
 
-        {/* Settings + Profile icons */}
         <div className="icon-section">
           <div className="icon-wrapper">
             <FaCog className="icon-btn" onClick={toggleSettings} />
             {showSettings && (
-              <div className="dropdown-menu">
+              <div className="dropdown-menu show-dropdown">
                 <button>Account Settings</button>
                 <button>Preferences</button>
                 <button onClick={handleLogout}>Logout</button>
@@ -145,7 +143,7 @@ const DashboardPage = () => {
           <div className="icon-wrapper">
             <FaUserCircle className="icon-btn" onClick={toggleProfile} />
             {showProfile && (
-              <div className="dropdown-menu">
+              <div className="dropdown-menu show-dropdown">
                 <button>View Profile</button>
                 <button>Edit Profile</button>
               </div>
@@ -154,33 +152,102 @@ const DashboardPage = () => {
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
       <main className="dashboard-main">
-        <h1>Welcome Admin!</h1>
-        <p>Monitor your users, products, and activity all in one place.</p>
+        
+        {/* Title Section (Centered) */}
+        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <h1 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>Welcome Admin!</h1>
+            <p style={{ color: '#555', fontSize: '1.1rem' }}>Here is an overview of your platform's performance.</p>
+            
+            {/* Centered Button */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                <button 
+                    onClick={handleGenerateReport} 
+                    disabled={isLoading || isGeneratingReport}
+                    className="btn-add" 
+                    style={{ 
+                        display: 'flex', alignItems: 'center', gap: '10px', 
+                        padding: '10px 25px', fontSize: '1rem', 
+                        cursor: (isLoading || isGeneratingReport) ? 'not-allowed' : 'pointer' 
+                    }}
+                >
+                    <FaDownload />
+                    {isGeneratingReport ? "Downloading..." : "Generate Report"}
+                </button>
+            </div>
+        </div>
 
         {isLoading ? (
-            <div style={{textAlign: "center", marginTop: "50px", fontSize: "1.2rem"}}>
+            <div style={{textAlign: "center", marginTop: "50px", fontSize: "1.2rem", color: "#555"}}>
                 Loading Dashboard Data...
             </div>
         ) : (
             <div className="stats-container">
+            
+            {/* USERS CARD */}
             <div className="stat-card">
-                <h3>Users</h3>
-                <p>{userCount}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <h3>Total Users</h3>
+                        <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '10px 0' }}>{userCount}</p>
+                    </div>
+                    <FaUsers size={40} color="#3498db" style={{ opacity: 0.8 }} />
+                </div>
+                <small style={{ color: '#777' }}>Registered accounts</small>
             </div>
+
+            {/* ORDERS CARD */}
             <div className="stat-card">
-                <h3>Orders</h3>
-                <p>{orderCount}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <h3>Orders</h3>
+                        <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '10px 0' }}>{orderCount}</p>
+                    </div>
+                    <FaShoppingCart size={40} color="#e67e22" style={{ opacity: 0.8 }} />
+                </div>
+                <small style={{ color: '#777' }}>Total transactions</small>
             </div>
+
+            {/* MESSAGES CARD */}
             <div className="stat-card">
-                <h3>Messages</h3>
-                <p>{messageCount}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <h3>Messages</h3>
+                        <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '10px 0' }}>{messageCount}</p>
+                    </div>
+                    <FaEnvelope size={40} color="#9b59b6" style={{ opacity: 0.8 }} />
+                </div>
+                <small style={{ color: '#777' }}>Pending inquiries</small>
             </div>
+
+            {/* SALES CARD (Removed Green Border) */}
             <div className="stat-card">
-                <h3>Sales</h3>
-                <p>₱{totalSales.toLocaleString()}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <h3>Total Sales</h3>
+                        <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '10px 0', color: '#27ae60' }}>
+                            ₱{totalSales.toLocaleString()}
+                        </p>
+                    </div>
+                    <FaMoneyBillWave size={40} color="#27ae60" style={{ opacity: 0.8 }} />
+                </div>
+                <small style={{ color: '#777' }}>Avg. Order: ₱{avgOrderValue.toFixed(0)}</small>
             </div>
+
+            {/* AVERAGE ORDER VALUE CARD */}
+            <div className="stat-card">
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <h3>Avg. Order Value</h3>
+                        <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '10px 0' }}>
+                            ₱{avgOrderValue.toFixed(0)}
+                        </p>
+                    </div>
+                    <FaChartLine size={40} color="#f1c40f" style={{ opacity: 0.8 }} />
+                </div>
+                <small style={{ color: '#777' }}>Revenue efficiency</small>
+            </div>
+
             </div>
         )}
       </main>

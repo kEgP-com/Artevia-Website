@@ -8,29 +8,28 @@ import { useNavigate } from "react-router-dom";
 
 const API_URL = "http://localhost:8082"; 
 
+// --- FIXED CATEGORIES ---
+const CATEGORIES = [
+  "Painting",
+  "Sculpture",
+  "Digital Art",
+  "Sketch Art",
+  "Handmade Decor"
+];
+
 // --- STYLES FOR LOCAL TABLE OVERLAY ---
 const tableOverlayStyle = {
   position: "absolute",
-  top: 0,
-  left: 0,
-  width: "100%",
-  height: "100%",
-  backgroundColor: "rgba(255, 255, 255, 0.5)", // Semi-transparent white
-  backdropFilter: "blur(2px)", // Blur effect
+  top: 0, left: 0, width: "100%", height: "100%",
+  backgroundColor: "rgba(255, 255, 255, 0.5)",
+  backdropFilter: "blur(2px)",
   zIndex: 10,
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  flexDirection: "column",
-  color: "#333",
-  fontWeight: "bold",
-  fontSize: "1.2rem",
-  borderRadius: "8px" // Matches card radius
+  display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column",
+  color: "#333", fontWeight: "bold", fontSize: "1.2rem", borderRadius: "8px"
 };
 
 const spinnerStyle = {
-  width: "50px",
-  height: "50px",
+  width: "50px", height: "50px",
   border: "5px solid rgba(0, 0, 0, 0.1)",
   borderTop: "5px solid #007bff",
   borderRadius: "50%",
@@ -64,7 +63,7 @@ export default function AdminArts() {
   const [newArt, setNewArt] = useState({
     title: "", 
     artist_id: "", 
-    category: "",
+    category: "", // Dropdown value
     price: "",
     description: "",
     file: null, 
@@ -89,9 +88,7 @@ export default function AdminArts() {
     }
   };
 
-  // Fetch Products
   const fetchProducts = async (suppressLoading = false) => {
-    // Only show loading if we are NOT suppressing it (e.g., Manual Refresh button)
     if (!suppressLoading) setIsLoading(true);
     
     try {
@@ -113,19 +110,14 @@ export default function AdminArts() {
     }
   };
 
-  // Silent Initial Load
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        await Promise.all([
-          fetchProducts(false), // Let it trigger the local loader initially if desired, or keep true for silent
-          fetchArtists()
-        ]);
+        await Promise.all([fetchProducts(false), fetchArtists()]);
       } catch (error) {
         console.error("Error loading initial data", error);
       }
     };
-
     loadInitialData();
   }, []);
 
@@ -196,9 +188,9 @@ export default function AdminArts() {
     setShowAddOverlay(true);
   };
 
-  // SAVE NEW ART
   const handleSaveNewArt = async () => {
     if(!newArt.artist_id) { alert("Please select an artist"); return; } 
+    if(!newArt.category) { alert("Please select a category"); return; }
 
     setIsLoading(true); 
     try {
@@ -244,7 +236,6 @@ export default function AdminArts() {
     }
   };
 
-  // SAVE EDIT
   const handleSaveEdit = async () => {
     setIsLoading(true); 
     try {
@@ -296,7 +287,6 @@ export default function AdminArts() {
 
   return (
     <div className="admin-root" style={{ backgroundImage: `url(${wavebg})` }}>
-         {/* INJECT ANIMATION STYLE FOR SPINNER */}
          <style>
             {`
               @keyframes spin {
@@ -306,15 +296,11 @@ export default function AdminArts() {
             `}
          </style>
 
-         {/* HEADER */}
          <header className="dashboard-header">
            <div className="brand">
              <img src={logo} alt="logo" className="brand-logo" />
            </div>
-   
-           <button className="hamburger" onClick={toggleNav}>
-             <FaBars />
-           </button>
+           <button className="hamburger" onClick={toggleNav}><FaBars /></button>
    
          <nav className="dashboard-nav">
           <button className="nav-item" onClick={() => navigate("/admin/dashboard")}>DASHBOARD</button>
@@ -328,7 +314,6 @@ export default function AdminArts() {
            <div className="icon-section">
              <FaCog className="icon-btn" onClick={toggleSettings} />
              <FaUserCircle className="icon-btn" onClick={toggleProfile} />
-   
              {showSettings && (
                <div className="dropdown-menu">
                  <button>Account Settings</button>
@@ -345,7 +330,6 @@ export default function AdminArts() {
            </div>
          </header>
 
-      {/* MAIN CONTENT */}
       <main className="admin-main">
         <section className="controls">
           <div className="search-group">
@@ -369,21 +353,13 @@ export default function AdminArts() {
           </div>
 
           <div className="controls-right">
-            <button className="btn-add" onClick={handleAddArtClick}>
-              Add Art
-            </button>
-            <button className="btn" onClick={() => fetchProducts(false)} style={{marginLeft: '10px'}}>
-                Refresh
-            </button>
+            <button className="btn-add" onClick={handleAddArtClick}>Add Art</button>
+            <button className="btn" onClick={() => fetchProducts(false)} style={{marginLeft: '10px'}}>Refresh</button>
           </div>
         </section>
 
-        {/* TABLE SECTION */}
         <section className="table-section">
-          {/* ✅ ADDED: Position relative to container */}
           <div className="table-card scrollable-table" style={{ position: "relative", minHeight: "200px" }}>
-            
-            {/* ✅ ADDED: Local Loading Overlay */}
             {isLoading && (
                 <div style={tableOverlayStyle}>
                     <div style={spinnerStyle}></div>
@@ -404,29 +380,13 @@ export default function AdminArts() {
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
-                  <tr className="empty-row">
-                    <td colSpan="6">
-                        No artworks found
-                    </td>
-                  </tr>
+                  <tr className="empty-row"><td colSpan="6">No artworks found</td></tr>
                 ) : (
                   filtered.map((a) => (
                     <tr key={a.id}>
-                      <td>
-                        <img 
-                            src={getImageUrl(a.image)} 
-                            alt="art" 
-                            loading="lazy" 
-                            decoding="async"
-                            style={{width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px'}}
-                        />
-                      </td>
-                      <td style={{ whiteSpace: "normal", maxWidth: "200px", wordWrap: "break-word", lineHeight: "1.4" }}>
-                        {a.title}
-                      </td>
-                      <td style={{ whiteSpace: "normal", maxWidth: "150px" }}>
-                        {a.artist}
-                      </td>
+                      <td><img src={getImageUrl(a.image)} alt="art" loading="lazy" style={{width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px'}} /></td>
+                      <td style={{ whiteSpace: "normal", maxWidth: "200px" }}>{a.title}</td>
+                      <td style={{ whiteSpace: "normal", maxWidth: "150px" }}>{a.artist}</td>
                       <td>{a.category}</td>
                       <td>₱{a.price}</td>
                       <td>
@@ -448,67 +408,27 @@ export default function AdminArts() {
         <div className="overlay">
           <div className="overlay-content">
             <h2>Add New Artwork</h2>
-            <input
-              placeholder="Title"
-              value={newArt.title}
-              onChange={(e) => setNewArt({ ...newArt, title: e.target.value })}
-              className="overlay-input"
-            />
-            <select
-                className="overlay-input"
-                value={newArt.artist_id}
-                onChange={(e) => setNewArt({ ...newArt, artist_id: e.target.value })}
-            >
+            <input placeholder="Title" value={newArt.title} onChange={(e) => setNewArt({ ...newArt, title: e.target.value })} className="overlay-input" />
+            
+            <select className="overlay-input" value={newArt.artist_id} onChange={(e) => setNewArt({ ...newArt, artist_id: e.target.value })}>
                 <option value="">-- Select Artist --</option>
-                {artists.map(artist => (
-                    <option key={artist.id} value={artist.id}>
-                        {artist.name}
-                    </option>
-                ))}
+                {artists.map(artist => <option key={artist.id} value={artist.id}>{artist.name}</option>)}
             </select>
-            <input
-              placeholder="Category"
-              list="category-options-new"
-              value={newArt.category}
-              onChange={(e) => setNewArt({ ...newArt, category: e.target.value })}
-              className="overlay-input"
-            />
-            <datalist id="category-options-new">
-              {[...new Set(arts.map(item => item.category))].map((cat, index) => (
-                <option key={index} value={cat} />
-              ))}
-            </datalist>
 
-            <input
-              placeholder="Price (₱)"
-              type="number"
-              value={newArt.price}
-              onChange={(e) => setNewArt({ ...newArt, price: e.target.value })}
-              className="overlay-input"
-            />
-            <textarea
-              placeholder="Description"
-              value={newArt.description}
-              onChange={(e) => setNewArt({ ...newArt, description: e.target.value })}
-              className="overlay-input"
-              rows={3}
-            />
+            {/* 👇 UPDATED: CATEGORY DROPDOWN */}
+            <select className="overlay-input" value={newArt.category} onChange={(e) => setNewArt({ ...newArt, category: e.target.value })}>
+                <option value="">-- Select Category --</option>
+                {CATEGORIES.map((cat, index) => <option key={index} value={cat}>{cat}</option>)}
+            </select>
+
+            <input placeholder="Price (₱)" type="number" value={newArt.price} onChange={(e) => setNewArt({ ...newArt, price: e.target.value })} className="overlay-input" />
+            <textarea placeholder="Description" value={newArt.description} onChange={(e) => setNewArt({ ...newArt, description: e.target.value })} className="overlay-input" rows={3} />
             <label style={{display:'block', textAlign:'left', marginBottom:'5px', fontSize:'14px'}}>Upload Image:</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setNewArt({ ...newArt, file: e.target.files[0] })}
-              className="overlay-input"
-              style={{paddingTop: '10px'}}
-            />
+            <input type="file" accept="image/*" onChange={(e) => setNewArt({ ...newArt, file: e.target.files[0] })} className="overlay-input" style={{paddingTop: '10px'}} />
 
             <div className="overlay-actions">
-              <button className="btn" onClick={handleSaveNewArt} disabled={isLoading}>
-                Save
-              </button>
-              <button className="btn" onClick={() => setShowAddOverlay(false)}>
-                Cancel
-              </button>
+              <button className="btn" onClick={handleSaveNewArt} disabled={isLoading}>Save</button>
+              <button className="btn" onClick={() => setShowAddOverlay(false)}>Cancel</button>
             </div>
           </div>
         </div>
@@ -519,71 +439,27 @@ export default function AdminArts() {
         <div className="overlay">
           <div className="overlay-content">
             <h2>Edit Artwork</h2>
-            <input
-              placeholder="Title"
-              value={editedArt.title}
-              onChange={(e) => setEditedArt({ ...editedArt, title: e.target.value })}
-              className="overlay-input"
-            />
-            <select
-                className="overlay-input"
-                value={editedArt.artist_id || ""}
-                onChange={(e) => setEditedArt({ ...editedArt, artist_id: e.target.value })}
-            >
+            <input placeholder="Title" value={editedArt.title} onChange={(e) => setEditedArt({ ...editedArt, title: e.target.value })} className="overlay-input" />
+            
+            <select className="overlay-input" value={editedArt.artist_id || ""} onChange={(e) => setEditedArt({ ...editedArt, artist_id: e.target.value })}>
                 <option value="">-- Select Artist --</option>
-                {artists.map(artist => (
-                    <option key={artist.id} value={artist.id}>
-                        {artist.name}
-                    </option>
-                ))}
+                {artists.map(artist => <option key={artist.id} value={artist.id}>{artist.name}</option>)}
             </select>
-            <input
-              placeholder="Category"
-              list="category-options-edit"
-              value={editedArt.category}
-              onChange={(e) => setEditedArt({ ...editedArt, category: e.target.value })}
-              className="overlay-input"
-            />
-            <datalist id="category-options-edit">
-              {[...new Set(arts.map(item => item.category))].map((cat, index) => (
-                <option key={index} value={cat} />
-              ))}
-            </datalist>
-            <input
-              placeholder="Price (₱)"
-              type="number"
-              value={editedArt.price}
-              onChange={(e) => setEditedArt({ ...editedArt, price: e.target.value })}
-              className="overlay-input"
-            />
-            <textarea
-              placeholder="Description"
-              value={editedArt.description}
-              onChange={(e) => setEditedArt({ ...editedArt, description: e.target.value })}
-              className="overlay-input"
-              rows={3}
-            />
+
+            {/* 👇 UPDATED: CATEGORY DROPDOWN */}
+            <select className="overlay-input" value={editedArt.category} onChange={(e) => setEditedArt({ ...editedArt, category: e.target.value })}>
+                <option value="">-- Select Category --</option>
+                {CATEGORIES.map((cat, index) => <option key={index} value={cat}>{cat}</option>)}
+            </select>
+
+            <input placeholder="Price (₱)" type="number" value={editedArt.price} onChange={(e) => setEditedArt({ ...editedArt, price: e.target.value })} className="overlay-input" />
+            <textarea placeholder="Description" value={editedArt.description} onChange={(e) => setEditedArt({ ...editedArt, description: e.target.value })} className="overlay-input" rows={3} />
             <label style={{display:'block', textAlign:'left', marginBottom:'5px', fontSize:'14px'}}>Change Image (Optional):</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setEditedArt({ ...editedArt, file: e.target.files[0] })}
-              className="overlay-input"
-              style={{paddingTop: '10px'}}
-            />
+            <input type="file" accept="image/*" onChange={(e) => setEditedArt({ ...editedArt, file: e.target.files[0] })} className="overlay-input" style={{paddingTop: '10px'}} />
+            
             <div className="overlay-actions">
-              <button className="btn" onClick={handleSaveEdit} disabled={isLoading}>
-                Save
-              </button>
-              <button
-                className="btn"
-                onClick={() => {
-                  setShowEditOverlay(false);
-                  setEditedArt(null);
-                }}
-              >
-                Cancel
-              </button>
+              <button className="btn" onClick={handleSaveEdit} disabled={isLoading}>Save</button>
+              <button className="btn" onClick={() => { setShowEditOverlay(false); setEditedArt(null); }}>Cancel</button>
             </div>
           </div>
         </div>
@@ -594,31 +470,13 @@ export default function AdminArts() {
         <div className="overlay">
           <div className="overlay-content preview">
             <h2>{previewArt.title}</h2>
-            <img
-              src={getImageUrl(previewArt.image)}
-              alt={previewArt.title}
-              style={{
-                maxWidth: "300px",
-                maxHeight: "300px",
-                borderRadius: "10px",
-                marginBottom: "20px",
-                objectFit: "contain"
-              }}
-            />
+            <img src={getImageUrl(previewArt.image)} alt={previewArt.title} style={{maxWidth: "300px", maxHeight: "300px", borderRadius: "10px", marginBottom: "20px", objectFit: "contain"}} />
             <p><strong>Artist:</strong> {previewArt.artist}</p>
             <p><strong>Category:</strong> {previewArt.category}</p>
             <p><strong>Price:</strong> ₱{previewArt.price}</p>
             <p><strong>Description:</strong> {previewArt.description}</p>
             <div className="overlay-actions">
-              <button
-                className="btn"
-                onClick={() => {
-                  setShowPreviewOverlay(false);
-                  setPreviewArt(null);
-                }}
-              >
-                Close
-              </button>
+              <button className="btn" onClick={() => { setShowPreviewOverlay(false); setPreviewArt(null); }}>Close</button>
             </div>
           </div>
         </div>

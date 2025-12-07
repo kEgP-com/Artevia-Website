@@ -14,6 +14,7 @@ import Painting from "./pages/ProductPage/Painting";
 import Sketch from "./pages/ProductPage/Sketch";
 import HandmadeDecors from "./pages/ProductPage/HandmadeDecors";
 import ArtPage from "./pages/ProductPage/ArtPageList";
+import Suspend from "./components/Suspension";
 
 export default function App() {
   return (
@@ -23,7 +24,7 @@ export default function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/code-verification" element={<CodeVerification />} />
-
+      <Route path="/suspend" element={<Suspend />} />
       {/* Main pages */}
       <Route path="/" element={<Navigate to="/homepage" />} />
       <Route path="/homepage" element={<Homepage />} />

@@ -104,7 +104,12 @@ function Painting() {
             />
           </div>
           <div className="discovery-grid">
-            {filteredPaintings.length > 0 ? (
+            {/* 👇 LOADING CHECK ADDED HERE */}
+            {loading ? (
+              <div style={{ width: "100%", textAlign: "center", padding: "50px", color: "#666", fontSize: "1.2rem" }}>
+                Loading paintings...
+              </div>
+            ) : filteredPaintings.length > 0 ? (
               filteredPaintings.map((art) => (
                 <ProductCard key={art.id} item={art} onView={handleView} />
               ))

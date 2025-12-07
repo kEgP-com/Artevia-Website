@@ -104,7 +104,12 @@ function DigitalArts() {
             />
           </div>
           <div className="discovery-grid">
-            {filteredDigitalArts.length > 0 ? (
+            {/* 👇 LOADING CHECK ADDED HERE */}
+            {loading ? (
+              <div style={{ width: "100%", textAlign: "center", padding: "50px", color: "#666", fontSize: "1.2rem" }}>
+                Loading digital arts...
+              </div>
+            ) : filteredDigitalArts.length > 0 ? (
               filteredDigitalArts.map((art) => (
                 <ProductCard key={art.id} item={art} onView={handleView} />
               ))

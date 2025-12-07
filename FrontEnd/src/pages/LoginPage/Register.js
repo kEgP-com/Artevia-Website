@@ -2,22 +2,27 @@ import React, { useState } from "react";
 // No axios import needed
 import "../../css/Register.css";
 import wavebg from "../../images/images/login_bg.png";
-import { FaCheckCircle, FaRegCircle, FaGoogle } from "react-icons/fa";
+// 1. Import Eye Icons
+import { FaCheckCircle, FaRegCircle, FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 export default function Register() {
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [confirm, setConfirm] = useState("");
+  
+  // 2. Add State for toggling password visibility
+  const [showPass, setShowPass] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const [agreed, setAgreed] = useState(false);
-  const [error, setError] = useState(""); // State for error messages
-  const [isLoading, setIsLoading] = useState(false); // State for loading overlay
+  const [error, setError] = useState(""); 
+  const [isLoading, setIsLoading] = useState(false); 
   const navigate = useNavigate();
 
   const handleSignUp = async () => {
     setError("");
 
-    // 1. Client-side Validation
     if (!agreed) {
       alert("You must agree to the Terms of Service and Privacy Policy!");
       return;
@@ -33,11 +38,9 @@ export default function Register() {
         return;
     }
 
-    // 2. Start Loading
     setIsLoading(true);
 
     try {
-        // 3. Send Data to Backend using Fetch
         const response = await fetch("http://localhost:8082/api/register", {
             method: "POST",
             headers: {
@@ -53,11 +56,9 @@ export default function Register() {
         const data = await response.json();
 
         if (response.ok) {
-            // Success!
             alert("Sign up successful! Please log in.");
             navigate("/customer/login"); 
         } else {
-            // Backend returned an error (e.g., Email taken)
             setIsLoading(false);
             setError(data.message || "Registration failed. Email might be taken.");
         }
@@ -140,9 +141,31 @@ export default function Register() {
           transform: scale(1.02);
           box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
+
+        /* 3. CSS for Password Eye Icon */
+        .password-container {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        .eye-icon {
+            position: absolute;
+            right: 15px; /* Adjust based on your input padding/width */
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            z-index: 10;
+        }
       `}</style>
 
-      {/* ✅ The Overlay Component */}
       {isLoading && (
         <div className="loading-overlay">
           <div className="spinner"></div>
@@ -169,28 +192,52 @@ export default function Register() {
             }}
             className="input"
           />
-          <input
-            placeholder="enter password"
-            type="password"
-            value={pass}
-            disabled={isLoading}
-            onChange={(e) => {
-                setPass(e.target.value);
-                setError("");
-            }}
-            className="input2"
-          />
-          <input
-            placeholder="confirm password"
-            type="password"
-            value={confirm}
-            disabled={isLoading}
-            onChange={(e) => {
-                setConfirm(e.target.value);
-                setError("");
-            }}
-            className="input3"
-          />
+
+          {/* 4. Password Field with Icon */}
+          <div className="password-container">
+            <input
+                placeholder="enter password"
+                type={showPass ? "text" : "password"} // Toggle type
+                value={pass}
+                disabled={isLoading}
+                onChange={(e) => {
+                    setPass(e.target.value);
+                    setError("");
+                }}
+                className="input2"
+                style={{ width: "100%" }} // Ensure input fills container if needed
+            />
+            <button 
+                type="button" // Important: prevents form submission
+                className="eye-icon" 
+                onClick={() => setShowPass(!showPass)}
+            >
+                {showPass ? <FaEyeSlash size={20}/> : <FaEye size={20}/>}
+            </button>
+          </div>
+
+          {/* 5. Confirm Password Field with Icon */}
+          <div className="password-container">
+            <input
+                placeholder="confirm password"
+                type={showConfirm ? "text" : "password"} // Toggle type
+                value={confirm}
+                disabled={isLoading}
+                onChange={(e) => {
+                    setConfirm(e.target.value);
+                    setError("");
+                }}
+                className="input3"
+                style={{ width: "100%" }}
+            />
+            <button 
+                type="button" 
+                className="eye-icon" 
+                onClick={() => setShowConfirm(!showConfirm)}
+            >
+                {showConfirm ? <FaEyeSlash size={20}/> : <FaEye size={20}/>}
+            </button>
+          </div>
 
           {/* Error Message Display */}
           {error && <p style={{ color: "red", fontSize: "14px", marginTop: "10px", textAlign: "center" }}>{error}</p>}

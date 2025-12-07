@@ -16,11 +16,11 @@ Route::get('/test', function () {
 // User Authentication Routes
 Route::post('/login', [UsersInfoController::class, 'login']);
 Route::post('/register', [UsersInfoController::class, 'register']);
-// Route::post('/reset-password', [UsersInfoController::class, 'resetPassword'])
+Route::post('/reset-password', [UsersInfoController::class, 'resetPassword']);
 Route::get('/users', [UsersInfoController::class, 'index']);
 Route::get('/users/{id}', [UsersInfoController::class, 'show']);
 Route::put('/users/{id}', [UsersInfoController::class, 'update']);
-
+Route::put('/users/{id}/ban', [UsersInfoController::class, 'toggleBan']);
 // Product Routes
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);

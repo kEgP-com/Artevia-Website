@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../css/Admin.css";
-import { FaUserCircle, FaCog, FaBars } from "react-icons/fa";
+import { FaUserCircle, FaCog, FaBars, FaBan, FaCheck } from "react-icons/fa";
 import logo from "../../images/logo/logo_clear.png";
 import wavebg from "../../images/images/login_bg.png";
 
@@ -11,20 +11,23 @@ export default function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [query, setQuery] = useState("");
   const [sortOrder, setSortOrder] = useState("none");
-  const [editingId, setEditingId] = useState(null);
-  const [editedUser, setEditedUser] = useState({});
-  const [showOverlay, setShowOverlay] = useState(false);
-  const [newUsersCount, setNewUsersCount] = useState(1);
-  const [newUsers, setNewUsers] = useState([]);
+  
+  // --- BAN OVERLAY STATE ---
+  const [showBanOverlay, setShowBanOverlay] = useState(false);
+  const [selectedUserBan, setSelectedUserBan] = useState(null);
+  const [banType, setBanType] = useState("permanent"); 
+  const [banDuration, setBanDuration] = useState(1);
+  const [banUnit, setBanUnit] = useState("days"); 
+  const [banReason, setBanReason] = useState(""); 
+
   const [showSettings, setShowSettings] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
   
-
+  // Controls loading spinner for Fetching AND Banning
   const [isLoading, setIsLoading] = useState(false);
 
   const toggleNav = () => setIsNavOpen(!isNavOpen);
-
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -46,7 +49,6 @@ export default function AdminUsers() {
   useEffect(() => {
     fetchUsers();
   }, []);
-
 
   const toggleSettings = () => {
     setShowSettings(!showSettings);
@@ -82,209 +84,136 @@ export default function AdminUsers() {
     return data;
   }, [users, query, sortOrder]);
 
-
-
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this user? This cannot be undone.")) return;
 
     try {
-        const response = await fetch(`http://localhost:8082/api/users/${id}`, {
+        await fetch(`http://localhost:8082/api/users/${id}`, {
             method: "DELETE"
         });
-        
         setUsers((prev) => prev.filter((u) => u.id !== id));
     } catch (error) {
         alert("Failed to delete user.");
     }
   };
 
-  const handleEdit = (user) => {
-    setEditingId(user.id);
-    setEditedUser({ ...user });
+  // --- 1. OPEN BAN OVERLAY OR UNBAN IMMEDIATELY ---
+  const handleBanClick = (user) => {
+      if (user.is_banned) {
+          if (window.confirm(`Unban ${user.name}?`)) {
+             // Unban immediately
+             confirmBanAction(user, false, null, null, null); 
+          }
+      } else {
+          // Open Ban Overlay
+          setSelectedUserBan(user);
+          setBanType("permanent");
+          setBanDuration(1);
+          setBanUnit("days");
+          setBanReason(""); 
+          setShowBanOverlay(true);
+      }
   };
 
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    setEditedUser({});
+  // --- 2. CALCULATE DATE AND SUBMIT ---
+  const submitBan = () => {
+      if (!banReason.trim()) {
+          alert("Please provide a reason for this suspension.");
+          return;
+      }
+
+      let bannedUntil = null;
+
+      if (banType === "temporary") {
+          const date = new Date();
+          const duration = parseInt(banDuration);
+          
+          if (banUnit === "days") date.setDate(date.getDate() + duration);
+          if (banUnit === "months") date.setMonth(date.getMonth() + duration);
+          if (banUnit === "years") date.setFullYear(date.getFullYear() + duration);
+          
+          bannedUntil = date.toISOString().slice(0, 19).replace('T', ' ');
+      }
+
+      confirmBanAction(selectedUserBan, true, bannedUntil, banReason, banType);
+      // Note: We close the overlay ONLY after success in the API call below, 
+      // or we can close it here if we want optimistic UI. 
+      // I prefer closing it here but letting the loading state handle visual feedback.
   };
 
-  const handleChange = (e, key) => {
-    setEditedUser((prev) => ({ ...prev, [key]: e.target.value }));
-  };
-
-
-  const handleSave = async (id) => {
-    try {
-        const response = await fetch(`http://localhost:8082/api/users/${id}`, {
+  // --- 3. API CALL (WITH LOADING STATE) ---
+  const confirmBanAction = async (user, isBanned, bannedUntil, reason, type) => {
+      // 👇 Start Loading
+      setIsLoading(true);
+      
+      try {
+        const response = await fetch(`http://localhost:8082/api/users/${user.id}/ban`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
                 "Accept": "application/json"
             },
-            body: JSON.stringify(editedUser)
+            body: JSON.stringify({ 
+                is_banned: isBanned,
+                banned_until: isBanned ? bannedUntil : null,
+                ban_reason: isBanned ? reason : null,
+                type: isBanned ? type : null 
+            }) 
         });
 
         if (response.ok) {
+            const updatedUser = await response.json(); 
+            
             setUsers((prev) =>
-              prev.map((u) => (u.id === id ? { ...editedUser } : u))
+              prev.map((u) => (u.id === user.id ? updatedUser : u))
             );
-            setEditingId(null);
-            alert("User updated successfully!");
+            
+            setShowBanOverlay(false); // Close overlay on success
+            const msg = !isBanned ? "User Activated." : "User has been suspended successfully.";
+            alert(msg);
         } else {
-            alert("Failed to update user.");
+            alert("Failed to update status.");
         }
     } catch (error) {
-        console.error("Update error:", error);
+        console.error("Ban error:", error);
         alert("Network error.");
-    }
-  };
-
-  const handleAddClick = () => {
-    setShowOverlay(true);
-    setNewUsers([
-      {
-        id: Date.now(),
-        name: "",
-        email: "",
-        address: "",
-        contact: "",
-        age: "",
-        password: "password123"
-      },
-    ]);
-  };
-
-  const handleAddCountChange = (count) => {
-    const number = Math.max(1, Number(count) || 1);
-    setNewUsersCount(number);
-    const newArray = Array.from({ length: number }, (_, i) => ({
-      id: Date.now() + i,
-      name: "",
-      email: "",
-      address: "",
-      contact: "",
-      age: "",
-      password: "password123"
-    }));
-    setNewUsers(newArray);
-  };
-
-  const handleNewUserChange = (index, key, value) => {
-    const updated = [...newUsers];
-    updated[index][key] = value;
-    setNewUsers(updated);
-  };
-
-  const handleSaveNewUsers = async () => {
-    setIsLoading(true);
-    try {
-        for (const user of newUsers) {
-            await fetch("http://localhost:8082/api/register", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                },
-                body: JSON.stringify({
-                    email: user.email,
-                    password: user.password,
-                    name: user.name,
-                    address: user.address,
-                    contact: user.contact,
-                    age: user.age
-                })
-            });
-        }
-        
-        await fetchUsers();
-        setShowOverlay(false);
-        alert("Users added successfully!");
-    } catch (error) {
-        console.error("Add user error:", error);
-        alert("Failed to add some users.");
     } finally {
+        // 👇 Stop Loading
         setIsLoading(false);
     }
   };
 
   return (
-    <div
-      className="admin-root"
-      style={{
-        backgroundImage: `url(${wavebg})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-
+    <div className="admin-root" style={{ backgroundImage: `url(${wavebg})`, backgroundSize: "cover", backgroundPosition: "center" }}>
+      
       <header className="dashboard-header">
-        <div className="brand">
-          <img src={logo} alt="logo" className="brand-logo" />
-        </div>
-
-        <button className="hamburger" onClick={toggleNav}>
-          <FaBars />
-        </button>
-
+        <div className="brand"><img src={logo} alt="logo" className="brand-logo" /></div>
+        <button className="hamburger" onClick={toggleNav}><FaBars /></button>
         <nav className={`dashboard-nav ${isNavOpen ? "show" : ""}`}>
-          <button className="nav-item" onClick={() => navigate("/admin/dashboard")}>
-            DASHBOARD
-          </button>
-          <button className="nav-item active" onClick={() => navigate("/admin/users")}>
-            USERS
-          </button>
-          <button className="nav-item" onClick={() => navigate("/admin/arts")}>
-            ARTS
-          </button>
-          <button className="nav-item" onClick={() => navigate("/admin/artists")}>
-            ARTISTS
-          </button>
-          <button className="nav-item" onClick={() => navigate("/admin/orders")}>
-            ORDERS
-          </button>
-          <button className="nav-item" onClick={() => navigate("/admin/messages")}>
-            MESSAGES
-          </button>
+          <button className="nav-item" onClick={() => navigate("/admin/dashboard")}>DASHBOARD</button>
+          <button className="nav-item active" onClick={() => navigate("/admin/users")}>USERS</button>
+          <button className="nav-item" onClick={() => navigate("/admin/arts")}>ARTS</button>
+          <button className="nav-item" onClick={() => navigate("/admin/artists")}>ARTISTS</button>
+          <button className="nav-item" onClick={() => navigate("/admin/orders")}>ORDERS</button>
+          <button className="nav-item" onClick={() => navigate("/admin/messages")}>MESSAGES</button>
         </nav>
         <div className="icon-section">
           <div className="icon-wrapper">
             <FaCog className="icon-btn" onClick={toggleSettings} />
-            {showSettings && (
-              <div className="dropdown-menu show-dropdown">
-                <button>Account Settings</button>
-                <button>Preferences</button>
-                <button onClick={() => navigate("/admin/login")}>Logout</button>
-              </div>
-            )}
+            {showSettings && (<div className="dropdown-menu show-dropdown"><button>Account Settings</button><button>Preferences</button><button onClick={() => navigate("/admin/login")}>Logout</button></div>)}
           </div>
-
           <div className="icon-wrapper">
             <FaUserCircle className="icon-btn" onClick={toggleProfile} />
-            {showProfile && (
-              <div className="dropdown-menu show-dropdown">
-                <button>View Profile</button>
-                <button>Edit Profile</button>
-              </div>
-            )}
+            {showProfile && (<div className="dropdown-menu show-dropdown"><button>View Profile</button><button>Edit Profile</button></div>)}
           </div>
         </div>
       </header>
 
-
       <main className="admin-main">
         <section className="controls">
           <div className="search-group">
-            <input
-              className="search-input"
-              placeholder="Search user..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            <select
-              className="select-field"
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value)}
-            >
+            <input className="search-input" placeholder="Search user..." value={query} onChange={(e) => setQuery(e.target.value)} />
+            <select className="select-field" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
               <option value="none">Sort...</option>
               <option value="a-z">A–Z</option>
               <option value="z-a">Z–A</option>
@@ -292,14 +221,9 @@ export default function AdminUsers() {
             </select>
             <button className="btn btn-search">Search</button>
           </div>
-
           <div className="controls-right">
-            <button className="btn-add" onClick={handleAddClick}>
-              Add User
-            </button>
-            <button className="btn" onClick={fetchUsers} style={{marginLeft: '10px'}}>
-              Refresh Data
-            </button>
+            {/* 👇 Removed Add User Button */}
+            <button className="btn" onClick={fetchUsers} style={{marginLeft: '10px'}}>Refresh Data</button>
           </div>
         </section>
 
@@ -313,113 +237,47 @@ export default function AdminUsers() {
                   <th>ADDRESS</th>
                   <th>CONTACT NO.</th>
                   <th>AGE</th>
+                  <th>STATUS</th> 
                   <th>ACTION</th>
                 </tr>
               </thead>
               <tbody>
-                {isLoading ? (
-                    <tr><td colSpan="6" style={{textAlign: "center", padding: "20px"}}>Loading Data...</td></tr>
+                {isLoading && !showBanOverlay ? (
+                    <tr><td colSpan="7" style={{textAlign: "center", padding: "20px"}}>Loading Data...</td></tr>
                 ) : filtered.length === 0 ? (
-                  <tr className="empty-row">
-                    <td colSpan="6">No results found</td>
-                  </tr>
+                  <tr className="empty-row"><td colSpan="7">No results found</td></tr>
                 ) : (
                   filtered.map((u) => (
-                    <tr key={u.id}>
+                    <tr key={u.id} style={{ opacity: u.is_banned ? 0.6 : 1 }}>
+                      <td>{u.name}</td>
+                      <td>{u.email}</td>
+                      <td>{u.address || "N/A"}</td>
+                      <td>{u.contact || "N/A"}</td>
+                      <td>{u.age || "-"}</td>
                       <td>
-                        {editingId === u.id ? (
-                          <input
-                            type="text"
-                            value={editedUser.name}
-                            onChange={(e) => handleChange(e, "name")}
-                            className="edit-input"
-                          />
-                        ) : (
-                          u.name
-                        )}
+                        <span style={{
+                                backgroundColor: u.is_banned ? "#ffcccc" : "#ccffcc",
+                                color: u.is_banned ? "#cc0000" : "#006600",
+                                padding: "4px 8px", borderRadius: "4px", fontWeight: "bold", fontSize: "0.85rem"
+                            }}
+                        >
+                            {u.is_banned ? "BANNED" : "ACTIVE"}
+                        </span>
                       </td>
                       <td>
-                        {editingId === u.id ? (
-                          <input
-                            type="email"
-                            value={editedUser.email}
-                            onChange={(e) => handleChange(e, "email")}
-                            className="edit-input"
-                          />
-                        ) : (
-                          u.email
-                        )}
-                      </td>
-                      <td>
-                        {editingId === u.id ? (
-                          <input
-                            type="text"
-                            value={editedUser.address}
-                            onChange={(e) => handleChange(e, "address")}
-                            className="edit-input"
-                          />
-                        ) : (
-                          u.address
-                        )}
-                      </td>
-                      <td>
-                        {editingId === u.id ? (
-                          <input
-                            type="text"
-                            value={editedUser.contact}
-                            onChange={(e) => handleChange(e, "contact")}
-                            className="edit-input"
-                          />
-                        ) : (
-                          u.contact
-                        )}
-                      </td>
-                      <td>
-                        {editingId === u.id ? (
-                          <input
-                            type="number"
-                            value={editedUser.age}
-                            onChange={(e) => handleChange(e, "age")}
-                            className="edit-input"
-                          />
-                        ) : (
-                          u.age
-                        )}
-                      </td>
-                      <td>
-                        {editingId === u.id ? (
-                          <>
-                            <button
-                              className="action-btn save"
-                              onClick={() => handleSave(u.id)}
-                            >
-                              Save
-                            </button>
-                        
-                            <button
-                                className="action-btn"
-                                onClick={handleCancelEdit}
-                                style={{ marginLeft: "5px", backgroundColor: "#6c757d", color: "white" }}
-                            >
-                                Cancel
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              className="action-btn edit"
-                              onClick={() => handleEdit(u)}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className="action-btn delete"
-                              onClick={() => handleDelete(u.id)}
-                            >
-                              Delete
-                            </button>
-                          </>
-                        )}
+                        <button
+                          className="action-btn"
+                          onClick={() => handleBanClick(u)}
+                          style={{ 
+                              backgroundColor: u.is_banned ? "#28a745" : "#ff9800",
+                              color: "white", marginRight: "5px", display: "inline-flex", alignItems: "center", gap: "4px"
+                          }}
+                          title={u.is_banned ? "Re-activate User" : "Suspend User"}
+                        >
+                          {u.is_banned ? <FaCheck /> : <FaBan />}
+                          {u.is_banned ? "Activate" : "Ban"}
+                        </button>
+                        <button className="action-btn delete" onClick={() => handleDelete(u.id)}>Delete</button>
                       </td>
                     </tr>
                   ))
@@ -430,65 +288,85 @@ export default function AdminUsers() {
         </section>
       </main>
 
-      {showOverlay && (
-        <div className="overlay">
-          <div className="overlay-content">
-            <h2>Add New Users</h2>
-            <label>
-              How many users to add:
-              <input
-                type="number"
-                className="overlay-input"
-                value={newUsersCount}
-                onChange={(e) => handleAddCountChange(e.target.value)}
-              />
-            </label>
+      {/* OVERLAY: Ban Options */}
+      {showBanOverlay && selectedUserBan && (
+          <div className="overlay">
+            <div className="overlay-content" style={{ maxWidth: '450px' }}>
+                <h2 style={{color: '#d32f2f'}}>Suspend User</h2>
+                <p>Select suspension details for <strong>{selectedUserBan.name}</strong>:</p>
+                
+                <div style={{ margin: '20px 0', textAlign: 'left' }}>
+                    
+                    {/* Duration Options */}
+                    <div style={{ marginBottom: '15px' }}>
+                        <div style={{ marginBottom: '10px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                <input 
+                                    type="radio" name="banType" value="permanent" 
+                                    checked={banType === "permanent"} onChange={() => setBanType("permanent")}
+                                    style={{ marginRight: '10px', width: '20px', height: '20px' }}
+                                />
+                                <strong>Permanent Ban</strong>
+                            </label>
+                        </div>
+                        <div style={{ marginBottom: '10px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                <input 
+                                    type="radio" name="banType" value="temporary" 
+                                    checked={banType === "temporary"} onChange={() => setBanType("temporary")}
+                                    style={{ marginRight: '10px', width: '20px', height: '20px' }}
+                                />
+                                <strong>Temporary Suspension</strong>
+                            </label>
+                        </div>
+                        {banType === "temporary" && (
+                            <div style={{ paddingLeft: '30px', display: 'flex', gap: '10px' }}>
+                                <input type="number" min="1" value={banDuration} onChange={(e) => setBanDuration(e.target.value)} style={{ width: '80px', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}/>
+                                <select value={banUnit} onChange={(e) => setBanUnit(e.target.value)} style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}>
+                                    <option value="days">Days</option>
+                                    <option value="months">Months</option>
+                                    <option value="years">Years</option>
+                                </select>
+                            </div>
+                        )}
+                    </div>
 
-            <div className="overlay-users-form">
-              {newUsers.map((user, i) => (
-                <div key={i} className="overlay-user-box">
-                  <h4>User {i + 1}</h4>
-                  <input
-                    placeholder="Name"
-                    value={user.name}
-                    onChange={(e) => handleNewUserChange(i, "name", e.target.value)}
-                  />
-                  <input
-                    placeholder="Email"
-                    value={user.email}
-                    onChange={(e) => handleNewUserChange(i, "email", e.target.value)}
-                  />
-                  <input
-                    placeholder="Address"
-                    value={user.address}
-                    onChange={(e) => handleNewUserChange(i, "address", e.target.value)}
-                  />
-                  <input
-                    placeholder="Contact No."
-                    value={user.contact}
-                    onChange={(e) => handleNewUserChange(i, "contact", e.target.value)}
-                  />
-                  <input
-                    placeholder="Age"
-                    type="number"
-                    value={user.age}
-                    onChange={(e) => handleNewUserChange(i, "age", e.target.value)}
-                  />
+                    {/* Reason Text Area */}
+                    <div style={{ borderTop: '1px solid #eee', paddingTop: '15px' }}>
+                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Reason for Suspension (Required):</label>
+                        <textarea
+                            rows="3"
+                            style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontFamily: 'inherit', resize: 'vertical' }}
+                            placeholder="e.g. Violation of Terms of Service, Inappropriate behavior, Fake profile..."
+                            value={banReason}
+                            onChange={(e) => setBanReason(e.target.value)}
+                        />
+                    </div>
                 </div>
-              ))}
-            </div>
 
-            <div className="overlay-actions">
-              <button className="btn" onClick={handleSaveNewUsers} disabled={isLoading}>
-                {isLoading ? "Saving..." : "Save"}
-              </button>
-              <button className="btn" onClick={() => setShowOverlay(false)}>
-                Cancel
-              </button>
+                <div className="overlay-actions">
+                    {/* 👇 Updated Button with Loading State */}
+                    <button 
+                        className="btn" 
+                        onClick={submitBan} 
+                        disabled={isLoading}
+                        style={{ backgroundColor: '#d32f2f', color: 'white', opacity: isLoading ? 0.7 : 1, cursor: isLoading ? 'not-allowed' : 'pointer' }}
+                    >
+                        {isLoading ? "Processing..." : "Confirm Suspension"}
+                    </button>
+                    
+                    <button 
+                        className="btn" 
+                        onClick={() => setShowBanOverlay(false)}
+                        disabled={isLoading} // Also disable cancel while loading
+                    >
+                        Cancel
+                    </button>
+                </div>
             </div>
           </div>
-        </div>
       )}
+
     </div>
   );
 }

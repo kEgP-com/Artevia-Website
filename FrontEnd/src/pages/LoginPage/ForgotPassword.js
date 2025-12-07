@@ -6,6 +6,9 @@ import { useNavigate } from "react-router-dom";
 import Overlay from "../../components/Overlay";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
+// Ensure this matches your Laravel port
+const API_URL = "http://localhost:8082";
+
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [newPass, setNewPass] = useState("");
@@ -13,18 +16,17 @@ export default function ForgotPassword() {
   const [showNewPass, setShowNewPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   
-  // ✅ New States for Loading and Errors
-  const [showOverlay, setShowOverlay] = useState(false); // Success Overlay
-  const [isLoading, setIsLoading] = useState(false); // Loading Spinner
-  const [error, setError] = useState(""); // Error Message
+  // States for Loading and UI
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   
   const navigate = useNavigate();
 
   const handleReset = async () => {
-    // 1. Reset Error
     setError("");
 
-    // 2. Validation
+    // 1. Validation
     if (!email || !newPass || !confirmPass) {
       setError("Please fill in all fields.");
       return;
@@ -35,13 +37,12 @@ export default function ForgotPassword() {
       return;
     }
 
-    // 3. Start Loading
+    // 2. Start Loading
     setIsLoading(true);
 
     try {
-      // 4. Send Request to Backend
-      // We are hitting a new endpoint we will create: /api/reset-password
-      const response = await fetch("http://localhost:8082/api/reset-password", {
+      // 3. Send Request to Backend
+      const response = await fetch(`${API_URL}/api/reset-password`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -56,11 +57,11 @@ export default function ForgotPassword() {
       const data = await response.json();
 
       if (response.ok) {
-        // Success! Stop loading and show the Success Overlay
+        // Success!
         setIsLoading(false);
         setShowOverlay(true); 
       } else {
-        // Handle Backend Errors (e.g., Email not found)
+        // Handle Errors (e.g. Email not found)
         setIsLoading(false);
         setError(data.message || "Failed to reset password.");
       }
@@ -75,47 +76,25 @@ export default function ForgotPassword() {
   return (
     <div className="view" style={{ backgroundImage: `url(${wavebg})` }}>
       
-      {/* ✅ Internal Styles for the Loading Spinner */}
+      {/* Loading CSS */}
       <style>{`
         .loading-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
+          position: fixed; top: 0; left: 0; width: 100%; height: 100%;
           background: rgba(0, 0, 0, 0.6);
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          z-index: 9999;
-          backdrop-filter: blur(5px);
+          display: flex; flex-direction: column;
+          justify-content: center; align-items: center;
+          z-index: 9999; backdrop-filter: blur(5px);
         }
-
         .spinner {
-          border: 6px solid #f3f3f3;
-          border-top: 6px solid #3498db;
-          border-radius: 50%;
-          width: 50px;
-          height: 50px;
-          animation: spin 1s linear infinite;
-          margin-bottom: 15px;
+          border: 6px solid #f3f3f3; border-top: 6px solid #3498db;
+          border-radius: 50%; width: 50px; height: 50px;
+          animation: spin 1s linear infinite; margin-bottom: 15px;
         }
-
-        .loading-text {
-          color: white;
-          font-size: 1.2rem;
-          font-weight: bold;
-          font-family: sans-serif;
-        }
-
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
+        .loading-text { color: white; font-size: 1.2rem; font-weight: bold; font-family: sans-serif; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       `}</style>
 
-      {/* ✅ The Loading Overlay Component */}
+      {/* Loading Overlay */}
       {isLoading && (
         <div className="loading-overlay">
           <div className="spinner"></div>
@@ -129,64 +108,63 @@ export default function ForgotPassword() {
           <img src={logo} alt="Logo" className="logo-image" />
         </div>
 
+        <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#333' }}>Reset Password</h2>
+
         {/* Email */}
         <input
-          placeholder="Enter email"
+          placeholder="Enter your email"
           value={email}
           disabled={isLoading}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            setError("");
-          }}
+          onChange={(e) => { setEmail(e.target.value); setError(""); }}
           className="input"
         />
 
         {/* New Password */}
-        <div className="password-container">
+        <div className="password-container" style={{ position: 'relative' }}>
           <input
             placeholder="New Password"
             type={showNewPass ? "text" : "password"}
             value={newPass}
             disabled={isLoading}
-            onChange={(e) => {
-                setNewPass(e.target.value);
-                setError("");
-            }}
+            onChange={(e) => { setNewPass(e.target.value); setError(""); }}
             className="input2 password-input"
+            style={{ width: '100%' }}
           />
-          <span
+          <button 
+            type="button"
             className="eye-icon"
             onClick={() => setShowNewPass(!showNewPass)}
+            style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer' }}
           >
-            {showNewPass ? <FaEyeSlash /> : <FaEye />}
-          </span>
+            {showNewPass ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+          </button>
         </div>
 
         {/* Confirm Password */}
-        <div className="password-container">
+        <div className="password-container" style={{ position: 'relative' }}>
           <input
             placeholder="Confirm Password"
             type={showConfirmPass ? "text" : "password"}
             value={confirmPass}
             disabled={isLoading}
-            onChange={(e) => {
-                setConfirmPass(e.target.value);
-                setError("");
-            }}
+            onChange={(e) => { setConfirmPass(e.target.value); setError(""); }}
             className="input2 password-input"
+            style={{ width: '100%' }}
           />
-          <span
+          <button 
+            type="button"
             className="eye-icon"
             onClick={() => setShowConfirmPass(!showConfirmPass)}
+            style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer' }}
           >
-            {showConfirmPass ? <FaEyeSlash /> : <FaEye />}
-          </span>
+            {showConfirmPass ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+          </button>
         </div>
 
-        {/* ✅ Error Message Display */}
+        {/* Error Message */}
         {error && <p style={{ color: "red", marginTop: "10px", fontSize: "14px", textAlign: "center" }}>{error}</p>}
 
-        {/* Button */}
+        {/* Reset Button */}
         <button className="button" onClick={handleReset} disabled={isLoading}>
           <span className="text2">
             {isLoading ? "WAIT..." : "RESET PASSWORD"}
@@ -197,17 +175,17 @@ export default function ForgotPassword() {
         <span
           className="clickable-text"
           onClick={() => !isLoading && navigate("/customer/login")}
-          style={{ marginTop: "10px", cursor: isLoading ? "not-allowed" : "pointer" }}
+          style={{ marginTop: "15px", cursor: isLoading ? "not-allowed" : "pointer", textAlign: 'center', display: 'block', textDecoration: 'underline' }}
         >
           Back to Login
         </span>
       </div>
 
-      {/* Existing Success Overlay */}
+      {/* Success Overlay */}
       {showOverlay && (
         <Overlay
-          title="Password has been reset!"
-          message="Login again for verification."
+          title="Password Reset Successful!"
+          message="You can now login with your new password."
           buttonText="Go to Login"
           onClose={() => navigate("/customer/login")}
         />

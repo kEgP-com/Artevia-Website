@@ -9,7 +9,6 @@ import {
   FaPhone,
   FaCreditCard,
   FaEdit,
-  FaLock,
   FaTimes,
   FaSignOutAlt,
 } from "react-icons/fa";
@@ -24,7 +23,6 @@ export default function AccountPage() {
     email: "",
     username: "",
     age: "", // ✅ Added Age
-    password: "",
     address: "",
     contact: "",
     payment: {
@@ -66,7 +64,6 @@ export default function AccountPage() {
                 username: dbData.name,
                 email: dbData.email,
                 age: dbData.age || "", // ✅ Set Age from DB
-                password: localData.password,
                 address: dbData.address || "No address set",
                 contact: dbData.contact || "No contact set",
                 payment: {
@@ -128,8 +125,6 @@ export default function AccountPage() {
         payload = { address: tempValue };
     } else if (field === "contact") {
         payload = { contact: tempValue };
-    } else if (field === "password") {
-        payload = { password: tempValue }; 
     }
 
     try {
@@ -280,15 +275,6 @@ export default function AccountPage() {
             <p><strong>Username:</strong> {account.username}</p>
             {/* ✅ Added Age Display */}
             <p><strong>Age:</strong> {account.age}</p>
-            
-            <p className="password-line">
-              <strong>Password:</strong> ••••••••
-              <FaLock
-                className="edit-icon"
-                title="Edit Password"
-                onClick={() => openOverlay("password")}
-              />
-            </p>
           </div>
 
           {/* Address Section */}
@@ -399,7 +385,7 @@ export default function AccountPage() {
               <>
                 <p>Enter new {field}:</p>
                 <input
-                  type={field === "password" ? "password" : "text"}
+                  type="text"
                   value={tempValue}
                   onChange={(e) => setTempValue(e.target.value)}
                   className="overlay-input"

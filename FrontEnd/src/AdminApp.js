@@ -8,13 +8,20 @@ import AdminArtists from "./pages/AdminPage/ArtistsPage";
 import LoginPage from "./pages/AdminPage/LoginPage";
 import AdminProtectedRoute from "./components/AdminProtectedRoute"; 
 
+// 👇 1. IMPORT THE SUSPEND PAGE
+import Suspend from "./components/Suspension";
+
 function AdminApp() {
   return (
   
     <Routes>
-      {/* PUBLIC ROUTE */}
+      {/* PUBLIC ROUTES */}
       <Route path="/login" element={<LoginPage />} />
+      
+      {/* 👇 2. ADD THE SUSPEND ROUTE HERE */}
+      <Route path="/suspend" element={<Suspend />} />
 
+      {/* PROTECTED ROUTES */}
       <Route
         path="/dashboard"
         element={
@@ -69,7 +76,6 @@ function AdminApp() {
         }
       />
       
-      {/* ... your customer routes ... */}
     </Routes>
   );
 }

@@ -44,7 +44,6 @@ function Sketch() {
 
   const handleView = (art) => setSelectedArt(art);
   
-  // 👇 FIXED ADD TO CART FUNCTION
   const addToCart = async (product) => {
       const savedUser = localStorage.getItem("accountInfo");
       if (!savedUser) {
@@ -73,7 +72,7 @@ function Sketch() {
 
           if (response.ok) {
               alert("Item added to cart successfully!");
-              setSelectedArt(null); // Close modal
+              setSelectedArt(null); 
           } else {
               alert("Failed to add item to cart.");
           }
@@ -109,7 +108,12 @@ function Sketch() {
           </div>
 
           <div className="discovery-grid">
-            {filteredSketches.length > 0 ? (
+            {/* 👇 LOADING CHECK ADDED HERE */}
+            {loading ? (
+              <div style={{ width: "100%", textAlign: "center", padding: "50px", color: "#666", fontSize: "1.2rem" }}>
+                Loading sketches...
+              </div>
+            ) : filteredSketches.length > 0 ? (
               filteredSketches.map((art) => (
                 <ProductCard key={art.id} item={art} onView={handleView} />
               ))

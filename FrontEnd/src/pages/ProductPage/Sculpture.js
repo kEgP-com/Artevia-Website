@@ -9,7 +9,7 @@ function Sculpture() {
   const [selectedArt, setSelectedArt] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterCategory, setFilterCategory] = useState("All");
+  // Removed filterCategory state
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -85,10 +85,9 @@ function Sculpture() {
 
   const closeOverlay = () => setSelectedArt(null);
 
+  // Updated filter logic: Only filters by Search Query now
   const filteredSculptures = products.filter((art) => {
-    const matchesSearch = art.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = filterCategory === "All" || art.category === filterCategory;
-    return matchesSearch && matchesCategory;
+    return art.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   return (
@@ -105,21 +104,16 @@ function Sculpture() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="sculpture-search-input"
             />
-            <select
-              className="sculpture-filter-select"
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-            >
-              <option value="All">All Categories</option>
-              <option value="Sculpture">Sculpture</option>
-              <option value="Marble">Marble</option>
-              <option value="Wood">Wood</option>
-              <option value="Steel">Steel</option>
-            </select>
+            {/* REMOVED THE CATEGORY DROPDOWN HERE */}
           </div>
 
           <div className="discovery-grid">
-            {filteredSculptures.length > 0 ? (
+            {/* 👇 LOADING CHECK ADDED HERE */}
+            {loading ? (
+              <div style={{ width: "100%", textAlign: "center", padding: "50px", color: "#666", fontSize: "1.2rem" }}>
+                Loading sculptures...
+              </div>
+            ) : filteredSculptures.length > 0 ? (
               filteredSculptures.map((art) => (
                 <ProductCard key={art.id} item={art} onView={handleView} />
               ))

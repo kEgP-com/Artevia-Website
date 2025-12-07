@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\users_info;
+use App\Models\SuspendedUser; // 👈 IMPORTS THE NEW MODEL
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -18,16 +19,18 @@ class UsersInfoController extends Controller
         $user = users_info::create([
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'name' => 'New User', 
-            'address' => 'Update your address',
-            'contact' => '0000000000',
-            'age' => 18
+            'name' => $request->name ?? 'New User', 
+            // Default nulls to trigger "Incomplete Profile" on frontend
+            'address' => $request->address ?? null, 
+            'contact' => $request->contact ?? null, 
+            'age' => $request->age ?? null,
+            'is_banned' => false 
         ]);
 
         return response()->json(['message' => 'Registered successfully', 'user' => $user]);
     }
 
-    // 2. LOGIN
+// 2. LOGIN (Updated to return Type and Reason)
     public function login(Request $request) {
         $user = users_info::where('email', $request->email)->first();
 
@@ -35,17 +38,29 @@ class UsersInfoController extends Controller
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
+        if ($user->is_banned) {
+            $suspension = $user->suspension; 
+
+            // Auto-Unban Logic
+            if ($suspension && $suspension->banned_until && now()->greaterThan($suspension->banned_until)) {
+                $user->update(['is_banned' => false]);
+                $suspension->delete(); 
+            } 
+            else {
+                // 👇 RETURN THE ADMIN'S INPUT HERE
+                return response()->json([
+                    'message' => 'Account Suspended',
+                    'is_banned' => true,
+                    'reason' => $suspension ? $suspension->reason : 'No reason provided.',
+                    'type' => $suspension ? $suspension->type : 'permanent', // "permanent" or "temporary"
+                    'until' => $suspension ? $suspension->banned_until : null
+                ], 403);
+            }
+        }
+
         return response()->json(['message' => 'Login successful', 'user' => $user]);
     }
-// 6. GET SINGLE USER (Add this function)
-    public function show($id) {
-        $user = users_info::find($id);
-        if ($user) {
-            return response()->json($user);
-        }
-        return response()->json(['message' => 'User not found'], 404);
-    }
-    // 3. UPDATE
+    // 3. UPDATE (Profile Info)
     public function update(Request $request, $id) {
         $user = users_info::find($id);
         
@@ -57,8 +72,66 @@ class UsersInfoController extends Controller
         return response()->json(['message' => 'User not found'], 404);
     }
 
-    // 4. GET ALL USERS (ADDED THIS)
+    // 4. GET ALL USERS
     public function index() {
-        return users_info::all();
+        // 'with' automatically loads the suspension details if they exist
+        return users_info::with('suspension')->get();
+    }
+
+    // 6. GET SINGLE USER
+    public function show($id) {
+        $user = users_info::with('suspension')->find($id);
+        if ($user) {
+            return response()->json($user);
+        }
+        return response()->json(['message' => 'User not found'], 404);
+    }
+
+    // 7. RESET PASSWORD
+    public function resetPassword(Request $request) {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required' 
+        ]);
+
+        $user = users_info::where('email', $request->email)->first();
+
+        if ($user) {
+            $user->update([
+                'password' => Hash::make($request->password)
+            ]);
+            return response()->json(['message' => 'Password reset successfully']);
+        }
+
+        return response()->json(['message' => 'Email not found'], 404);
+    }
+
+   // 8. TOGGLE BAN (Updated to save Type)
+    public function toggleBan(Request $request, $id) {
+        $user = users_info::find($id);
+        if (!$user) return response()->json(['message' => 'User not found'], 404);
+
+        $shouldBan = $request->input('is_banned');
+
+        if ($shouldBan) {
+            $user->update(['is_banned' => true]);
+
+            // 👇 SAVING ADMIN INPUTS TO DATABASE
+            SuspendedUser::updateOrCreate(
+                ['user_id' => $user->id], 
+                [
+                    'reason' => $request->input('ban_reason'), 
+                    'type' => $request->input('banned_until') ? 'temporary' : 'permanent',
+                    'banned_until' => $request->input('banned_until')
+                ]
+            );
+        } else {
+            $user->update(['is_banned' => false]);
+            if ($user->suspension) {
+                $user->suspension->delete();
+            }
+        }
+
+        return response()->json($user->fresh(['suspension']));
     }
 }
