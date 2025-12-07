@@ -37,7 +37,6 @@ export default function OrderPage() {
       if (!userId) return;
 
       try {
-        // Fetch lang ng simple list galing sa orders table
         const response = await fetch(`http://localhost:8082/api/orders?user_id=${userId}`);
         if (response.ok) {
           const data = await response.json();
@@ -53,7 +52,7 @@ export default function OrderPage() {
 
   // --- 2. ACTION HANDLERS ---
 
-  // Cancel Order (Update Status)
+  // Cancel Order
   const handleCancel = async (orderId) => {
     if (!window.confirm("Are you sure you want to cancel this item?")) return;
     try {
@@ -62,7 +61,6 @@ export default function OrderPage() {
         });
         if (res.ok) {
             alert("Item cancelled.");
-            // Update local state
             setOrders(orders.map(o => o.id === orderId ? {...o, status: 'Cancelled'} : o));
             setSelectedOrder(null);
         } else {
@@ -73,7 +71,7 @@ export default function OrderPage() {
     }
   };
 
-  // Delete Order (Permanent Remove)
+  // Delete Order
   const handleDelete = async (orderId) => {
     if (!window.confirm("Permanently delete this record from history?")) return;
     try {
@@ -121,7 +119,6 @@ export default function OrderPage() {
 
   // --- SEND MESSAGE TO DATABASE ---
   const handleSendVendorMessage = async () => {
-    // 1. Kunin ang User Info galing LocalStorage
     const savedInfo = JSON.parse(localStorage.getItem("accountInfo"));
     
     if (!savedInfo) {
@@ -134,18 +131,14 @@ export default function OrderPage() {
         return;
     }
 
-    // 2. Prepare Payload (Dapat match sa Controller validation mo)
     const payload = {
-        // 👇 UPDATE: Subukan kunin sa .name, kung wala try .fullName, kung wala pa rin -> "Customer"
         name: savedInfo.name || savedInfo.fullName || "Customer", 
-        
         email: savedInfo.email || "no-email@provided.com",
         subject: `Order #${currentVendorOrder.id}: ${currentVendorOrder.name}`,
         message: vendorMessage
     };
 
     try {
-        // 3. Send sa Laravel Backend
         const res = await fetch("http://localhost:8082/api/contact-messages", {
             method: "POST",
             headers: { 
@@ -157,8 +150,8 @@ export default function OrderPage() {
 
         if (res.ok) {
             alert("Message sent to Admin! We will review your concern.");
-            setVendorMessage(""); // Clear textbox
-            setShowVendorOverlay(false); // Close modal
+            setVendorMessage(""); 
+            setShowVendorOverlay(false); 
         } else {
             const errorData = await res.json();
             console.error("Server Error:", errorData);
@@ -177,7 +170,6 @@ export default function OrderPage() {
     }
   };
 
-  // Image URL Fixer
   const getImgUrl = (img) => {
     if (!img || img === 'no-image.png') return "https://via.placeholder.com/150";
     if (typeof img === 'string' && img.startsWith("http")) return img;
@@ -187,10 +179,19 @@ export default function OrderPage() {
 
   // --- 4. RENDER ---
 
-  // Filter Logic
+  // FILTER LOGIC
   const filteredOrders = orders.filter((order) => {
     if (filter === "All") return true;
-    return order.status === filter;
+    
+    const s = order.status ? order.status.toLowerCase() : "";
+    const f = filter.toLowerCase();
+
+    // Logic: Isama ang 'completed' sa 'delivered' tab
+    if (f === "delivered") {
+        return s === "delivered" || s === "completed";
+    }
+
+    return s === f;
   });
 
   return (
@@ -219,70 +220,87 @@ export default function OrderPage() {
           </div>
         ) : (
           <div className="orders-list">
-            {filteredOrders.map((order) => (
-              <div key={order.id} className="order-card">
+            {filteredOrders.map((order) => {
+                // Check kung Completed or Delivered para sa Badge Style
+                const isCompleted = order.status === 'Completed' || order.status === 'Delivered';
                 
-                {/* Image */}
-                <div className="order-img">
-                  <img src={getImgUrl(order.image)} alt={order.name} />
-                </div>
+                return (
+                  <div key={order.id} className="order-card">
+                    
+                    {/* Image */}
+                    <div className="order-img">
+                      <img src={getImgUrl(order.image)} alt={order.name} />
+                    </div>
 
-                {/* Info */}
-                <div className="order-info">
-                  <h3>{order.name}</h3>
-                  <p>
-                    <strong>Status:</strong>{" "}
-                    <span className={`order-status ${order.status.toLowerCase()}`}>
-                      {order.status}
-                    </span>
-                  </p>
-                  <p><strong>Quantity:</strong> {order.quantity}</p>
-                  <p><strong>Total:</strong> ₱{parseFloat(order.total_amount).toLocaleString()}</p>
-                  <p><strong>Date:</strong> {new Date(order.created_at).toLocaleDateString()}</p>
-                </div>
+                    {/* Info */}
+                    <div className="order-info">
+                      <h3>{order.name}</h3>
+                      <p>
+                        <strong>Status:</strong>{" "}
+                        {/* UI FIX: 
+                            - Kung Completed/Delivered: Green BG + White Text
+                            - Kung Pending/Cancelled: Original CSS Classes (walang inline style)
+                        */}
+                        <span 
+                            className={`order-status ${order.status.toLowerCase()}`}
+                            style={isCompleted ? {
+                                backgroundColor: '#28a745',
+                                color: 'white',
+                                padding: '4px 12px',
+                                borderRadius: '20px',
+                                fontWeight: 'bold'
+                            } : {}} 
+                        >
+                          {order.status}
+                        </span>
+                      </p>
+                      <p><strong>Quantity:</strong> {order.quantity}</p>
+                      <p><strong>Total:</strong> ₱{parseFloat(order.total_amount).toLocaleString()}</p>
+                      <p><strong>Date:</strong> {new Date(order.created_at).toLocaleDateString()}</p>
+                    </div>
 
-                {/* Buttons */}
-                <div className="order-actions">
-                  <button className="details-btn" onClick={() => setSelectedOrder(order)}>
-                    <FaEye /> View
-                  </button>
+                    {/* Buttons */}
+                    <div className="order-actions">
+                      <button className="details-btn" onClick={() => setSelectedOrder(order)}>
+                        <FaEye /> View
+                      </button>
 
-                  {order.status === "Pending" && (
-                    <button className="cancel-btn" onClick={() => handleCancel(order.id)}>
-                      <FaTrashAlt /> Cancel
-                    </button>
-                  )}
+                      {order.status === "Pending" && (
+                        <button className="cancel-btn" onClick={() => handleCancel(order.id)}>
+                          <FaTrashAlt /> Cancel
+                        </button>
+                      )}
 
-                  {["Cancelled", "Delivered"].includes(order.status) && (
-                     <button 
-                        className="cancel-btn" 
-                        style={{ backgroundColor: "#d32f2f" }} 
-                        onClick={() => handleDelete(order.id)}
-                     >
-                        <FaTrashAlt /> Delete
-                     </button>
-                  )}
+                      {["Cancelled", "Delivered", "Completed"].includes(order.status) && (
+                          <button 
+                            className="cancel-btn" 
+                            style={{ backgroundColor: "#d32f2f" }} 
+                            onClick={() => handleDelete(order.id)}
+                          >
+                            <FaTrashAlt /> Delete
+                          </button>
+                      )}
 
-                  {["Pending", "Delivered"].includes(order.status) && (
-                    <button className="driver-btn" onClick={() => handleContactDriver(order.driver)}>
-                      <FaPhoneAlt /> Driver
-                    </button>
-                  )}
+                      {["Pending", "Delivered"].includes(order.status) && (
+                        <button className="driver-btn" onClick={() => handleContactDriver(order.driver)}>
+                          <FaPhoneAlt /> Driver
+                        </button>
+                      )}
 
-                  <button className="vendor-btn" onClick={() => handleContactVendor(order)}>
-                    <FaUserTie /> Vendor
-                  </button>
+                      <button className="vendor-btn" onClick={() => handleContactVendor(order)}>
+                        <FaUserTie /> Vendor
+                      </button>
 
-                  {order.status === "Delivered" && (
-                    <button className="rate-btn" onClick={() => handleRate(order.id)}>
-                      <FaStar /> Rate
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
+                      {(order.status === "Delivered" || order.status === "Completed") && (
+                        <button className="rate-btn" onClick={() => handleRate(order.id)}>
+                          <FaStar /> Rate
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+            })}
 
-            {/* Clear All Button */}
             <div className="clear-history-container">
               <button className="clear-history-btn" onClick={() => setShowClearConfirm(true)}>
                 <FaTrashAlt /> Clear All History
@@ -308,7 +326,17 @@ export default function OrderPage() {
             <p><strong>Item:</strong> {selectedOrder.name}</p>
             <p>
               <strong>Status:</strong>{" "}
-              <span className={`order-status ${selectedOrder.status.toLowerCase()}`}>
+              {/* Modal Fix: Same logic as list */}
+              <span 
+                className={`order-status ${selectedOrder.status.toLowerCase()}`}
+                style={(selectedOrder.status === 'Completed' || selectedOrder.status === 'Delivered') ? {
+                    backgroundColor: '#28a745',
+                    color: 'white',
+                    padding: '4px 12px',
+                    borderRadius: '20px',
+                    fontWeight: 'bold'
+                } : {}} 
+              >
                 {selectedOrder.status}
               </span>
             </p>
