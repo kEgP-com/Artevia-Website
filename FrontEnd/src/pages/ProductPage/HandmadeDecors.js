@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/navbar";
 import Footer from "../../components/footer";
 import "../../css/Category.css";
@@ -6,6 +7,7 @@ import ProductCard from "../../components/ProductCard";
 import { productAPI } from "../../services/api";
 
 function HandmadeDecors() {
+  const navigate = useNavigate();
   const [selectedArt, setSelectedArt] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -44,42 +46,67 @@ function HandmadeDecors() {
   const handleView = (art) => setSelectedArt(art);
 
   const addToCart = async (product) => {
-      const savedUser = localStorage.getItem("accountInfo");
-      if (!savedUser) {
-          alert("Please log in first to add items to your cart.");
-          return;
-      }
+    // A. Check User Login
+    const savedUser = localStorage.getItem("accountInfo");
+    if (!savedUser) {
+        alert("Please log in first to add items to your cart.");
+        return;
+    }
 
-      const currentUser = JSON.parse(savedUser);
-      setIsSubmitting(true);
-  
-      const payload = {
-          user_id: currentUser.id,
-          product_id: product.id,
-          quantity: 1,
-          name: product.name,
-          price: product.price,
-          image: product.image_url || product.image
-      };
+    let userId;
+    try {
+        const currentUser = JSON.parse(savedUser);
+        userId = currentUser.id;
+    } catch (e) {
+        alert("Session error. Please logout and login again.");
+        return;
+    }
 
-      try {
-          const response = await fetch("http://localhost:8082/api/cart/add", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload)
-          });
+    setIsSubmitting(true);
 
-          if (response.ok) {
-              alert("Item added to cart successfully!");
-              setSelectedArt(null);
-          } else {
-              alert("Failed to add item to cart.");
-          }
-      } catch (error) {
-          console.error("Add to cart error:", error);
-      } finally {
-          setIsSubmitting(false);
-      }
+    // B. Prepare Payload
+    const payload = {
+        user_id: userId,
+        product_id: product.id,
+        name: product.name,
+        artist: product.artist || 'Unknown',
+        type: product.category, 
+        price: product.price,
+        image: product.image_url, 
+        quantity: 1
+    };
+
+    // C. Send to Backend
+    try {
+        const response = await fetch('http://localhost:8082/api/cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            // Optional: Pwede mong tanggalin ang alert kung gusto mo diretso agad
+            alert(`✅ Success! ${product.name} added to cart.`); 
+            
+            // 👇 ITO ANG MAGDADALA SA USER SA CART PAGE
+            navigate("/cart"); 
+            
+        } else {
+            console.error("Server Error:", result);
+            alert("❌ Failed to add: " + (result.message || "Unknown error"));
+        }
+
+    } catch (error) {
+        console.error("Connection Error:", error);
+        alert("❌ Cannot connect to server.");
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   const closeOverlay = () => setSelectedArt(null);
@@ -111,8 +138,13 @@ function HandmadeDecors() {
               </div>
             ) : filteredDecors.length > 0 ? (
               filteredDecors.map((art) => (
-                <ProductCard key={art.id} item={art} onView={handleView} />
-              ))
+                  <ProductCard 
+                      key={art.id} 
+                      item={art} 
+                      onView={handleView} 
+                      onAddToCart={addToCart} // 👈 ITO ANG SUSI! Ipinapasa natin yung function.
+                  />
+                ))
             ) : (
               <p className="no-results">No handmade decorations found.</p>
             )}

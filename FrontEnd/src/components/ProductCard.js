@@ -1,31 +1,30 @@
 // src/components/ProductCard.js
 import React, { useState } from "react";
 
-// 1. Nagdagdag ako ng `onAddToCart` dito sa props
+// Updated Port to 8082 based on your previous files
+const API_URL = "http://localhost:8082";
+
 function ProductCard({ item, onView, onAddToCart }) {
   const [addedMessage, setAddedMessage] = useState("");
 
-  // Get image URL - ORIGINAL STYLE (Walang binago dito)
   const getImageUrl = (item) => {
     if (!item) return '/images/default-product.jpg';
     
     // If from API (Laravel)
     if (item.image_url) {
-      // If it's a full URL
       if (item.image_url.startsWith('http')) {
         return item.image_url;
       }
-      // If it's from Laravel public folder
+      // 👇 FIXED: Changed to API_URL (8082) para lumabas ang image
       if (item.image_url.startsWith('/')) {
-        return `http://localhost:8000${item.image_url}`;
+        return `${API_URL}${item.image_url}`;
       }
-      // If it's from Laravel storage
       if (item.image_url.startsWith('storage/')) {
-        return `http://localhost:8000/${item.image_url}`;
+        return `${API_URL}/${item.image_url}`;
       }
     }
     
-    // Fallback to local images (original method)
+    // Fallback to local images
     if (item.imageUrl) {
       try {
         const images = require.context("../images", true);
@@ -40,17 +39,15 @@ function ProductCard({ item, onView, onAddToCart }) {
   };
 
   const handleAddToCart = () => {
-    // --- IDINAGDAG NA CODE ---
-    // Kung may pinasang onAddToCart galing sa parent (ArtPageList), yun ang gamitin.
+    // 1. PRIORITY: Kung may pinasang onAddToCart galing sa Parent (Category Pages)
+    // Ito ang magpapatakbo ng logic papuntang Cart Page.
     if (onAddToCart) {
         onAddToCart(item);
-        return; // Huminto dito para hindi na gumana ang localStorage sa baba
+        return; 
     }
-    // -------------------------
 
-    // ORIGINAL CODE (Nandito pa rin bilang fallback)
+    // 2. FALLBACK: Kung walang parent function, save to LocalStorage (Old logic)
     const storedCart = JSON.parse(localStorage.getItem("cartItems")) || [];
-
     const existingIndex = storedCart.findIndex((i) => i.id === item.id);
 
     if (existingIndex >= 0) {
@@ -80,7 +77,6 @@ function ProductCard({ item, onView, onAddToCart }) {
         src={getImageUrl(item)} 
         alt={item.name}
         onError={(e) => {
-          // console.error('Image failed to load:', e.target.src); // Optional: Commented out para malinis console
           e.target.src = '/images/default-product.jpg';
         }}
       />
@@ -91,6 +87,7 @@ function ProductCard({ item, onView, onAddToCart }) {
         </div>
 
         <div className="discovery-buttons-container">
+          {/* Ito ang pipindutin ng user */}
           <button 
             className="btn-discovery-overlay" 
             onClick={handleAddToCart}

@@ -75,12 +75,12 @@ class UsersInfoController extends Controller
     // 4. GET ALL USERS
     public function index() {
         // 'with' automatically loads the suspension details if they exist
-        return users_info::with('suspension')->get();
+      return users_info::all();
     }
 
     // 6. GET SINGLE USER
     public function show($id) {
-        $user = users_info::with('suspension')->find($id);
+        $user = users_info::find($id);
         if ($user) {
             return response()->json($user);
         }

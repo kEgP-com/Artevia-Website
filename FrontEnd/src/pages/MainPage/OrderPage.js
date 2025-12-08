@@ -117,6 +117,47 @@ export default function OrderPage() {
     setShowVendorOverlay(true);
   };
 
+  // --- NEW: Helper for Status Colors ---
+  const getStatusStyle = (status) => {
+    const s = status ? status.toLowerCase() : "";
+
+    // 1. PROCESSING: Brown BG, White Text
+    if (s === 'processing') {
+        return {
+            backgroundColor: '#795548', // Brown
+            color: 'white',
+            padding: '4px 12px',
+            borderRadius: '20px',
+            fontWeight: 'bold'
+        };
+    }
+    
+    // 2. SHIPPED: Light Green BG, White Text
+    if (s === 'shipped') {
+        return {
+            backgroundColor: '#81C784', // Light Green
+            color: 'white',
+            padding: '4px 12px',
+            borderRadius: '20px',
+            fontWeight: 'bold'
+        };
+    }
+
+    // 3. COMPLETED/DELIVERED: Dark Green BG, White Text
+    if (s === 'completed' || s === 'delivered') {
+        return {
+            backgroundColor: '#28a745', // Darker Green
+            color: 'white',
+            padding: '4px 12px',
+            borderRadius: '20px',
+            fontWeight: 'bold'
+        };
+    }
+
+    // Default (Pending/Cancelled uses CSS classes or none)
+    return {};
+  };
+
   // --- SEND MESSAGE TO DATABASE ---
   const handleSendVendorMessage = async () => {
     const savedInfo = JSON.parse(localStorage.getItem("accountInfo"));
@@ -221,9 +262,6 @@ export default function OrderPage() {
         ) : (
           <div className="orders-list">
             {filteredOrders.map((order) => {
-                // Check kung Completed or Delivered para sa Badge Style
-                const isCompleted = order.status === 'Completed' || order.status === 'Delivered';
-                
                 return (
                   <div key={order.id} className="order-card">
                     
@@ -237,17 +275,10 @@ export default function OrderPage() {
                       <h3>{order.name}</h3>
                       <p>
                         <strong>Status:</strong>{" "}
-                        {
-                        }
+                        {/* UPDATE: Uses getStatusStyle function */}
                         <span 
                             className={`order-status ${order.status.toLowerCase()}`}
-                            style={isCompleted ? {
-                                backgroundColor: '#28a745',
-                                color: 'white',
-                                padding: '4px 12px',
-                                borderRadius: '20px',
-                                fontWeight: 'bold'
-                            } : {}} 
+                            style={getStatusStyle(order.status)} 
                         >
                           {order.status}
                         </span>
@@ -279,7 +310,7 @@ export default function OrderPage() {
                           </button>
                       )}
 
-                      {["Pending", "Delivered"].includes(order.status) && (
+                      {["Pending", "Processing", "Shipped", "Delivered"].includes(order.status) && (
                         <button className="driver-btn" onClick={() => handleContactDriver(order.driver)}>
                           <FaPhoneAlt /> Driver
                         </button>
@@ -324,16 +355,10 @@ export default function OrderPage() {
             <p><strong>Item:</strong> {selectedOrder.name}</p>
             <p>
               <strong>Status:</strong>{" "}
-              {/* Modal Fix: Same logic as list */}
+              {/* UPDATE: Uses getStatusStyle function here too */}
               <span 
                 className={`order-status ${selectedOrder.status.toLowerCase()}`}
-                style={(selectedOrder.status === 'Completed' || selectedOrder.status === 'Delivered') ? {
-                    backgroundColor: '#28a745',
-                    color: 'white',
-                    padding: '4px 12px',
-                    borderRadius: '20px',
-                    fontWeight: 'bold'
-                } : {}} 
+                style={getStatusStyle(selectedOrder.status)} 
               >
                 {selectedOrder.status}
               </span>

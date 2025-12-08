@@ -24,5 +24,5 @@ class users_info extends Model
     }
     
     // Add this so the JSON response includes the suspension details automatically
-    protected $with = ['suspension']; 
+   // protected $with = ['suspension']; 
 }
