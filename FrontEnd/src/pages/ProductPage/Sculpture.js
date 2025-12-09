@@ -47,7 +47,7 @@ function Sculpture() {
   const handleView = (art) => setSelectedArt(art);
   
  const addToCart = async (product) => {
-    // A. Check User Login
+   
     const savedUser = localStorage.getItem("accountInfo");
     if (!savedUser) {
         alert("Please log in first to add items to your cart.");
@@ -65,7 +65,7 @@ function Sculpture() {
 
     setIsSubmitting(true);
 
-    // B. Prepare Payload
+ 
     const payload = {
         user_id: userId,
         product_id: product.id,
@@ -77,7 +77,7 @@ function Sculpture() {
         quantity: 1
     };
 
-    // C. Send to Backend
+   
     try {
         const response = await fetch('http://localhost:8082/api/cart', {
             method: 'POST',
@@ -91,27 +91,27 @@ function Sculpture() {
         const result = await response.json();
 
         if (response.ok) {
-            // Optional: Pwede mong tanggalin ang alert kung gusto mo diretso agad
-            alert(`✅ Success! ${product.name} added to cart.`); 
+           
+            alert(`Success! ${product.name} added to cart.`); 
             
-            // 👇 ITO ANG MAGDADALA SA USER SA CART PAGE
+          
             navigate("/cart"); 
             
         } else {
             console.error("Server Error:", result);
-            alert("❌ Failed to add: " + (result.message || "Unknown error"));
+            alert("Failed to add: " + (result.message || "Unknown error"));
         }
 
     } catch (error) {
         console.error("Connection Error:", error);
-        alert("❌ Cannot connect to server.");
+        alert("Cannot connect to server.");
     } finally {
         setIsSubmitting(false);
     }
   };
   const closeOverlay = () => setSelectedArt(null);
 
-  // Updated filter logic: Only filters by Search Query now
+  
   const filteredSculptures = products.filter((art) => {
     return art.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
@@ -130,11 +130,11 @@ function Sculpture() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="sculpture-search-input"
             />
-            {/* REMOVED THE CATEGORY DROPDOWN HERE */}
+            
           </div>
 
           <div className="discovery-grid">
-            {/* 👇 LOADING CHECK ADDED HERE */}
+           
             {loading ? (
               <div style={{ width: "100%", textAlign: "center", padding: "50px", color: "#666", fontSize: "1.2rem" }}>
                 Loading sculptures...
@@ -145,7 +145,7 @@ function Sculpture() {
                     key={art.id} 
                     item={art} 
                     onView={handleView} 
-                    onAddToCart={addToCart} // 👈 ITO ANG SUSI! Ipinapasa natin yung function.
+                    onAddToCart={addToCart} 
                 />
               ))
             ) : (

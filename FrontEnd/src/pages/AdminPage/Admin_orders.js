@@ -36,7 +36,7 @@ export default function AdminOrders() {
         const response = await fetch(`${API_URL}/orders`);
         if (response.ok) {
             const data = await response.json();
-            // Map DB fields to Frontend structure
+           
             const mappedData = data.map(o => ({
                 ...o,
                 id: o.id,
@@ -89,7 +89,7 @@ export default function AdminOrders() {
     setShowEditOverlay(true);
   };
 
-  // ✅ 3. SAVE STATUS EDIT (API)
+ 
   const handleSaveEdit = async () => {
     try {
         const response = await fetch(`${API_URL}/orders/${editedOrder.id}`, {
@@ -118,7 +118,6 @@ export default function AdminOrders() {
     setShowViewOverlay(true);
   };
 
-  // Filtering Logic
   const filtered = useMemo(() => {
     let data = [...orders];
     const q = query.trim().toLowerCase();
@@ -175,7 +174,7 @@ export default function AdminOrders() {
 
   return (
     <div className="admin-root" style={{ backgroundImage: `url(${wavebg})` }}>
-      {/* HEADER */}
+    
       <header className="dashboard-header">
         <div className="brand">
           <img src={logo} alt="logo" className="brand-logo" />
@@ -217,7 +216,7 @@ export default function AdminOrders() {
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
+      
       <main className="admin-main">
         <section className="controls">
           <div className="search-group">
@@ -285,7 +284,7 @@ export default function AdminOrders() {
         </section>
       </main>
 
-      {/* VIEW OVERLAY */}
+    
       {showViewOverlay && viewOrder && (
         <div className="overlay">
           <div className="overlay-content">
@@ -313,7 +312,7 @@ export default function AdminOrders() {
         </div>
       )}
 
-      {/* EDIT OVERLAY */}
+      
       {showEditOverlay && editedOrder && (
         <div className="overlay">
           <div className="overlay-content">

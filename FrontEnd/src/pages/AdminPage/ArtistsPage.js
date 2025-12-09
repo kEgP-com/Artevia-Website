@@ -85,7 +85,7 @@ export default function AdminArtists() {
     return data;
   }, [artists, query, sortOrder]);
 
-  // ✅ 4. DELETE ARTIST
+  
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this artist?")) return;
     try {

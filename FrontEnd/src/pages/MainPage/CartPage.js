@@ -6,11 +6,10 @@ import "../../css/CartPage.css";
 import {
   FaTrashAlt, FaPaypal, FaMoneyBillAlt, FaCcMastercard,
   FaHome, FaListAlt, FaCreditCard, FaBoxOpen, FaEdit,
-  FaExclamationTriangle, FaUserEdit // Added icons
+  FaExclamationTriangle, FaUserEdit 
 } from "react-icons/fa"; 
 import sampleImg from "../../images/Sketch arts/cat portrait.png";
 
-// 👇 UPDATED PORT: 8082
 const API_URL = "http://localhost:8082";
 
 export default function CartPage() {
@@ -22,7 +21,7 @@ export default function CartPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedItemIds, setSelectedItemIds] = useState([]);
 
-  // 👇 New State for Restriction Check
+ 
   const [showRestriction, setShowRestriction] = useState(false);
 
   const [accountInfo, setAccountInfo] = useState({
@@ -31,7 +30,7 @@ export default function CartPage() {
 
   const navigate = useNavigate();
 
-  // --- LOAD DATA ---
+ 
   useEffect(() => {
     const saved = localStorage.getItem("accountInfo");
     let currentUserId = null;
@@ -40,7 +39,7 @@ export default function CartPage() {
       const acc = JSON.parse(saved);
       setAccountInfo({
         name: acc.fullName,
-        // Handle nulls safely by defaulting to empty string
+     
         address: acc.address || "", 
         contact: acc.contact || "",
         payment: acc.payment || { paypal: "", gcash: "" },
@@ -71,7 +70,7 @@ export default function CartPage() {
     fetchCart();
   }, []);
 
-  // --- SELECTION LOGIC ---
+
   const toggleSelect = (id) => {
     if (selectedItemIds.includes(id)) {
       setSelectedItemIds(selectedItemIds.filter(itemId => itemId !== id));
@@ -90,7 +89,7 @@ export default function CartPage() {
 
   const itemsToCheckout = cartItems.filter(item => selectedItemIds.includes(item.id));
 
-  // --- DELETE ITEM ---
+ 
   const handleDelete = async (id) => {
     setCartItems((prev) => prev.filter((item) => item.id !== id));
     setSelectedItemIds((prev) => prev.filter((itemId) => itemId !== id));
@@ -123,15 +122,14 @@ export default function CartPage() {
     month: "long", day: "numeric", year: "numeric",
   });
 
-  // --- PROCEED BUTTON (GATEKEEPER) ---
+  
   const handleProceed = () => {
     if (itemsToCheckout.length === 0) {
       alert("Please select at least one item to checkout.");
       return;
     }
 
-    // 👇 CHECK PROFILE COMPLETENESS (Address & Contact)
-    // Checks for empty string, null, or the default placeholder text
+   
     const isProfileIncomplete = 
         !accountInfo.address || 
         accountInfo.address.trim() === "" || 
@@ -148,7 +146,7 @@ export default function CartPage() {
     setShowOverlay(true);
   };
 
-  // --- CHECKOUT SUBMISSION ---
+  
   const handleOverlayProceed = async () => {
     setIsProcessing(true);
 
@@ -317,7 +315,7 @@ export default function CartPage() {
         </div>
       </div>
 
-      {/* Checkout Overlay */}
+    
       {showOverlay && (
         <div className="overlay">
           <div className="overlay-content">
@@ -348,7 +346,7 @@ export default function CartPage() {
         </div>
       )}
 
-      {/* 👇 NEW: Profile Restriction Overlay */}
+   
       {showRestriction && (
          <div className="overlay" style={{ 
              display: "flex", 

@@ -19,20 +19,20 @@ import Suspend from "./components/Suspension";
 export default function App() {
   return (
     <Routes>
-      {/* Auth routes */}
+      
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/code-verification" element={<CodeVerification />} />
       <Route path="/suspend" element={<Suspend />} />
-      {/* Main pages */}
+     
       <Route path="/" element={<Navigate to="/homepage" />} />
       <Route path="/homepage" element={<Homepage />} />
       <Route path="/cart" element={<CartPage />} />
       <Route path="/order" element={<OrderPage />} />
       <Route path="/account" element={<AccountPage />} />
 
-      {/* Product pages */}
+     
       <Route path="/artpage" element={<ArtPage />} />
       <Route path="/sculpture" element={<Sculpture />} />
       <Route path="/digital-arts" element={<DigitalArts />} />

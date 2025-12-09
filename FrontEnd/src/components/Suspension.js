@@ -7,11 +7,10 @@ export default function Suspend() {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // 1. Get the data passed from Login.js
-  // These variables now contain exactly what the Admin typed/selected.
+  
   const { reason, until, type } = location.state || {};
 
-  // 2. Format the Date nicely
+  
   const dateStr = until 
     ? new Date(until).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) 
     : "Permanent";
@@ -40,7 +39,7 @@ export default function Suspend() {
             Your account has been suspended due to a violation of our policies.
         </p>
 
-        {/* 3. DYNAMIC DATA DISPLAY */}
+        
         <div style={{ background: "#f8d7da", padding: "15px", borderRadius: "8px", margin: "20px 0", color: "#721c24", textAlign: "left" }}>
             
             <p style={{ margin: "5px 0" }}>

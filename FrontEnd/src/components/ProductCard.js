@@ -1,7 +1,7 @@
-// src/components/ProductCard.js
+
 import React, { useState } from "react";
 
-// Updated Port to 8082 based on your previous files
+
 const API_URL = "http://localhost:8082";
 
 function ProductCard({ item, onView, onAddToCart }) {
@@ -10,12 +10,12 @@ function ProductCard({ item, onView, onAddToCart }) {
   const getImageUrl = (item) => {
     if (!item) return '/images/default-product.jpg';
     
-    // If from API (Laravel)
+  
     if (item.image_url) {
       if (item.image_url.startsWith('http')) {
         return item.image_url;
       }
-      // 👇 FIXED: Changed to API_URL (8082) para lumabas ang image
+     
       if (item.image_url.startsWith('/')) {
         return `${API_URL}${item.image_url}`;
       }
@@ -24,7 +24,7 @@ function ProductCard({ item, onView, onAddToCart }) {
       }
     }
     
-    // Fallback to local images
+   
     if (item.imageUrl) {
       try {
         const images = require.context("../images", true);
@@ -39,14 +39,13 @@ function ProductCard({ item, onView, onAddToCart }) {
   };
 
   const handleAddToCart = () => {
-    // 1. PRIORITY: Kung may pinasang onAddToCart galing sa Parent (Category Pages)
-    // Ito ang magpapatakbo ng logic papuntang Cart Page.
+    
     if (onAddToCart) {
         onAddToCart(item);
         return; 
     }
 
-    // 2. FALLBACK: Kung walang parent function, save to LocalStorage (Old logic)
+    
     const storedCart = JSON.parse(localStorage.getItem("cartItems")) || [];
     const existingIndex = storedCart.findIndex((i) => i.id === item.id);
 
@@ -87,7 +86,7 @@ function ProductCard({ item, onView, onAddToCart }) {
         </div>
 
         <div className="discovery-buttons-container">
-          {/* Ito ang pipindutin ng user */}
+        
           <button 
             className="btn-discovery-overlay" 
             onClick={handleAddToCart}

@@ -22,7 +22,7 @@ export default function AccountPage() {
     fullName: "",
     email: "",
     username: "",
-    age: "", // ✅ Added Age
+    age: "", 
     address: "",
     contact: "",
     payment: {
@@ -63,7 +63,7 @@ export default function AccountPage() {
                 fullName: dbData.name,
                 username: dbData.name,
                 email: dbData.email,
-                age: dbData.age || "", // ✅ Set Age from DB
+                age: dbData.age || "", 
                 address: dbData.address || "No address set",
                 contact: dbData.contact || "No contact set",
                 payment: {
@@ -95,7 +95,7 @@ export default function AccountPage() {
             fullName: account.fullName,
             email: account.email,
             username: account.username,
-            age: account.age // ✅ Load current age into temp state
+            age: account.age 
         });
     } else if (section === "payment") {
         setTempPayment(account.payment);
@@ -105,7 +105,7 @@ export default function AccountPage() {
     setShowOverlay(true);
   };
 
-  // Handle Save
+  
   const handleSave = async () => {
     setIsLoading(true);
     let payload = {};
@@ -114,7 +114,7 @@ export default function AccountPage() {
         payload = {
             name: tempPersonal.fullName,
             email: tempPersonal.email,
-            age: tempPersonal.age // ✅ Include Age in payload
+            age: tempPersonal.age 
         };
     } else if (field === "payment") {
         payload = {
@@ -144,14 +144,14 @@ export default function AccountPage() {
         });
 
         if (response.ok) {
-            // Update Local State
+            
             if (field === "personal") {
                 setAccount(prev => ({
                     ...prev,
                     fullName: tempPersonal.fullName,
                     email: tempPersonal.email,
                     username: tempPersonal.username,
-                    age: tempPersonal.age // ✅ Update Age in UI
+                    age: tempPersonal.age 
                 }));
             } else if (field === "payment") {
                 setAccount(prev => ({ ...prev, payment: tempPayment }));
@@ -273,11 +273,9 @@ export default function AccountPage() {
             <p><strong>Full Name:</strong> {account.fullName}</p>
             <p><strong>Email:</strong> {account.email}</p>
             <p><strong>Username:</strong> {account.username}</p>
-            {/* ✅ Added Age Display */}
             <p><strong>Age:</strong> {account.age}</p>
           </div>
 
-          {/* Address Section */}
           <div className="account-box">
             <h3>
               <FaMapMarkerAlt className="account-icon" /> Address
@@ -291,7 +289,6 @@ export default function AccountPage() {
             <p>{account.address}</p>
           </div>
 
-          {/* Contact Section */}
           <div className="account-box">
             <h3>
               <FaPhone className="account-icon" /> Contact
@@ -305,7 +302,6 @@ export default function AccountPage() {
             <p>{account.contact}</p>
           </div>
 
-          {/* Payment Section */}
           <div className="account-box">
             <h3>
               <FaCreditCard className="account-icon" /> Payment Methods
@@ -322,7 +318,6 @@ export default function AccountPage() {
         </div>
       </div>
 
-      {/* Dynamic Overlay Content */}
       {showOverlay && (
         <div className="overlay">
           <div className="overlay-content">
@@ -332,7 +327,6 @@ export default function AccountPage() {
 
             <h2>Edit {field === 'personal' ? 'Personal Information' : field.charAt(0).toUpperCase() + field.slice(1)}</h2>
 
-            {/* Content Switcher based on Field */}
             {field === "personal" ? (
                <div className="payment-edit"> 
                  <label>Full Name</label>
@@ -353,7 +347,7 @@ export default function AccountPage() {
                    value={tempPersonal.username}
                    onChange={(e) => setTempPersonal({...tempPersonal, username: e.target.value})}
                  />
-                 {/* ✅ Added Age Input */}
+                 
                  <label>Age</label>
                  <input
                    className="overlay-input"

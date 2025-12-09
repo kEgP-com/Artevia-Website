@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "./Compo.css"; // Assuming this is where your CSS is
+import "./Compo.css"; 
 import { FaBars, FaTimes, FaEnvelope, FaPhoneAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -8,7 +8,7 @@ import CartIcon from "../images/images/cart.png";
 import HelpIcon from "../images/images/help.png";
 import Logo from "../images/images/logo_clear.png";
 
-// ✅ Accept 'onSearch' as a prop
+
 function Navbar({ onSearch }) {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -17,7 +17,7 @@ function Navbar({ onSearch }) {
   const [showHelpOverlay, setShowHelpOverlay] = useState(false);
   const navigate = useNavigate();
 
-  // Hide navbar on scroll down
+  
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -32,7 +32,7 @@ function Navbar({ onSearch }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-  // Scroll to footer
+  
   const scrollToFooter = () => {
     const footer = document.getElementById("footer-section");
     if (footer) {
@@ -49,7 +49,7 @@ function Navbar({ onSearch }) {
   };
 
   const checkAuthAndNavigate = (path) => {
-    const isLoggedIn = localStorage.getItem("accountInfo"); // Or "user" depending on your logic
+    const isLoggedIn = localStorage.getItem("accountInfo");
 
     if (!isLoggedIn) {
       if (window.confirm("You need to login to access this page. Go to Login?")) {
@@ -60,9 +60,9 @@ function Navbar({ onSearch }) {
     }
   };
 
-  // ✅ Helper to handle typing
+  
   const handleSearchChange = (e) => {
-    // Only call onSearch if it exists (prevents errors on other pages)
+   
     if (onSearch) {
         onSearch(e.target.value);
     }
@@ -73,7 +73,7 @@ function Navbar({ onSearch }) {
       <header className={`navbar-container ${isVisible ? "visible" : "hidden"}`}>
         <nav className="navbar">
 
-          {/* Mobile Left Menu Button */}
+      
           <button
             className="menu-btn left-menu-btn"
             onClick={() => setShowLeftMenu(!showLeftMenu)}
@@ -81,7 +81,7 @@ function Navbar({ onSearch }) {
             {showLeftMenu ? <FaTimes /> : <FaBars />}
           </button>
 
-          {/* Logo */}
+          
           <div
             className="nav-left"
             onClick={() => goToPage("/customer/homepage")}
@@ -90,17 +90,17 @@ function Navbar({ onSearch }) {
             <img src={Logo} alt="Logo" className="logo-img" />
           </div>
 
-          {/* ✅ UPDATED SEARCH BAR */}
+          
           <div className="nav-center">
             <input 
                 type="text" 
                 className="search-bar" 
                 placeholder="Search art..." 
-                onChange={handleSearchChange} // Triggers the filter in Homepage
+                onChange={handleSearchChange} 
             />
           </div>
 
-          {/* Right Icons */}
+        
           <div className="nav-right">
             <img
               src={ProfileIcon}
@@ -122,7 +122,7 @@ function Navbar({ onSearch }) {
             />
           </div>
 
-          {/* Mobile Right Menu Button */}
+         
           <button
             className="menu-btn right-menu-btn"
             onClick={() => setShowRightMenu(!showRightMenu)}
@@ -131,7 +131,7 @@ function Navbar({ onSearch }) {
           </button>
         </nav>
 
-        {/* Desktop Links */}
+       
         <div className="nav-links-bar">
           <ul className="nav-links">
             <li onClick={() => goToPage("/customer/homepage")}>HOME</li>
@@ -151,7 +151,7 @@ function Navbar({ onSearch }) {
           </ul>
         </div>
 
-        {/* Mobile Left Menu */}
+   
         {showLeftMenu && (
           <div className="mobile-dropdown left-dropdown">
             <ul>
@@ -173,11 +173,11 @@ function Navbar({ onSearch }) {
           </div>
         )}
 
-        {/* Mobile Right Menu */}
+  
         {showRightMenu && (
           <div className="mobile-dropdown right-dropdown">
             <div className="mobile-search-alt">
-              {/* ✅ UPDATED MOBILE SEARCH */}
+       
               <input 
                 type="text" 
                 className="search-bar" 
@@ -209,7 +209,7 @@ function Navbar({ onSearch }) {
         )}
       </header>
 
-      {/* Help Overlay */}
+
       {showHelpOverlay && (
         <div className="overlay">
           <div className="overlay-content">

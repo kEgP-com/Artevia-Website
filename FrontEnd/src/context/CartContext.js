@@ -1,11 +1,10 @@
-// src/context/CartContext.js
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { cartAPI } from '../services/api';
 
-// Create context
+
 const CartContext = createContext();
 
-// Custom hook
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
@@ -14,14 +13,14 @@ export const useCart = () => {
   return context;
 };
 
-// Provider component
+
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [cartTotal, setCartTotal] = useState(0);
   const [cartCount, setCartCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // Fetch cart from API
+  
   const fetchCart = async () => {
     try {
       setLoading(true);
@@ -29,7 +28,7 @@ export const CartProvider = ({ children }) => {
       
       console.log('🛒 Cart data received:', data);
       
-      // Handle different response formats
+      
       let items = [];
       if (Array.isArray(data)) {
         items = data;
@@ -43,7 +42,7 @@ export const CartProvider = ({ children }) => {
       
       setCartItems(items);
       
-      // Calculate totals
+      
       const total = items.reduce((sum, item) => {
         const price = item.product?.price || item.price || 0;
         const quantity = item.quantity || 1;
@@ -64,28 +63,28 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // Load cart on mount
+  
   useEffect(() => {
     fetchCart();
   }, []);
 
-  // Add item to cart
+  
   const addToCart = async (productId, quantity = 1) => {
     try {
       console.log(`➕ Adding product ${productId} to cart`);
       const result = await cartAPI.addToCart(productId, quantity);
-      await fetchCart(); // Refresh cart
+      await fetchCart(); 
       
-      // Show success message
+    
       if (typeof window !== 'undefined') {
-        alert('✅ Product added to cart!');
+        alert('Product added to cart!');
       }
       
       return { success: true, data: result };
     } catch (error) {
       console.error('Add to cart failed:', error);
       
-      // Show user-friendly message
+     
       let message = 'Failed to add to cart';
       if (error.response?.status === 401) {
         message = 'Please login to add items to cart';
@@ -94,14 +93,14 @@ export const CartProvider = ({ children }) => {
       }
       
       if (typeof window !== 'undefined') {
-        alert(`❌ ${message}`);
+        alert(`${message}`);
       }
       
       return { success: false, error: message };
     }
   };
 
-  // Update quantity
+  
   const updateQuantity = async (itemId, quantity) => {
     try {
       await cartAPI.updateCartItem(itemId, quantity);
@@ -113,7 +112,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // Remove item
+  
   const removeFromCart = async (itemId) => {
     try {
       await cartAPI.removeFromCart(itemId);
@@ -125,7 +124,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // Clear cart
+  
   const clearCart = async () => {
     try {
       await cartAPI.clearCart();
@@ -139,7 +138,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // Context value
+  
   const value = {
     cartItems,
     cartTotal,

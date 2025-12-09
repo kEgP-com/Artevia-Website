@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 const API_URL = "http://localhost:8082"; 
 
-// --- FIXED CATEGORIES ---
+
 const CATEGORIES = [
   "Painting",
   "Sculpture",
@@ -17,7 +17,7 @@ const CATEGORIES = [
   "Handmade Decor"
 ];
 
-// --- STYLES FOR LOCAL TABLE OVERLAY ---
+
 const tableOverlayStyle = {
   position: "absolute",
   top: 0, left: 0, width: "100%", height: "100%",
@@ -40,9 +40,7 @@ const spinnerStyle = {
 export default function AdminArts() {
   const navigate = useNavigate();
   
-  // ==========================
-  // 1. STATE MANAGEMENT
-  // ==========================
+  
   const [arts, setArts] = useState([]);
   const [artists, setArtists] = useState([]); 
   const [query, setQuery] = useState("");
@@ -52,18 +50,18 @@ export default function AdminArts() {
   const [showSettings, setShowSettings] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
-  // Overlays
+ 
   const [showAddOverlay, setShowAddOverlay] = useState(false);
   const [showEditOverlay, setShowEditOverlay] = useState(false);
   const [showPreviewOverlay, setShowPreviewOverlay] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
 
-  // Form State
+ 
   const [newArt, setNewArt] = useState({
     title: "", 
     artist_id: "", 
-    category: "", // Dropdown value
+    category: "",
     price: "",
     description: "",
     file: null, 
@@ -72,10 +70,7 @@ export default function AdminArts() {
   const [editedArt, setEditedArt] = useState(null);
   const [previewArt, setPreviewArt] = useState(null);
 
-  // ==========================
-  // 2. FETCH DATA FUNCTIONS
-  // ==========================
-
+  
   const fetchArtists = async () => {
     try {
       const response = await fetch(`${API_URL}/api/artists`);
@@ -121,9 +116,7 @@ export default function AdminArts() {
     loadInitialData();
   }, []);
 
-  // ==========================
-  // 3. HELPER FUNCTIONS
-  // ==========================
+  
   const toggleSettings = () => { setShowSettings(!showSettings); setShowProfile(false); };
   const toggleProfile = () => { setShowProfile(!showProfile); setShowSettings(false); };
   const toggleNav = () => setShowNav(!showNav);
@@ -154,9 +147,7 @@ export default function AdminArts() {
     return data;
   }, [arts, query, sortOrder]);
 
-  // ==========================
-  // 4. ACTION HANDLERS
-  // ==========================
+  
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this artwork?")) return;
     setIsLoading(true); 
@@ -403,7 +394,7 @@ export default function AdminArts() {
         </section>
       </main>
 
-      {/* OVERLAY - ADD ART */}
+      
       {showAddOverlay && (
         <div className="overlay">
           <div className="overlay-content">
@@ -415,7 +406,7 @@ export default function AdminArts() {
                 {artists.map(artist => <option key={artist.id} value={artist.id}>{artist.name}</option>)}
             </select>
 
-            {/* 👇 UPDATED: CATEGORY DROPDOWN */}
+            
             <select className="overlay-input" value={newArt.category} onChange={(e) => setNewArt({ ...newArt, category: e.target.value })}>
                 <option value="">-- Select Category --</option>
                 {CATEGORIES.map((cat, index) => <option key={index} value={cat}>{cat}</option>)}
@@ -434,7 +425,7 @@ export default function AdminArts() {
         </div>
       )}
 
-      {/* OVERLAY - EDIT ART */}
+     
       {showEditOverlay && editedArt && (
         <div className="overlay">
           <div className="overlay-content">
@@ -446,7 +437,7 @@ export default function AdminArts() {
                 {artists.map(artist => <option key={artist.id} value={artist.id}>{artist.name}</option>)}
             </select>
 
-            {/* 👇 UPDATED: CATEGORY DROPDOWN */}
+           
             <select className="overlay-input" value={editedArt.category} onChange={(e) => setEditedArt({ ...editedArt, category: e.target.value })}>
                 <option value="">-- Select Category --</option>
                 {CATEGORIES.map((cat, index) => <option key={index} value={cat}>{cat}</option>)}
@@ -465,7 +456,7 @@ export default function AdminArts() {
         </div>
       )}
 
-      {/* OVERLAY - PREVIEW ART */}
+      
       {showPreviewOverlay && previewArt && (
         <div className="overlay">
           <div className="overlay-content preview">

@@ -46,7 +46,7 @@ function DigitalArts() {
   const handleView = (art) => setSelectedArt(art);
 
 const addToCart = async (product) => {
-    // A. Check User Login
+    
     const savedUser = localStorage.getItem("accountInfo");
     if (!savedUser) {
         alert("Please log in first to add items to your cart.");
@@ -64,7 +64,7 @@ const addToCart = async (product) => {
 
     setIsSubmitting(true);
 
-    // B. Prepare Payload
+  
     const payload = {
         user_id: userId,
         product_id: product.id,
@@ -76,7 +76,7 @@ const addToCart = async (product) => {
         quantity: 1
     };
 
-    // C. Send to Backend
+   
     try {
         const response = await fetch('http://localhost:8082/api/cart', {
             method: 'POST',
@@ -90,20 +90,20 @@ const addToCart = async (product) => {
         const result = await response.json();
 
         if (response.ok) {
-            // Optional: Pwede mong tanggalin ang alert kung gusto mo diretso agad
-            alert(`✅ Success! ${product.name} added to cart.`); 
             
-            // 👇 ITO ANG MAGDADALA SA USER SA CART PAGE
+            alert(`Success! ${product.name} added to cart.`); 
+            
+           
             navigate("/cart"); 
             
         } else {
             console.error("Server Error:", result);
-            alert("❌ Failed to add: " + (result.message || "Unknown error"));
+            alert("Failed to add: " + (result.message || "Unknown error"));
         }
 
     } catch (error) {
         console.error("Connection Error:", error);
-        alert("❌ Cannot connect to server.");
+        alert("Cannot connect to server.");
     } finally {
         setIsSubmitting(false);
     }
@@ -131,7 +131,7 @@ const addToCart = async (product) => {
             />
           </div>
           <div className="discovery-grid">
-            {/* 👇 LOADING CHECK ADDED HERE */}
+          
             {loading ? (
               <div style={{ width: "100%", textAlign: "center", padding: "50px", color: "#666", fontSize: "1.2rem" }}>
                 Loading digital arts...
@@ -142,7 +142,7 @@ const addToCart = async (product) => {
                       key={art.id} 
                       item={art} 
                       onView={handleView} 
-                      onAddToCart={addToCart} // 👈 ITO ANG SUSI! Ipinapasa natin yung function.
+                      onAddToCart={addToCart}
                   />
                 ))
             ) : (
