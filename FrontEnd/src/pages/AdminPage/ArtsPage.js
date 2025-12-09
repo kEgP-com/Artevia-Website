@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 const API_URL = "http://localhost:8082"; 
 
-
+// --- FIXED CATEGORIES ---
 const CATEGORIES = [
   "Painting",
   "Sculpture",
@@ -17,7 +17,7 @@ const CATEGORIES = [
   "Handmade Decor"
 ];
 
-
+// --- STYLES FOR LOCAL TABLE OVERLAY ---
 const tableOverlayStyle = {
   position: "absolute",
   top: 0, left: 0, width: "100%", height: "100%",
@@ -40,7 +40,9 @@ const spinnerStyle = {
 export default function AdminArts() {
   const navigate = useNavigate();
   
- 
+  // ==========================
+  // 1. STATE MANAGEMENT
+  // ==========================
   const [arts, setArts] = useState([]);
   const [artists, setArtists] = useState([]); 
   const [query, setQuery] = useState("");
@@ -50,12 +52,14 @@ export default function AdminArts() {
   const [showSettings, setShowSettings] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
+  // Overlays
   const [showAddOverlay, setShowAddOverlay] = useState(false);
   const [showEditOverlay, setShowEditOverlay] = useState(false);
   const [showPreviewOverlay, setShowPreviewOverlay] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
 
+  // Form State
   const [newArt, setNewArt] = useState({
     title: "", 
     artist_id: "", 
@@ -68,7 +72,9 @@ export default function AdminArts() {
   const [editedArt, setEditedArt] = useState(null);
   const [previewArt, setPreviewArt] = useState(null);
 
-  
+  // ==========================
+  // 2. FETCH DATA FUNCTIONS
+  // ==========================
 
   const fetchArtists = async () => {
     try {
@@ -93,6 +99,7 @@ export default function AdminArts() {
                 ...item,
                 title: item.name, 
                 image: item.image_url, 
+                // Fallback if artist relationship isn't loaded yet
                 artist: item.artist || (item.artist_relation ? item.artist_relation.name : "Unknown") 
             }));
             setArts(mappedData);
@@ -115,7 +122,9 @@ export default function AdminArts() {
     loadInitialData();
   }, []);
 
-  
+  // ==========================
+  // 3. HELPER FUNCTIONS
+  // ==========================
   const toggleSettings = () => { setShowSettings(!showSettings); setShowProfile(false); };
   const toggleProfile = () => { setShowProfile(!showProfile); setShowSettings(false); };
   const toggleNav = () => setShowNav(!showNav);
@@ -146,7 +155,9 @@ export default function AdminArts() {
     return data;
   }, [arts, query, sortOrder]);
 
-  
+  // ==========================
+  // 4. ACTION HANDLERS
+  // ==========================
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this artwork?")) return;
     setIsLoading(true); 
@@ -178,23 +189,29 @@ export default function AdminArts() {
     setShowAddOverlay(true);
   };
 
+  // --- FIXED SAVE FUNCTION ---
   const handleSaveNewArt = async () => {
+    // Validation
+    if(!newArt.title) { alert("Please enter a title"); return; }
     if(!newArt.artist_id) { alert("Please select an artist"); return; } 
     if(!newArt.category) { alert("Please select a category"); return; }
+    if(!newArt.price) { alert("Please enter a price"); return; }
+    if(!newArt.file) { alert("Please upload an image"); return; }
 
     setIsLoading(true); 
     try {
         const formData = new FormData();
         formData.append("artist_id", newArt.artist_id); 
         formData.append("name", newArt.title);
-        
-        const selectedArtist = artists.find(a => a.id == newArt.artist_id);
-        formData.append("artist", selectedArtist ? selectedArtist.name : "Unknown"); 
-
         formData.append("category", newArt.category);
         formData.append("price", newArt.price);
-        formData.append("description", newArt.description);
+        formData.append("description", newArt.description || "");
         
+        // Note: The controller handles looking up the artist name via ID now
+        // But we can append it if your backend strictly needs 'artist' string
+        const selectedArtist = artists.find(a => a.id == newArt.artist_id);
+        if(selectedArtist) formData.append("artist", selectedArtist.name);
+
         if (newArt.file) formData.append("image", newArt.file);
 
         const response = await fetch(`${API_URL}/api/products`, {
@@ -202,8 +219,9 @@ export default function AdminArts() {
             body: formData 
         });
 
+        const result = await response.json();
+
         if (response.ok) {
-            const result = await response.json();
             const savedProduct = result.product;
             
             setArts((prev) => [...prev, {
@@ -215,46 +233,51 @@ export default function AdminArts() {
 
             setShowAddOverlay(false);
             setNewArt({ title: "", artist_id: "", price: "", description: "", category: "", file: null });
-            alert("Product added!");
+            alert("Product added successfully!");
         } else {
-            alert("Failed to add product.");
+            console.error("Backend Error:", result);
+            alert(`Failed to add product: ${result.message || JSON.stringify(result.errors)}`);
         }
     } catch (error) {
         console.error("Add error", error);
+        alert("Network error occurred.");
     } finally {
         setIsLoading(false); 
     }
   };
 
+  // --- FIXED EDIT FUNCTION ---
   const handleSaveEdit = async () => {
     setIsLoading(true); 
     try {
         const formData = new FormData();
         formData.append("name", editedArt.title);
+        formData.append("category", editedArt.category);
+        formData.append("price", editedArt.price);
+        formData.append("description", editedArt.description || "");
         
         if(editedArt.artist_id) {
             formData.append("artist_id", editedArt.artist_id);
             const selectedArtist = artists.find(a => a.id == editedArt.artist_id);
             if(selectedArtist) formData.append("artist", selectedArtist.name);
         } else {
-            formData.append("artist", editedArt.artist); 
+             formData.append("artist", editedArt.artist); 
         }
 
-        formData.append("category", editedArt.category);
-        formData.append("price", editedArt.price);
-        formData.append("description", editedArt.description);
-        
         if (editedArt.file) formData.append("image", editedArt.file);
         
+        // Laravel requires this for file uploads on PUT/PATCH
         formData.append("_method", "PUT"); 
 
+        // Note: Using POST here with _method=PUT inside formData
         const response = await fetch(`${API_URL}/api/products/${editedArt.id}`, {
             method: "POST", 
             body: formData, 
         });
 
+        const result = await response.json();
+
         if (response.ok) {
-            const result = await response.json();
             const updatedProduct = result.product;
             setArts((prev) => prev.map((a) => (a.id === editedArt.id ? {
                 ...updatedProduct,
@@ -264,12 +287,14 @@ export default function AdminArts() {
 
             setShowEditOverlay(false);
             setEditedArt(null);
-            alert("Product updated!");
+            alert("Product updated successfully!");
         } else {
-            alert("Failed to update.");
+            console.error("Update Error:", result);
+            alert(`Failed to update: ${result.message || JSON.stringify(result.errors)}`);
         }
     } catch (error) {
         console.error("Update error", error);
+        alert("Network error occurred.");
     } finally {
         setIsLoading(false); 
     }
@@ -393,7 +418,7 @@ export default function AdminArts() {
         </section>
       </main>
 
-  
+      {/* OVERLAY - ADD ART */}
       {showAddOverlay && (
         <div className="overlay">
           <div className="overlay-content">
@@ -405,7 +430,6 @@ export default function AdminArts() {
                 {artists.map(artist => <option key={artist.id} value={artist.id}>{artist.name}</option>)}
             </select>
 
-    
             <select className="overlay-input" value={newArt.category} onChange={(e) => setNewArt({ ...newArt, category: e.target.value })}>
                 <option value="">-- Select Category --</option>
                 {CATEGORIES.map((cat, index) => <option key={index} value={cat}>{cat}</option>)}
@@ -424,7 +448,7 @@ export default function AdminArts() {
         </div>
       )}
 
-
+      {/* OVERLAY - EDIT ART */}
       {showEditOverlay && editedArt && (
         <div className="overlay">
           <div className="overlay-content">
@@ -454,7 +478,7 @@ export default function AdminArts() {
         </div>
       )}
 
-   
+      {/* OVERLAY - PREVIEW ART */}
       {showPreviewOverlay && previewArt && (
         <div className="overlay">
           <div className="overlay-content preview">
