@@ -83,10 +83,10 @@ export default function CartPage() {
     }
   };
 
-  // 1. Filter items first
+  
   const itemsToCheckout = cartItems.filter(item => selectedItemIds.includes(item.id));
 
-  // --- DITO KO IDINAGDAG ANG MGA NAWALANG CALCULATIONS ---
+ 
   const subtotal = itemsToCheckout.reduce((sum, i) => sum + i.price * (i.quantity || 1), 0);
   const shipping = itemsToCheckout.length > 0 ? 120 : 0;
   const protectionFee = (protection && itemsToCheckout.length > 0) ? 50 : 0;
@@ -95,7 +95,7 @@ export default function CartPage() {
   const expectedDelivery = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString("en-PH", {
     month: "long", day: "numeric", year: "numeric",
   });
-  // -------------------------------------------------------
+ 
 
 
   const handleDelete = async (id) => {
@@ -112,13 +112,13 @@ export default function CartPage() {
   };
 
   const updateQuantity = async (id, change) => {
-    // 1. Hanapin ang item at current quantity
+  
     const currentItem = cartItems.find(item => item.id === id);
     if (!currentItem) return;
 
     const newQuantity = Math.max(1, (currentItem.quantity || 1) + change);
 
-    // 2. OPTIMISTIC UPDATE (Update UI agad)
+  
     setCartItems((prev) => {
       return prev.map((item) =>
         item.id === id
@@ -127,18 +127,16 @@ export default function CartPage() {
       );
     });
 
-    // 3. DATABASE UPDATE (Fixed for your Laravel Route)
+    
     try {
-      // PAGBABAGO: 
-      // 1. Ginawang 'PUT' ang method.
-      // 2. Ang URL ay may ID sa dulo: /api/cart/${id}
+    
       const response = await fetch(`${API_URL}/api/cart/${id}`, { 
         method: 'PUT', 
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          quantity: newQuantity, // Ipadala lang ang quantity
+          quantity: newQuantity, 
         }),
       });
 
@@ -151,7 +149,7 @@ export default function CartPage() {
 
     } catch (error) {
       console.error("Error updating database:", error);
-      // Optional: Ibalik sa dating value kung nag-error
+    
       alert("Failed to save quantity. Please check your connection.");
     }
   };
@@ -186,7 +184,7 @@ export default function CartPage() {
       user_id: userId,
       name: accountInfo.name,
       items: itemsToCheckout,
-      total: total, // Ngayon didefine na ang total sa taas
+      total: total,
       address: accountInfo.address,
       contact: accountInfo.contact,
       payment: payment,
