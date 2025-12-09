@@ -12,6 +12,6 @@ class Admin extends Model
     protected $table = 'admins';
     protected $fillable = ['username', 'email', 'password', 'pin'];
     
-    // Hide password/pin when returning data
+   
     protected $hidden = ['password', 'pin']; 
 }

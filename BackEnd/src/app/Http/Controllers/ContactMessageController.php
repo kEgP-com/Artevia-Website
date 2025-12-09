@@ -7,13 +7,13 @@ use Illuminate\Http\Request;
 
 class ContactMessageController extends Controller
 {
-    // 1. GET ALL MESSAGES
+
     public function index()
     {
         return response()->json(ContactMessage::orderBy('created_at', 'desc')->get());
     }
 
-    // 2. STORE NEW MESSAGE (For your Public "Contact Us" page later)
+
     public function store(Request $request)
     {
         $request->validate([
@@ -28,13 +28,13 @@ class ContactMessageController extends Controller
         return response()->json(['message' => 'Message sent successfully!']);
     }
 
-    // 3. REPLY / MARK RESOLVED
+ 
     public function update(Request $request, $id)
     {
         $msg = ContactMessage::find($id);
         if (!$msg) return response()->json(['message' => 'Message not found'], 404);
 
-        // Update response and status
+    
         $msg->update([
             'response' => $request->response,
             'status' => 'Resolved'
@@ -43,7 +43,7 @@ class ContactMessageController extends Controller
         return response()->json(['message' => 'Message resolved', 'data' => $msg]);
     }
 
-    // 4. DELETE MESSAGE
+ 
     public function destroy($id)
     {
         $msg = ContactMessage::find($id);
