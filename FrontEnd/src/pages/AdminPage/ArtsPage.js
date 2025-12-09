@@ -40,7 +40,7 @@ const spinnerStyle = {
 export default function AdminArts() {
   const navigate = useNavigate();
   
-  
+ 
   const [arts, setArts] = useState([]);
   const [artists, setArtists] = useState([]); 
   const [query, setQuery] = useState("");
@@ -50,18 +50,16 @@ export default function AdminArts() {
   const [showSettings, setShowSettings] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
- 
   const [showAddOverlay, setShowAddOverlay] = useState(false);
   const [showEditOverlay, setShowEditOverlay] = useState(false);
   const [showPreviewOverlay, setShowPreviewOverlay] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
 
- 
   const [newArt, setNewArt] = useState({
     title: "", 
     artist_id: "", 
-    category: "",
+    category: "", 
     price: "",
     description: "",
     file: null, 
@@ -71,6 +69,7 @@ export default function AdminArts() {
   const [previewArt, setPreviewArt] = useState(null);
 
   
+
   const fetchArtists = async () => {
     try {
       const response = await fetch(`${API_URL}/api/artists`);
@@ -394,7 +393,7 @@ export default function AdminArts() {
         </section>
       </main>
 
-      
+  
       {showAddOverlay && (
         <div className="overlay">
           <div className="overlay-content">
@@ -406,7 +405,7 @@ export default function AdminArts() {
                 {artists.map(artist => <option key={artist.id} value={artist.id}>{artist.name}</option>)}
             </select>
 
-            
+    
             <select className="overlay-input" value={newArt.category} onChange={(e) => setNewArt({ ...newArt, category: e.target.value })}>
                 <option value="">-- Select Category --</option>
                 {CATEGORIES.map((cat, index) => <option key={index} value={cat}>{cat}</option>)}
@@ -425,7 +424,7 @@ export default function AdminArts() {
         </div>
       )}
 
-     
+
       {showEditOverlay && editedArt && (
         <div className="overlay">
           <div className="overlay-content">
@@ -437,7 +436,6 @@ export default function AdminArts() {
                 {artists.map(artist => <option key={artist.id} value={artist.id}>{artist.name}</option>)}
             </select>
 
-           
             <select className="overlay-input" value={editedArt.category} onChange={(e) => setEditedArt({ ...editedArt, category: e.target.value })}>
                 <option value="">-- Select Category --</option>
                 {CATEGORIES.map((cat, index) => <option key={index} value={cat}>{cat}</option>)}
@@ -456,7 +454,7 @@ export default function AdminArts() {
         </div>
       )}
 
-      
+   
       {showPreviewOverlay && previewArt && (
         <div className="overlay">
           <div className="overlay-content preview">

@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
-    // 1. GET ALL PRODUCTS
+
     public function index()
     {
-        // Returns the list including the 'image_url' needed for the frontend
+    
         return response()->json(Product::all());
 
         
@@ -21,13 +21,13 @@ class ProductController extends Controller
     
         $products = \Illuminate\Support\Facades\DB::table('products')
             ->join('artists', 'products.artist_id', '=', 'artists.id')
-            ->select('products.*', 'artists.name as artist_name') // Get product data + artist name
+            ->select('products.*', 'artists.name as artist_name') 
             ->get();
 
         return response()->json($products);
     }
 
-    // 2. GET SINGLE PRODUCT
+
     public function show($id)
     {
         $product = Product::find($id);
@@ -35,20 +35,19 @@ class ProductController extends Controller
         return response()->json(['message' => 'Product not found'], 404);
     }
 
-    // 3. CREATE PRODUCT (Handles File Uploads)
     public function store(Request $request)
     {
-        // Validation
+      
         $request->validate([
             'name' => 'required|string',
             'price' => 'required|numeric',
             'category' => 'required|string',
-            // Max 10MB image, must be a file type
+       
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240' 
         ]);
 
         $data = $request->all();
-        $imageUrl = null; // Default if upload fails
+        $imageUrl = null; 
 
 
         if ($request->hasFile('image')) {
@@ -59,10 +58,10 @@ class ProductController extends Controller
         $product = Product::create([
             'artist_id' => $request->artist_id, 
             'name' => $data['name'],
-            'artist' => $data['artist'] ?? 'Unknown', // Default value
+            'artist' => $data['artist'] ?? 'Unknown', 
             'category' => $data['category'],
             'price' => $data['price'],
-            'description' => $data['description'] ?? '', // Default value
+            'description' => $data['description'] ?? '', 
             'image_url' => $imageUrl
         ]);
 
@@ -86,14 +85,14 @@ class ProductController extends Controller
 
     
         if ($request->hasFile('image')) {
-            // 1. Delete old image to save space (Optional but recommended)
+          
             if ($product->image_url) {
-                // Remove '/storage/' to get the real path relative to the public disk
+               
                 $oldPath = str_replace('/storage/', '', $product->image_url);
                 Storage::disk('public')->delete($oldPath);
             }
 
-            // 2. Store new image
+            
             $path = $request->file('image')->store('products', 'public');
             $data['image_url'] = '/storage/' . $path;
         }
@@ -102,12 +101,12 @@ class ProductController extends Controller
         return response()->json(['message' => 'Product updated', 'product' => $product]);
     }
 
-    // 5. DELETE PRODUCT
+    
     public function destroy($id)
     {
         $product = Product::find($id);
         if ($product) {
-            // Clean up image file
+        
             if ($product->image_url) {
                 $oldPath = str_replace('/storage/', '', $product->image_url);
                 Storage::disk('public')->delete($oldPath);
