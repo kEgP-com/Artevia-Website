@@ -9,7 +9,7 @@ use App\Models\Cart;
 
 class OrderController extends Controller
 {
-    // 1. GET ORDERS
+    
     public function index(Request $request)
     {
         $userId = $request->query('user_id'); 
@@ -21,7 +21,7 @@ class OrderController extends Controller
                       ->get()
             );
         } else {
-            // Admin View
+    
             $orders = DB::table('orders')
                 ->join('users_info', 'orders.user_id', '=', 'users_info.id')
                 ->select('orders.*', 'users_info.name as customer_name')
@@ -32,10 +32,10 @@ class OrderController extends Controller
         }
     }
 
-    // 2. CHECKOUT (One Row Per Item)
+
     public function store(Request $request)
     {
-        // Validate Data
+    
         $validated = $request->validate([
             'user_id' => 'required|integer',
             'items'   => 'required|array',
@@ -44,14 +44,14 @@ class OrderController extends Controller
             'payment' => 'required|string',
         ]);
 
-        // Loop items and save individually
+
         foreach ($validated['items'] as $itemData) {
             $item = (object) $itemData;
             
-            // Image handling
+       
             $itemImage = isset($item->image) ? $item->image : 'no-image.png';
             
-            // Compute Item Total
+   
             $qty = $item->quantity ?? 1;
             $itemTotal = $item->price * $qty;
 
@@ -69,17 +69,15 @@ class OrderController extends Controller
             ]);
         }
 
-        // Clear Cart
-        // 1. Kunin ang mga ID ng items na inorder mula sa request
+      
             $orderedItemIds = collect($request->items)->pluck('id');
 
-            // 2. Burahin lang yung mga items na nasa listahan na 'yun
+        
             Cart::whereIn('id', $orderedItemIds)->delete();
 
         return response()->json(['message' => 'Orders placed successfully!']);
     }
 
-    // 3. UPDATE ORDER STATUS
     public function update(Request $request, $id)
     {
         $order = Orders::find($id);
@@ -90,7 +88,6 @@ class OrderController extends Controller
         return response()->json(['message' => 'Order not found'], 404);
     }
 
-    // 4. CANCEL ORDER
     public function cancel($id)
     {
         $order = Orders::find($id);
@@ -102,7 +99,7 @@ class OrderController extends Controller
         return response()->json(['message' => 'Cannot cancel this order'], 400);
     }
 
-    // 5. DELETE ORDER
+
     public function destroy($id)
     {
         $order = Orders::find($id);
@@ -113,7 +110,7 @@ class OrderController extends Controller
         return response()->json(['message' => 'Order not found'], 404);
     }
 
-    // 6. RATE ORDER
+
     public function rate(Request $request, $id)
     {
         $order = Orders::find($id);
@@ -125,7 +122,7 @@ class OrderController extends Controller
         return response()->json(['message' => 'Order not found'], 404);
     }
 
-    // 7. CLEAR ALL HISTORY
+ 
     public function clearHistory(Request $request)
     {
         $userId = $request->query('user_id');
@@ -138,4 +135,4 @@ class OrderController extends Controller
         return response()->json(['message' => 'User ID required'], 400);
     }
 
-} // 👈 ITO ANG DULONG BRACE NG CLASS. DAPAT ISA LANG NITO SA DULO.
+} 

@@ -1,8 +1,6 @@
 import React, { useState } from "react";
-// No axios import needed
 import "../../css/Register.css";
 import wavebg from "../../images/images/login_bg.png";
-// 1. Import Eye Icons
 import { FaCheckCircle, FaRegCircle, FaGoogle, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -11,7 +9,7 @@ export default function Register() {
   const [pass, setPass] = useState("");
   const [confirm, setConfirm] = useState("");
   
-  // 2. Add State for toggling password visibility
+ 
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -175,13 +173,13 @@ export default function Register() {
 
       <div className="view" style={{ backgroundImage: `url(${wavebg})` }}>
         <div className="column">
-          {/* Header */}
+         
           <div className="column2">
             <span className="text">Create an account</span>
             <span className="text7">Enter your email to sign up!</span>
           </div>
 
-          {/* Input fields */}
+        
           <input
             placeholder="email@domain.com"
             value={email}
@@ -193,11 +191,11 @@ export default function Register() {
             className="input"
           />
 
-          {/* 4. Password Field with Icon */}
+          
           <div className="password-container">
             <input
                 placeholder="enter password"
-                type={showPass ? "text" : "password"} // Toggle type
+                type={showPass ? "text" : "password"} 
                 value={pass}
                 disabled={isLoading}
                 onChange={(e) => {
@@ -205,10 +203,10 @@ export default function Register() {
                     setError("");
                 }}
                 className="input2"
-                style={{ width: "100%" }} // Ensure input fills container if needed
+                style={{ width: "100%" }} 
             />
             <button 
-                type="button" // Important: prevents form submission
+                type="button"
                 className="eye-icon" 
                 onClick={() => setShowPass(!showPass)}
             >
@@ -216,11 +214,11 @@ export default function Register() {
             </button>
           </div>
 
-          {/* 5. Confirm Password Field with Icon */}
+         
           <div className="password-container">
             <input
                 placeholder="confirm password"
-                type={showConfirm ? "text" : "password"} // Toggle type
+                type={showConfirm ? "text" : "password"}
                 value={confirm}
                 disabled={isLoading}
                 onChange={(e) => {
@@ -239,30 +237,30 @@ export default function Register() {
             </button>
           </div>
 
-          {/* Error Message Display */}
+          
           {error && <p style={{ color: "red", fontSize: "14px", marginTop: "10px", textAlign: "center" }}>{error}</p>}
 
-          {/* Sign-up button */}
+          
           <button className="button" onClick={handleSignUp} disabled={isLoading}>
             <span className="text3">
                 {isLoading ? "WAIT..." : "Sign up with email"}
             </span>
           </button>
 
-          {/* Divider */}
+          
           <div className="row-view">
             <div className="box"></div>
             <span className="text4">or continue with</span>
             <div className="box"></div>
           </div>
 
-          {/* Google button with React icon */}
+          
           <button className="google-button" onClick={handleGoogleSignIn} disabled={isLoading}>
             <FaGoogle size={24} color="#DB4437" />
             <span>Google</span>
           </button>
 
-          {/* Terms and agreement */}
+         
           <div className="column3">
             <div 
                 className="terms-container" 

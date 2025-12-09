@@ -18,17 +18,17 @@ export default function OrderPage() {
   const [orders, setOrders] = useState([]);
   const navigate = useNavigate();
 
-  // --- STATE DEFINITIONS ---
+ 
   const [filter, setFilter] = useState("All");
   const [selectedOrder, setSelectedOrder] = useState(null);
   
-  // Modals
+ 
   const [showVendorOverlay, setShowVendorOverlay] = useState(false);
   const [currentVendorOrder, setCurrentVendorOrder] = useState(null);
   const [vendorMessage, setVendorMessage] = useState("");
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  // --- 1. FETCH ORDERS ---
+
   useEffect(() => {
     const fetchOrders = async () => {
       const savedInfo = JSON.parse(localStorage.getItem("accountInfo"));
@@ -50,9 +50,7 @@ export default function OrderPage() {
     fetchOrders();
   }, []);
 
-  // --- 2. ACTION HANDLERS ---
-
-  // Cancel Order
+ 
   const handleCancel = async (orderId) => {
     if (!window.confirm("Are you sure you want to cancel this item?")) return;
     try {
@@ -71,7 +69,7 @@ export default function OrderPage() {
     }
   };
 
-  // Delete Order
+  
   const handleDelete = async (orderId) => {
     if (!window.confirm("Permanently delete this record from history?")) return;
     try {
@@ -87,7 +85,7 @@ export default function OrderPage() {
     }
   };
 
-  // Clear All History
+ 
   const handleClearAll = async () => {
     const savedInfo = JSON.parse(localStorage.getItem("accountInfo"));
     if(!savedInfo) return;
@@ -106,10 +104,10 @@ export default function OrderPage() {
     }
   };
 
-  // --- 3. HELPER FUNCTIONS ---
+ 
   
   const handleContactDriver = (driverName) => {
-    alert(`Calling driver: ${driverName || "Assigning..."}... 📞`);
+    alert(`Calling driver: ${driverName || "Assigning..."}... `);
   };
 
   const handleContactVendor = (order) => {
@@ -117,7 +115,48 @@ export default function OrderPage() {
     setShowVendorOverlay(true);
   };
 
-  // --- SEND MESSAGE TO DATABASE ---
+  
+  const getStatusStyle = (status) => {
+    const s = status ? status.toLowerCase() : "";
+
+    
+    if (s === 'processing') {
+        return {
+            backgroundColor: '#795548', 
+            color: 'white',
+            padding: '4px 12px',
+            borderRadius: '20px',
+            fontWeight: 'bold'
+        };
+    }
+    
+  
+    if (s === 'shipped') {
+        return {
+            backgroundColor: '#81C784', 
+            color: 'white',
+            padding: '4px 12px',
+            borderRadius: '20px',
+            fontWeight: 'bold'
+        };
+    }
+
+    
+    if (s === 'completed' || s === 'delivered') {
+        return {
+            backgroundColor: '#28a745', 
+            color: 'white',
+            padding: '4px 12px',
+            borderRadius: '20px',
+            fontWeight: 'bold'
+        };
+    }
+
+    
+    return {};
+  };
+
+ 
   const handleSendVendorMessage = async () => {
     const savedInfo = JSON.parse(localStorage.getItem("accountInfo"));
     
@@ -177,16 +216,14 @@ export default function OrderPage() {
     return `http://localhost:8082${cleanPath}`;
   };
 
-  // --- 4. RENDER ---
 
-  // FILTER LOGIC
   const filteredOrders = orders.filter((order) => {
     if (filter === "All") return true;
     
     const s = order.status ? order.status.toLowerCase() : "";
     const f = filter.toLowerCase();
 
-    // Logic: Isama ang 'completed' sa 'delivered' tab
+   
     if (f === "delivered") {
         return s === "delivered" || s === "completed";
     }
@@ -199,7 +236,7 @@ export default function OrderPage() {
       <Navbar />
       <div className="order-history-container">
         
-        {/* HEADER */}
+       
         <div className="order-history-header">
           <h2><FaBoxOpen /> Order History</h2>
           <div className="order-filter">
@@ -213,7 +250,7 @@ export default function OrderPage() {
           </div>
         </div>
 
-        {/* ORDER LIST */}
+        
         {filteredOrders.length === 0 ? (
           <div className="empty-order">
             No {filter.toLowerCase()} items found
@@ -221,33 +258,23 @@ export default function OrderPage() {
         ) : (
           <div className="orders-list">
             {filteredOrders.map((order) => {
-                // Check kung Completed or Delivered para sa Badge Style
-                const isCompleted = order.status === 'Completed' || order.status === 'Delivered';
-                
                 return (
                   <div key={order.id} className="order-card">
                     
-                    {/* Image */}
+                    
                     <div className="order-img">
                       <img src={getImgUrl(order.image)} alt={order.name} />
                     </div>
 
-                    {/* Info */}
+                  
                     <div className="order-info">
                       <h3>{order.name}</h3>
                       <p>
                         <strong>Status:</strong>{" "}
-                        {
-                        }
+                      
                         <span 
                             className={`order-status ${order.status.toLowerCase()}`}
-                            style={isCompleted ? {
-                                backgroundColor: '#28a745',
-                                color: 'white',
-                                padding: '4px 12px',
-                                borderRadius: '20px',
-                                fontWeight: 'bold'
-                            } : {}} 
+                            style={getStatusStyle(order.status)} 
                         >
                           {order.status}
                         </span>
@@ -257,7 +284,6 @@ export default function OrderPage() {
                       <p><strong>Date:</strong> {new Date(order.created_at).toLocaleDateString()}</p>
                     </div>
 
-                    {/* Buttons */}
                     <div className="order-actions">
                       <button className="details-btn" onClick={() => setSelectedOrder(order)}>
                         <FaEye /> View
@@ -279,7 +305,7 @@ export default function OrderPage() {
                           </button>
                       )}
 
-                      {["Pending", "Delivered"].includes(order.status) && (
+                      {["Pending", "Processing", "Shipped", "Delivered"].includes(order.status) && (
                         <button className="driver-btn" onClick={() => handleContactDriver(order.driver)}>
                           <FaPhoneAlt /> Driver
                         </button>
@@ -308,9 +334,7 @@ export default function OrderPage() {
         )}
       </div>
 
-      {/* --- MODALS --- */}
-
-      {/* 1. Details Modal */}
+     
       {selectedOrder && (
         <div className="overlay">
           <div className="overlay-content">
@@ -324,16 +348,10 @@ export default function OrderPage() {
             <p><strong>Item:</strong> {selectedOrder.name}</p>
             <p>
               <strong>Status:</strong>{" "}
-              {/* Modal Fix: Same logic as list */}
+             
               <span 
                 className={`order-status ${selectedOrder.status.toLowerCase()}`}
-                style={(selectedOrder.status === 'Completed' || selectedOrder.status === 'Delivered') ? {
-                    backgroundColor: '#28a745',
-                    color: 'white',
-                    padding: '4px 12px',
-                    borderRadius: '20px',
-                    fontWeight: 'bold'
-                } : {}} 
+                style={getStatusStyle(selectedOrder.status)} 
               >
                 {selectedOrder.status}
               </span>
@@ -347,7 +365,7 @@ export default function OrderPage() {
         </div>
       )}
 
-      {/* 2. Vendor Message Modal */}
+      
       {showVendorOverlay && currentVendorOrder && (
         <div className="overlay">
           <div className="overlay-content">
@@ -365,7 +383,7 @@ export default function OrderPage() {
         </div>
       )}
 
-      {/* 3. Clear History Confirmation Modal */}
+  
       {showClearConfirm && (
         <div className="overlay">
           <div className="overlay-content">

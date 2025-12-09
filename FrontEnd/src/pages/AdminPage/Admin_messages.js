@@ -13,7 +13,7 @@ import logo from "../../images/logo/logo_clear.png";
 import wavebg from "../../images/images/login_bg.png";
 
 
-const API_URL = "http://localhost:8082/api"; // Ensure this matches your Laravel port
+const API_URL = "http://localhost:8082/api"; 
 
 export default function AdminMessages() {
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ export default function AdminMessages() {
   const fetchMessages = async () => {
     setIsLoading(true);
     try {
-        // Keep this pointing to your API endpoint
+        
         const response = await fetch(`${API_URL}/contact-messages`);
         if (response.ok) {
             const data = await response.json();
@@ -91,7 +91,7 @@ export default function AdminMessages() {
 
         if (response.ok) {
             const result = await response.json();
-            // Update local state
+            
             const updatedMessages = messages.map((m) =>
                 m.id === viewMessage.id ? result.data : m
             );
@@ -135,7 +135,7 @@ export default function AdminMessages() {
     }
   };
 
-  // Helper Date Formatter
+  
   const formatDate = (dateString) => {
       if(!dateString) return "";
       return new Date(dateString).toLocaleDateString("en-PH");
@@ -175,7 +175,7 @@ export default function AdminMessages() {
 
   return (
    <div className="admin-root" style={{ backgroundImage: `url(${wavebg})` }}>
-         {/* HEADER */}
+     
         <header className="dashboard-header">
         <div className="brand">
           <img src={logo} alt="logo" className="brand-logo" />
@@ -201,7 +201,7 @@ export default function AdminMessages() {
           <button className="nav-item" onClick={() => navigate("/admin/orders")}>
             ORDERS
           </button>
-          {/* 👇 FIXED: Changed from /admin/contact-messages to /admin/messages */}
+         
           <button className="nav-item active" onClick={() => navigate("/admin/messages")}>
             MESSAGES
           </button>
@@ -231,7 +231,7 @@ export default function AdminMessages() {
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
+      
       <main className="admin-main">
         <section className="controls">
           <div className="search-group">
@@ -316,7 +316,7 @@ export default function AdminMessages() {
         </section>
       </main>
 
-      {/* VIEW MESSAGE OVERLAY */}
+      
       {viewMessage && (
         <div className="overlay">
           <div className="overlay-content">

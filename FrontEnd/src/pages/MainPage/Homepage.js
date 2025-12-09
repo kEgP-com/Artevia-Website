@@ -4,18 +4,16 @@ import Navbar from "../../components/navbar";
 import Footer from "../../components/footer";
 import "../../css/Homepage.css";
 
-// Static Backgrounds & UI Elements
+
 import WaveBg from "../../images/images/wavebg.png";
 import SaleBadge from "../../images/images/Sale.png";
-
-// Static Category Images
 import Handmadedecor2 from "../../images/Handmade Decor/dovy_oak.png";
 import Painting2 from "../../images/Painting/Oil_On_Canvas_By_Shan_Arts.jpg";
 import Sculpture2 from "../../images/Sculpture/la-grande-ourse-animal-sculpture-by-eric-valat_7-550x769.png";
 import Sketch2 from "../../images/Sketch arts/Custom_Portrait_2.png";
 import DigitalArt2 from "../../images/Digital Art/A_Taste_of_Honey.png";
 
-// Icons for the restriction overlay
+
 import { FaExclamationTriangle, FaUserEdit } from "react-icons/fa";
 
 const API_URL = "http://localhost:8082"; 
@@ -26,18 +24,18 @@ function Homepage() {
   const [selectedArt, setSelectedArt] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Data State
+  
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Restriction State (Profile Incomplete)
+  
   const [showRestriction, setShowRestriction] = useState(false);
 
-  // 1. Fetch Data & Load User (BUT DO NOT REDIRECT GUESTS)
+ 
   useEffect(() => {
-    // Load User if they exist, but don't force login yet
+   
     const storedUser = localStorage.getItem("accountInfo");
     if (storedUser) {
       try {
@@ -48,7 +46,7 @@ function Homepage() {
       }
     } 
 
-    // Fetch Products
+   
     const fetchProducts = async () => {
       try {
         const response = await fetch(`${API_URL}/api/products`); 
@@ -78,17 +76,17 @@ function Homepage() {
       return `${API_URL}${path}`;
   };
 
-  // 2. HANDLE ADD TO CART (The Gatekeeper Logic)
+  
   const handleAddToCart = async (product) => {
-    // A. CHECK IF LOGGED IN
+   
     const savedUserString = localStorage.getItem("accountInfo");
     
     if (!savedUserString) {
-        // If not logged in, ask to login and redirect
+      
         if(window.confirm("Please log in first to add items to your cart. Go to Login?")) {
             navigate("/customer/login");
         }
-        return; // Stop execution here
+        return;
     }
 
     let userObj;
@@ -99,7 +97,7 @@ function Homepage() {
         return;
     }
 
-    // B. CHECK PROFILE COMPLETENESS (Address/Contact)
+   
     const isProfileIncomplete = 
         !userObj.address || 
         userObj.address.trim() === "" || 
@@ -109,11 +107,11 @@ function Homepage() {
         userObj.contact === "No contact set";
 
     if (isProfileIncomplete) {
-        setShowRestriction(true); // Open the warning popup
-        return; // Stop execution here
+        setShowRestriction(true); 
+        return;
     }
 
-    // C. PROCEED TO API IF ALL CHECKS PASS
+  
     setIsSubmitting(true);
 
     const payload = {
@@ -140,21 +138,21 @@ function Homepage() {
         const result = await response.json();
 
         if (response.ok) {
-            alert(`✅ Success! ${product.name} added to cart.`);
+            alert(`Success! ${product.name} added to cart.`);
             if(selectedArt) closeOverlay(); 
         } else {
-            alert("❌ Failed to add: " + (result.message || "Unknown error"));
+            alert("Failed to add: " + (result.message || "Unknown error"));
         }
 
     } catch (error) {
         console.error("Connection Error:", error);
-        alert("❌ Cannot connect to server.");
+        alert("Cannot connect to server.");
     } finally {
         setIsSubmitting(false);
     }
   };
 
-  // --- FILTERS & UI ---
+ 
   const filteredProducts = products.filter((art) => {
     const query = searchTerm.toLowerCase();
     return (
@@ -185,7 +183,7 @@ function Homepage() {
       <Navbar onSearch={setSearchTerm} />
 
       <div className="homepage">
-        {/* HERO */}
+  
         <section className="hero" style={{ backgroundImage: `url(${WaveBg})` }}>
           <h1>Shop art, live inspired.</h1>
           <p>
@@ -199,7 +197,7 @@ function Homepage() {
           <p>“Art should comfort the disturbed and disturb the comfortable.” – Banksy</p>
         </section>
 
-        {/* ART DISPLAY (TOP 3) with Local Loading */}
+      
         <section className="art-display" style={{ minHeight: "400px", position: "relative" }}>
           <div className="section-title">TOP</div>
           
@@ -254,7 +252,7 @@ function Homepage() {
           )}
         </section>
 
-        {/* PROMO CATEGORIES */}
+       
         <section className="promo">
           <div className="promo-title-container">
             <img src={SaleBadge} alt="Sale" className="sale-badge" />
@@ -279,7 +277,7 @@ function Homepage() {
           </div>
         </section>
 
-        {/* DISCOVERY SECTION */}
+       
         {!isLoading && discoveryArts.length > 0 && (
           <section className="discovery" style={{ backgroundImage: `url(${WaveBg}), linear-gradient(to bottom, white, #E49E69)` }}>
             <div className="section-title">DISCOVERY</div>
@@ -309,7 +307,7 @@ function Homepage() {
 
       <Footer />
 
-      {/* Art Details Overlay */}
+  
       {selectedArt && (
         <div className="overlay-backdrop" onClick={closeOverlay}>
           <div className="overlay-content" onClick={(e) => e.stopPropagation()}>
@@ -333,7 +331,7 @@ function Homepage() {
         </div>
       )}
 
-      {/* PROFILE RESTRICTION OVERLAY (Only if logged in but incomplete) */}
+
       {showRestriction && (
          <div className="overlay-backdrop" style={{ 
              display: "flex", 

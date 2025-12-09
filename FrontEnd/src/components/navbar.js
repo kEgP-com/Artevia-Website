@@ -17,7 +17,7 @@ function Navbar({ onSearch }) {
   const [showHelpOverlay, setShowHelpOverlay] = useState(false);
   const navigate = useNavigate();
 
-  // Hide navbar on scroll down
+  
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -32,7 +32,7 @@ function Navbar({ onSearch }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-  // Scroll to footer
+  
   const scrollToFooter = () => {
     const footer = document.getElementById("footer-section");
     if (footer) {
@@ -49,7 +49,7 @@ function Navbar({ onSearch }) {
   };
 
   const checkAuthAndNavigate = (path) => {
-    const isLoggedIn = localStorage.getItem("accountInfo"); 
+    const isLoggedIn = localStorage.getItem("accountInfo");
 
     if (!isLoggedIn) {
       if (window.confirm("You need to login to access this page. Go to Login?")) {
@@ -62,7 +62,7 @@ function Navbar({ onSearch }) {
 
   
   const handleSearchChange = (e) => {
-
+   
     if (onSearch) {
         onSearch(e.target.value);
     }
@@ -73,7 +73,7 @@ function Navbar({ onSearch }) {
       <header className={`navbar-container ${isVisible ? "visible" : "hidden"}`}>
         <nav className="navbar">
 
-          {/* Mobile Left Menu Button */}
+      
           <button
             className="menu-btn left-menu-btn"
             onClick={() => setShowLeftMenu(!showLeftMenu)}
@@ -81,7 +81,7 @@ function Navbar({ onSearch }) {
             {showLeftMenu ? <FaTimes /> : <FaBars />}
           </button>
 
-          {/* Logo */}
+          
           <div
             className="nav-left"
             onClick={() => goToPage("/customer/homepage")}
@@ -90,7 +90,7 @@ function Navbar({ onSearch }) {
             <img src={Logo} alt="Logo" className="logo-img" />
           </div>
 
-
+          
           <div className="nav-center">
             <input 
                 type="text" 
@@ -122,7 +122,7 @@ function Navbar({ onSearch }) {
             />
           </div>
 
-
+         
           <button
             className="menu-btn right-menu-btn"
             onClick={() => setShowRightMenu(!showRightMenu)}
@@ -131,7 +131,7 @@ function Navbar({ onSearch }) {
           </button>
         </nav>
 
-        {/* Desktop Links */}
+       
         <div className="nav-links-bar">
           <ul className="nav-links">
             <li onClick={() => goToPage("/customer/homepage")}>HOME</li>
@@ -151,7 +151,7 @@ function Navbar({ onSearch }) {
           </ul>
         </div>
 
-        {/* Mobile Left Menu */}
+   
         {showLeftMenu && (
           <div className="mobile-dropdown left-dropdown">
             <ul>
@@ -173,11 +173,11 @@ function Navbar({ onSearch }) {
           </div>
         )}
 
-        {/* Mobile Right Menu */}
+  
         {showRightMenu && (
           <div className="mobile-dropdown right-dropdown">
             <div className="mobile-search-alt">
-
+       
               <input 
                 type="text" 
                 className="search-bar" 
@@ -209,7 +209,7 @@ function Navbar({ onSearch }) {
         )}
       </header>
 
-      {/* Help Overlay */}
+
       {showHelpOverlay && (
         <div className="overlay">
           <div className="overlay-content">

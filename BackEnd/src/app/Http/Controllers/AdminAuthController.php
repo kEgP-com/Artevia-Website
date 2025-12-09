@@ -16,12 +16,11 @@ class AdminAuthController extends Controller
             'pin' => 'required'
         ]);
 
-        // Check if input is Email OR Username
         $admin = Admin::where('email', $request->emailOrUser)
                       ->orWhere('username', $request->emailOrUser)
                       ->first();
 
-        // Validate Account, Password, and PIN
+
         if (!$admin || !Hash::check($request->password, $admin->password)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
@@ -36,7 +35,7 @@ class AdminAuthController extends Controller
         ]);
     }
 
-    // ... inside AdminAuthController class
+
 
     public function resetPassword(Request $request)
     {
@@ -46,21 +45,21 @@ class AdminAuthController extends Controller
             'new_password' => 'required|min:6'
         ]);
 
-        // 1. Find Admin by Email
+       
         $admin = Admin::where('email', $request->email)->first();
 
-        // 2. Validate Admin Exists
+
         if (!$admin) {
             return response()->json(['message' => 'Email not found'], 404);
         }
 
-        // 3. Verify the PIN matches the one in DB
+
         if ($admin->pin !== $request->pin) {
             return response()->json(['message' => 'Invalid Security PIN'], 401);
         }
 
         
-        // 4. Update Password (Hash it!)
+        
         $admin->password = Hash::make($request->new_password);
         $admin->save();
 

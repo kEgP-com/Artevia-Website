@@ -26,7 +26,7 @@ export default function AdminLogin() {
         const data = await response.json();
 
         if (response.ok) {
-            // ✅ Save Login Session
+           
             localStorage.setItem("adminData", JSON.stringify(data.admin));
             alert("Login Successful!");
             navigate("/admin/dashboard");
@@ -55,7 +55,7 @@ export default function AdminLogin() {
           className="input"
         />
 
-        {/* PASSWORD FIELD */}
+       
         <div className="password-container">
           <input
             type={showPassword ? "text" : "password"}
@@ -69,7 +69,7 @@ export default function AdminLogin() {
           </span>
         </div>
 
-        {/* PIN FIELD */}
+       
         <div className="password-container">
           <input
             type={showPin ? "text" : "password"}

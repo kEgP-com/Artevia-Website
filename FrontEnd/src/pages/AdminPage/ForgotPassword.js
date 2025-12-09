@@ -8,19 +8,19 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function AdminForgotPassword() {
   const [email, setEmail] = useState("");
-  const [pin, setPin] = useState(""); // ✅ Added PIN State
+  const [pin, setPin] = useState(""); 
   const [newPass, setNewPass] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
   const [showNewPass, setShowNewPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   
   const [showOverlay, setShowOverlay] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // ✅ Loading State
+  const [isLoading, setIsLoading] = useState(false); 
   
   const navigate = useNavigate();
 
   const handleReset = async () => {
-    // 1. Basic Validation
+    
     if (!email || !pin || !newPass || !confirmPass) {
       alert("Please fill in all fields.");
       return;
@@ -39,7 +39,7 @@ export default function AdminForgotPassword() {
     setIsLoading(true);
 
     try {
-        // 2. Send Data to Backend
+       
         const response = await fetch("http://localhost:8082/api/admin/reset-password", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -53,15 +53,15 @@ export default function AdminForgotPassword() {
         const data = await response.json();
 
         if (response.ok) {
-            // ✅ Success: Show Overlay
+           
             setShowOverlay(true);
         } else {
-            // ❌ Error: Wrong Email or PIN
-            alert(`❌ ${data.message || "Reset failed"}`);
+           
+            alert(`${data.message || "Reset failed"}`);
         }
     } catch (error) {
         console.error("Reset Error:", error);
-        alert("❌ Server connection error.");
+        alert(" Server connection error.");
     } finally {
         setIsLoading(false);
     }
@@ -70,14 +70,14 @@ export default function AdminForgotPassword() {
   return (
     <div className="view" style={{ backgroundImage: `url(${wavebg})` }}>
       <div className="column">
-        {/* Logo */}
+       
         <div className="logo-container">
           <img src={logo} alt="Logo" className="logo-image" />
         </div>
 
         <h2 style={{color: '#333', marginBottom: '15px'}}>Admin Reset</h2>
 
-        {/* Email */}
+       
         <input
           placeholder="Enter admin email"
           value={email}
@@ -85,7 +85,7 @@ export default function AdminForgotPassword() {
           className="input"
         />
 
-        {/* ✅ PIN Field (Added) */}
+        
         <div className="password-container">
             <input
                 type="text"
@@ -97,7 +97,7 @@ export default function AdminForgotPassword() {
             />
         </div>
 
-        {/* New Password */}
+        
         <div className="password-container">
           <input
             type={showNewPass ? "text" : "password"}
@@ -114,7 +114,7 @@ export default function AdminForgotPassword() {
           </span>
         </div>
 
-        {/* Confirm Password */}
+       
         <div className="password-container">
           <input
             type={showConfirmPass ? "text" : "password"}
@@ -131,14 +131,12 @@ export default function AdminForgotPassword() {
           </span>
         </div>
 
-        {/* Button */}
         <button className="button" onClick={handleReset} disabled={isLoading}>
           <span className="text2">
             {isLoading ? "UPDATING..." : "RESET PASSWORD"}
           </span>
         </button>
 
-        {/* Back to Login */}
         <span
           className="clickable-text"
           onClick={() => navigate("/admin/login")}
@@ -148,7 +146,7 @@ export default function AdminForgotPassword() {
         </span>
       </div>
 
-      {/* Overlay after reset */}
+    
       {showOverlay && (
         <Overlay
           title="Password Reset Successful!"

@@ -9,7 +9,7 @@ import Painting1 from '../images/Painting/Pag Akbay Series VII by Leti watersong
 import Sculpture1 from '../images/Sculpture/blossom-v-wood-sculpture-by-wouter-van-der-vlugt-1-300x200.png';
 import Sketch1 from '../images/Sketch arts/cat portrait.png'; 
 
-//FOR CATEGORIES
+
 import DigitalArt2 from '../images/Digital Art/A_Taste_of_Honey.png'; 
 import Handmadedecor2 from '../images/Handmade Decor/dovy_oak_wood_decorative_bird_by_Woodlands_P_2,890.00.png';
 import Painting2 from '../images/Painting/Oil_On_Canvas_By_Shan_Arts.jpg'; 

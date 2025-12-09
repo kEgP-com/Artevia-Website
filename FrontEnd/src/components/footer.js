@@ -9,7 +9,7 @@ import QrCode from '../images/images/qrcode.png';
 function Footer() {
   return (
     <>
-      <footer id="footer-section" className="footer"> {/* 👈 Added ID here */}
+      <footer id="footer-section" className="footer"> 
         <div className="footer-section">
           <h4>Download App</h4>
           <img src={QrCode} alt="QR Code" className="qr-code" />

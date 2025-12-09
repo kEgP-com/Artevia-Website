@@ -5,7 +5,7 @@ import wavebg from "../../images/images/login_bg.png";
 import { useNavigate, Link } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaBan } from "react-icons/fa";
 
-// 👇 DEFINED BASE URL
+
 const API_BASE_URL = "http://localhost:8082";
 
 export default function Login() {
@@ -15,14 +15,14 @@ export default function Login() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
-  // 👇 NEW STATE: Stores ban details to show in the Overlay
+ 
   const [banDetails, setBanDetails] = useState(null); 
 
   const navigate = useNavigate();
 
   const handleLogin = async () => {
     setError("");
-    setBanDetails(null); // Reset ban details
+    setBanDetails(null); 
 
     if (input1 === "" || input2 === "") {
       setError("Please fill in both fields.");
@@ -46,20 +46,20 @@ export default function Login() {
 
       const data = await response.json();
 
-      // 🛑 PRIORITY CHECK: HANDLE BAN (Status 403 or is_banned flag)
+     
       if (response.status === 403 || (data.user && data.user.is_banned)) {
           setIsLoading(false);
           
-          // Prepare data for the overlay
+        
           setBanDetails({
               reason: data.reason || (data.user && data.user.ban_reason) || "Violation of Terms",
               until: data.until || (data.user && data.user.banned_until),
               type: data.type || (data.user && data.user.ban_type) || "permanent"
           });
-          return; // STOP HERE - Do not login
+          return; 
       }
 
-      // ✅ SUCCESS CASE
+      
       if (response.ok) {
         const userData = data.user;
 
@@ -81,7 +81,7 @@ export default function Login() {
         localStorage.setItem("accountInfo", JSON.stringify(accountInfo));
         navigate("/customer/homepage");
       } 
-      // ❌ ERROR CASE
+    
       else {
         setIsLoading(false);
         if (response.status === 401) {
@@ -98,7 +98,7 @@ export default function Login() {
     }
   };
 
-  // Helper to format date
+  
   const formatDate = (dateString) => {
       if (!dateString) return "Permanent";
       return new Date(dateString).toLocaleDateString("en-US", { 
@@ -109,7 +109,7 @@ export default function Login() {
   return (
     <div className="view" style={{ backgroundImage: `url(${wavebg})` }}>
       
-      {/* CSS for Overlays */}
+    
       <style>{`
         .loading-overlay {
           position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -132,7 +132,7 @@ export default function Login() {
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       `}</style>
 
-      {/* Loading Overlay */}
+   
       {isLoading && (
         <div className="loading-overlay">
           <div className="spinner"></div>
@@ -140,7 +140,7 @@ export default function Login() {
         </div>
       )}
 
-      {/* 👇 SUSPENSION OVERLAY */}
+   
       {banDetails && (
         <div className="loading-overlay">
             <div className="ban-card">

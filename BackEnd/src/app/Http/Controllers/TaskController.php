@@ -7,13 +7,13 @@ use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
-    // GET /api/tasks
+   
     public function index()
     {
         return response()->json(Task::all());
     }
 
-    // POST /api/tasks
+   
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -27,14 +27,14 @@ class TaskController extends Controller
         return response()->json($task, 201);
     }
 
-    // GET /api/tasks/{id}
+    
     public function show($id)
     {
         $task = Task::findOrFail($id);
         return response()->json($task);
     }
 
-    // PUT /api/tasks/{id}
+ 
     public function update(Request $request, $id)
     {
         $task = Task::findOrFail($id);
@@ -50,7 +50,7 @@ class TaskController extends Controller
         return response()->json($task);
     }
 
-    // DELETE /api/tasks/{id}
+    
     public function destroy($id)
     {
         $task = Task::findOrFail($id);

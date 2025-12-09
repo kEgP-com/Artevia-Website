@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import Overlay from "../../components/Overlay";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-// Ensure this matches your Laravel port
+
 const API_URL = "http://localhost:8082";
 
 export default function ForgotPassword() {
@@ -16,7 +16,7 @@ export default function ForgotPassword() {
   const [showNewPass, setShowNewPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   
-  // States for Loading and UI
+  
   const [showOverlay, setShowOverlay] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -26,7 +26,7 @@ export default function ForgotPassword() {
   const handleReset = async () => {
     setError("");
 
-    // 1. Validation
+   
     if (!email || !newPass || !confirmPass) {
       setError("Please fill in all fields.");
       return;
@@ -37,11 +37,11 @@ export default function ForgotPassword() {
       return;
     }
 
-    // 2. Start Loading
+    
     setIsLoading(true);
 
     try {
-      // 3. Send Request to Backend
+      
       const response = await fetch(`${API_URL}/api/reset-password`, {
         method: "POST",
         headers: {
@@ -57,11 +57,11 @@ export default function ForgotPassword() {
       const data = await response.json();
 
       if (response.ok) {
-        // Success!
+        
         setIsLoading(false);
         setShowOverlay(true); 
       } else {
-        // Handle Errors (e.g. Email not found)
+       
         setIsLoading(false);
         setError(data.message || "Failed to reset password.");
       }
@@ -76,7 +76,7 @@ export default function ForgotPassword() {
   return (
     <div className="view" style={{ backgroundImage: `url(${wavebg})` }}>
       
-      {/* Loading CSS */}
+   
       <style>{`
         .loading-overlay {
           position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -94,7 +94,7 @@ export default function ForgotPassword() {
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       `}</style>
 
-      {/* Loading Overlay */}
+    
       {isLoading && (
         <div className="loading-overlay">
           <div className="spinner"></div>
@@ -103,14 +103,14 @@ export default function ForgotPassword() {
       )}
 
       <div className="column">
-        {/* Logo */}
+      
         <div className="logo-container">
           <img src={logo} alt="Logo" className="logo-image" />
         </div>
 
         <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#333' }}>Reset Password</h2>
 
-        {/* Email */}
+      
         <input
           placeholder="Enter your email"
           value={email}
@@ -119,7 +119,7 @@ export default function ForgotPassword() {
           className="input"
         />
 
-        {/* New Password */}
+       
         <div className="password-container" style={{ position: 'relative' }}>
           <input
             placeholder="New Password"
@@ -140,7 +140,7 @@ export default function ForgotPassword() {
           </button>
         </div>
 
-        {/* Confirm Password */}
+        
         <div className="password-container" style={{ position: 'relative' }}>
           <input
             placeholder="Confirm Password"
@@ -161,17 +161,17 @@ export default function ForgotPassword() {
           </button>
         </div>
 
-        {/* Error Message */}
+        
         {error && <p style={{ color: "red", marginTop: "10px", fontSize: "14px", textAlign: "center" }}>{error}</p>}
 
-        {/* Reset Button */}
+       
         <button className="button" onClick={handleReset} disabled={isLoading}>
           <span className="text2">
             {isLoading ? "WAIT..." : "RESET PASSWORD"}
           </span>
         </button>
 
-        {/* Back to Login */}
+
         <span
           className="clickable-text"
           onClick={() => !isLoading && navigate("/customer/login")}
@@ -181,7 +181,6 @@ export default function ForgotPassword() {
         </span>
       </div>
 
-      {/* Success Overlay */}
       {showOverlay && (
         <Overlay
           title="Password Reset Successful!"

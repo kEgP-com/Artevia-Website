@@ -12,7 +12,7 @@ export default function AdminUsers() {
   const [query, setQuery] = useState("");
   const [sortOrder, setSortOrder] = useState("none");
   
-  // --- BAN OVERLAY STATE ---
+  
   const [showBanOverlay, setShowBanOverlay] = useState(false);
   const [selectedUserBan, setSelectedUserBan] = useState(null);
   const [banType, setBanType] = useState("permanent"); 
@@ -24,7 +24,7 @@ export default function AdminUsers() {
   const [showProfile, setShowProfile] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false);
   
-  // Controls loading spinner for Fetching AND Banning
+  
   const [isLoading, setIsLoading] = useState(false);
 
   const toggleNav = () => setIsNavOpen(!isNavOpen);
@@ -97,15 +97,15 @@ export default function AdminUsers() {
     }
   };
 
-  // --- 1. OPEN BAN OVERLAY OR UNBAN IMMEDIATELY ---
+  
   const handleBanClick = (user) => {
       if (user.is_banned) {
           if (window.confirm(`Unban ${user.name}?`)) {
-             // Unban immediately
+             
              confirmBanAction(user, false, null, null, null); 
           }
       } else {
-          // Open Ban Overlay
+        
           setSelectedUserBan(user);
           setBanType("permanent");
           setBanDuration(1);
@@ -115,7 +115,7 @@ export default function AdminUsers() {
       }
   };
 
-  // --- 2. CALCULATE DATE AND SUBMIT ---
+  
   const submitBan = () => {
       if (!banReason.trim()) {
           alert("Please provide a reason for this suspension.");
@@ -136,14 +136,12 @@ export default function AdminUsers() {
       }
 
       confirmBanAction(selectedUserBan, true, bannedUntil, banReason, banType);
-      // Note: We close the overlay ONLY after success in the API call below, 
-      // or we can close it here if we want optimistic UI. 
-      // I prefer closing it here but letting the loading state handle visual feedback.
+     
   };
 
-  // --- 3. API CALL (WITH LOADING STATE) ---
+  
   const confirmBanAction = async (user, isBanned, bannedUntil, reason, type) => {
-      // 👇 Start Loading
+      
       setIsLoading(true);
       
       try {
@@ -168,7 +166,7 @@ export default function AdminUsers() {
               prev.map((u) => (u.id === user.id ? updatedUser : u))
             );
             
-            setShowBanOverlay(false); // Close overlay on success
+            setShowBanOverlay(false); 
             const msg = !isBanned ? "User Activated." : "User has been suspended successfully.";
             alert(msg);
         } else {
@@ -178,7 +176,7 @@ export default function AdminUsers() {
         console.error("Ban error:", error);
         alert("Network error.");
     } finally {
-        // 👇 Stop Loading
+       
         setIsLoading(false);
     }
   };
@@ -222,7 +220,7 @@ export default function AdminUsers() {
             <button className="btn btn-search">Search</button>
           </div>
           <div className="controls-right">
-            {/* 👇 Removed Add User Button */}
+            
             <button className="btn" onClick={fetchUsers} style={{marginLeft: '10px'}}>Refresh Data</button>
           </div>
         </section>
@@ -288,7 +286,7 @@ export default function AdminUsers() {
         </section>
       </main>
 
-      {/* OVERLAY: Ban Options */}
+     
       {showBanOverlay && selectedUserBan && (
           <div className="overlay">
             <div className="overlay-content" style={{ maxWidth: '450px' }}>
@@ -297,7 +295,6 @@ export default function AdminUsers() {
                 
                 <div style={{ margin: '20px 0', textAlign: 'left' }}>
                     
-                    {/* Duration Options */}
                     <div style={{ marginBottom: '15px' }}>
                         <div style={{ marginBottom: '10px' }}>
                             <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
@@ -331,7 +328,7 @@ export default function AdminUsers() {
                         )}
                     </div>
 
-                    {/* Reason Text Area */}
+                    
                     <div style={{ borderTop: '1px solid #eee', paddingTop: '15px' }}>
                         <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Reason for Suspension (Required):</label>
                         <textarea
@@ -345,7 +342,7 @@ export default function AdminUsers() {
                 </div>
 
                 <div className="overlay-actions">
-                    {/* 👇 Updated Button with Loading State */}
+                    
                     <button 
                         className="btn" 
                         onClick={submitBan} 
@@ -358,7 +355,7 @@ export default function AdminUsers() {
                     <button 
                         className="btn" 
                         onClick={() => setShowBanOverlay(false)}
-                        disabled={isLoading} // Also disable cancel while loading
+                        disabled={isLoading} 
                     >
                         Cancel
                     </button>

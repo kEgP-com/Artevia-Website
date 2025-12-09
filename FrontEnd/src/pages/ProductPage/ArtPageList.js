@@ -6,7 +6,7 @@ import ProductCard from "../../components/ProductCard";
 import { productAPI } from "../../services/api";
 
 function ArtPageList() {
-  // 1. STATE DECLARATIONS
+ 
   const [selectedArt, setSelectedArt] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -17,16 +17,16 @@ function ArtPageList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // 2. FETCH PRODUCTS
+ 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
         
-        // Note: Assumes productAPI calls the correct endpoint internally
+       
         const data = await productAPI.getAllProducts();
         
-        // Handle varying Laravel response formats
+        
         let productList = [];
         if (Array.isArray(data)) {
           productList = data;
@@ -51,12 +51,12 @@ function ArtPageList() {
     fetchProducts();
   }, []);
 
-  // 3. HELPER FUNCTIONS (Restored original URL logic)
+ 
   const getImageUrl = (item) => {
     if (!item || !item.image_url) {
       return '/images/default-product.jpg';
     }
-    // Ibinalik ko sa dating logic mo:
+    
     if (item.image_url.startsWith('/')) {
       return `http://localhost:8082${item.image_url}`;
     }
@@ -66,9 +66,9 @@ function ArtPageList() {
   const handleView = (art) => setSelectedArt(art);
   const closeOverlay = () => setSelectedArt(null);
 
-  // 4. ADD TO CART FUNCTION
+ 
   const addToCart = async (product) => {
-    // A. Check User Login
+    
     const savedUser = localStorage.getItem("accountInfo");
     if (!savedUser) {
         alert("Please log in first to add items to your cart.");
@@ -86,7 +86,6 @@ function ArtPageList() {
 
     setIsSubmitting(true);
 
-    // B. Prepare Payload
     const payload = {
         user_id: userId,
         product_id: product.id,
@@ -98,7 +97,7 @@ function ArtPageList() {
         quantity: 1
     };
 
-    // C. Send to Backend (Ibinalik ang original URL string)
+   
     try {
         const response = await fetch('http://localhost:8082/api/cart', {
             method: 'POST',
@@ -112,22 +111,22 @@ function ArtPageList() {
         const result = await response.json();
 
         if (response.ok) {
-            alert(`✅ Success! ${product.name} added to cart.`);
+            alert(`Success! ${product.name} added to cart.`);
             if(selectedArt) closeOverlay(); 
         } else {
             console.error("Server Error:", result);
-            alert("❌ Failed to add: " + (result.message || "Unknown error"));
+            alert("Failed to add: " + (result.message || "Unknown error"));
         }
 
     } catch (error) {
         console.error("Connection Error:", error);
-        alert("❌ Cannot connect to server.");
+        alert("Cannot connect to server.");
     } finally {
         setIsSubmitting(false);
     }
   };
 
-  // 5. FILTERS & SORTING
+  
   const filteredArts = products.filter((art) => {
     if (!art) return false;
     const matchesSearch = art.name?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -141,7 +140,7 @@ function ArtPageList() {
       return 0; 
   });
 
-  // 6. RENDER
+ 
   if (loading) {
     return (
       <>
@@ -216,13 +215,13 @@ function ArtPageList() {
               <option value="nameZA">Name: Z–A</option>
             </select>
           </div>
-          {/* Grid */}
+         
           <div className="discovery-grid">
             {filteredArts.length > 0 ? (
               filteredArts.map((art) => (
                 <ProductCard 
                     key={art.id} 
-                    // Pinapasa natin yung imageUrl na galing sa helper function mo
+                
                     item={{...art, imageUrl: getImageUrl(art)}} 
                     onView={handleView} 
                     onAddToCart={() => addToCart(art)} 
@@ -239,7 +238,7 @@ function ArtPageList() {
 
       <Footer />
 
-      {/* Overlay Modal */}
+      
       {selectedArt && (
         <div className="overlay-backdrop" onClick={closeOverlay}>
           <div className="overlay-content" onClick={(e) => e.stopPropagation()}>

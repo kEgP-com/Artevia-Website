@@ -17,7 +17,7 @@ const DashboardPage = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [showNav, setShowNav] = useState(false);
 
-  // Data States
+
   const [userCount, setUserCount] = useState(0);
   const [orderCount, setOrderCount] = useState(0);
   const [messageCount, setMessageCount] = useState(0);
@@ -154,12 +154,12 @@ const DashboardPage = () => {
 
       <main className="dashboard-main">
         
-        {/* Title Section (Centered) */}
+       
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
             <h1 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>Welcome Admin!</h1>
             <p style={{ color: '#555', fontSize: '1.1rem' }}>Here is an overview of your platform's performance.</p>
             
-            {/* Centered Button */}
+        
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
                 <button 
                     onClick={handleGenerateReport} 
@@ -184,7 +184,7 @@ const DashboardPage = () => {
         ) : (
             <div className="stats-container">
             
-            {/* USERS CARD */}
+           
             <div className="stat-card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
@@ -196,7 +196,7 @@ const DashboardPage = () => {
                 <small style={{ color: '#777' }}>Registered accounts</small>
             </div>
 
-            {/* ORDERS CARD */}
+         
             <div className="stat-card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
@@ -208,7 +208,7 @@ const DashboardPage = () => {
                 <small style={{ color: '#777' }}>Total transactions</small>
             </div>
 
-            {/* MESSAGES CARD */}
+           
             <div className="stat-card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
@@ -220,7 +220,7 @@ const DashboardPage = () => {
                 <small style={{ color: '#777' }}>Pending inquiries</small>
             </div>
 
-            {/* SALES CARD (Removed Green Border) */}
+           
             <div className="stat-card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
@@ -234,7 +234,7 @@ const DashboardPage = () => {
                 <small style={{ color: '#777' }}>Avg. Order: ₱{avgOrderValue.toFixed(0)}</small>
             </div>
 
-            {/* AVERAGE ORDER VALUE CARD */}
+          
             <div className="stat-card">
                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
